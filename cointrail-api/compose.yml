@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: cointrail-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: cointrail
+      POSTGRES_USER: cointrail
+      POSTGRES_PASSWORD: cointrail
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - cointrail-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  cointrail-postgres-data:
