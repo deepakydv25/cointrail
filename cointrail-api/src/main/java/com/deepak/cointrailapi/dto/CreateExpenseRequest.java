@@ -1,14 +1,27 @@
 package com.deepak.cointrailapi.dto;
 
 import com.deepak.cointrailapi.enums.ExpenseCategory;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class CreateExpenseRequest {
+
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be greater than zero")
     private BigDecimal amount;
+
+    @NotNull(message = "Category is required")
     private ExpenseCategory category;
+
+    @Size(max = 255, message = "Description must not exceed 255 characters")
     private String description;
+
+    @NotNull(message = "Expense date is required")
     private LocalDate expenseDate;
 
     public CreateExpenseRequest() {
