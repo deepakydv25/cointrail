@@ -1,0 +1,60 @@
+package com.deepak.cointrailapi.controller;
+
+import com.deepak.cointrailapi.dto.CreateExpenseRequest;
+import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.service.ExpenseService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/expenses")
+public class ExpenseController {
+
+    private final ExpenseService expenseService;
+
+    public ExpenseController(ExpenseService expenseService) {
+        this.expenseService = expenseService;
+    }
+
+    @GetMapping("/home")
+    public String expenseHome() {
+        return "Welcome to CoinTrail API!";
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ExpenseResponse> createExpense(@RequestBody CreateExpenseRequest request) {
+        ExpenseResponse response = expenseService.createExpense(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<ExpenseResponse>> getAllExpenses() {
+        List<ExpenseResponse> expenses = expenseService.getAllExpenses();
+        return ResponseEntity.ok(expenses);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ExpenseResponse> getExpenseById(@PathVariable Long id) {
+        ExpenseResponse response = expenseService.getExpenseById(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @RequestBody CreateExpenseRequest request) {
+        ExpenseResponse response = expenseService.updateExpense(id, request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ExpenseResponse> deleteExpense(@PathVariable Long id) {
+        expenseService.deleteExpense(id);
+
+        return ResponseEntity.noContent().build();
+    }
+}
