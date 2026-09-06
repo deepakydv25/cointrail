@@ -1,11 +1,11 @@
 package com.deepak.cointrailapi.exception;
 
+import com.deepak.cointrailapi.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +14,12 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpenseNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleExpenseNotFound(ExpenseNotFoundException e) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", HttpStatus.NOT_FOUND.value());
-        errorResponse.put("message", e.getMessage());
+    public ResponseEntity<ErrorResponse> handleExpenseNotFound(ExpenseNotFoundException e) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                e.getMessage()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -26,8 +28,8 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException e) {
-        Map<String, Object> validationErrors = new  HashMap<>();
+    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException e) {
+        Map<String, String> validationErrors = new  HashMap<>();
 
         e.getBindingResult().getFieldErrors()
                 .forEach(error ->
@@ -37,11 +39,11 @@ public class GlobalExceptionHandler {
                         )
                 );
 
-        Map<String, Object> errorResponse = new HashMap<>();
-
-        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
-        errorResponse.put("message", "Validation Failed");
-        errorResponse.put("errors", validationErrors);
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Failed",
+                validationErrors
+        );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

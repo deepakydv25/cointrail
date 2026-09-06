@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.controller;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.service.ExpenseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,7 @@ public class ExpenseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @Valid @RequestBody CreateExpenseRequest request) {
+    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @Valid @RequestBody UpdateExpenseResponse request) {
         ExpenseResponse response = expenseService.updateExpense(id, request);
 
         return ResponseEntity.ok(response);

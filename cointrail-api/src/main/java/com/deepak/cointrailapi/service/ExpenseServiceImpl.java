@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.service;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
@@ -56,7 +57,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public ExpenseResponse updateExpense(Long id, CreateExpenseRequest request) {
+    public ExpenseResponse updateExpense(Long id, UpdateExpenseResponse request) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: "+id));
 
