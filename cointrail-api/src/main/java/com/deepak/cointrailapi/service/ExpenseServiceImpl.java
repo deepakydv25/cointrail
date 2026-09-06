@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +27,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @Transactional
     public ExpenseResponse createExpense(CreateExpenseRequest request) {
 
         Expense expense = new Expense();
@@ -41,10 +43,14 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Expense savedExpense = expenseRepository.save(expense);
 
+        // TEMPORARY - only for testing transaction rollback
+        //throw new RuntimeException("Testing transaction rollback");
+
         return mapToResponse(savedExpense);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ExpenseResponse> getAllExpenses(ExpenseCategory category, Pageable pageable) {
 
         Specification<Expense> specification = Specification.allOf();
@@ -61,6 +67,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ExpenseResponse getExpenseById(Long id) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: "+id));
@@ -68,6 +75,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @Transactional
     public ExpenseResponse updateExpense(Long id, UpdateExpenseResponse request) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: "+id));
@@ -85,6 +93,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @Transactional
     public void deleteExpense(Long id) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new  ExpenseNotFoundException("Expense not found with id: "+id));
