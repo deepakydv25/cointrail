@@ -6,6 +6,8 @@ import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.service.ExpenseService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -37,8 +39,8 @@ public class ExpenseController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<ExpenseResponse>> getAllExpenses() {
-        List<ExpenseResponse> expenses = expenseService.getAllExpenses();
+    public ResponseEntity<Page<ExpenseResponse>> getAllExpenses(Pageable pageable) {
+        Page<ExpenseResponse> expenses = expenseService.getAllExpenses(pageable);
         return ResponseEntity.ok(expenses);
     }
 

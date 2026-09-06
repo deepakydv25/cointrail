@@ -6,6 +6,8 @@ import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,13 +42,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public List<ExpenseResponse> getAllExpenses() {
+    public Page<ExpenseResponse> getAllExpenses(Pageable pageable) {
 
-        List<Expense> expenses = expenseRepository.findAll();
+        Page<Expense> expenses = expenseRepository.findAll(pageable);
 
-        return expenses.stream()
-                .map(this::mapToResponse)
-                .toList();
+        return expenses.map(this::mapToResponse);
     }
 
     @Override
