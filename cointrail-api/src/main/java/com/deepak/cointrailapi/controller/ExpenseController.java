@@ -5,12 +5,15 @@ import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.service.ExpenseService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/expenses")
 public class ExpenseController {
@@ -40,21 +43,21 @@ public class ExpenseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExpenseResponse> getExpenseById(@PathVariable Long id) {
+    public ResponseEntity<ExpenseResponse> getExpenseById(@PathVariable @Positive Long id) {
         ExpenseResponse response = expenseService.getExpenseById(id);
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @Valid @RequestBody UpdateExpenseResponse request) {
+    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable @Positive Long id, @Valid @RequestBody UpdateExpenseResponse request) {
         ExpenseResponse response = expenseService.updateExpense(id, request);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ExpenseResponse> deleteExpense(@PathVariable Long id) {
+    public ResponseEntity<ExpenseResponse> deleteExpense(@PathVariable @Positive Long id) {
         expenseService.deleteExpense(id);
 
         return ResponseEntity.noContent().build();
