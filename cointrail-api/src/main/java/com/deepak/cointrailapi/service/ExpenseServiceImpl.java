@@ -4,10 +4,13 @@ import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
+import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
+import com.deepak.cointrailapi.specification.ExpenseSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -42,9 +45,17 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Page<ExpenseResponse> getAllExpenses(Pageable pageable) {
+    public Page<ExpenseResponse> getAllExpenses(ExpenseCategory category, Pageable pageable) {
 
-        Page<Expense> expenses = expenseRepository.findAll(pageable);
+        Specification<Expense> specification = Specification.allOf();
+
+        if (category != null) {
+            specification = specification.and(
+                    ExpenseSpecification.hasCategory(category)
+            );
+        }
+
+        Page<Expense> expenses = expenseRepository.findAll(specification, pageable);
 
         return expenses.map(this::mapToResponse);
     }

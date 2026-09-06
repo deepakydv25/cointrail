@@ -3,6 +3,7 @@ package com.deepak.cointrailapi.controller;
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
+import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.service.ExpenseService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -39,8 +40,8 @@ public class ExpenseController {
     }
 
     @GetMapping()
-    public ResponseEntity<Page<ExpenseResponse>> getAllExpenses(Pageable pageable) {
-        Page<ExpenseResponse> expenses = expenseService.getAllExpenses(pageable);
+    public ResponseEntity<Page<ExpenseResponse>> getAllExpenses(@RequestParam(required = false) ExpenseCategory category, Pageable pageable) {
+        Page<ExpenseResponse> expenses = expenseService.getAllExpenses(category, pageable);
         return ResponseEntity.ok(expenses);
     }
 
