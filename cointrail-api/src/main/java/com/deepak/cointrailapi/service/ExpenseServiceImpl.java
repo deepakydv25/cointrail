@@ -8,6 +8,8 @@ import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
 import com.deepak.cointrailapi.specification.ExpenseSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,7 +22,10 @@ import java.util.List;
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
 
+    private static final Logger log = LoggerFactory.getLogger(ExpenseServiceImpl.class);
+
     private ExpenseRepository expenseRepository;
+
 
     public ExpenseServiceImpl(ExpenseRepository expenseRepository) {
         this.expenseRepository = expenseRepository;
@@ -29,6 +34,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional
     public ExpenseResponse createExpense(CreateExpenseRequest request) {
+
+        log.info("Creating expense: category={}, amount={}, expenseDate={}", request.getCategory(), request.getAmount(), request.getExpenseDate());
 
         Expense expense = new Expense();
 
@@ -43,6 +50,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Expense savedExpense = expenseRepository.save(expense);
 
+        log.info("Expense created successfully with id={}", savedExpense.getId());
+
         // TEMPORARY - only for testing transaction rollback
         //throw new RuntimeException("Testing transaction rollback");
 
@@ -52,6 +61,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional(readOnly = true)
     public Page<ExpenseResponse> getAllExpenses(ExpenseCategory category, Pageable pageable) {
+
+        log.debug("Fetching expenses: category={}, page={}, size={}, sort={}", category, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
         Specification<Expense> specification = Specification.allOf();
 
@@ -63,22 +74,37 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Page<Expense> expenses = expenseRepository.findAll(specification, pageable);
 
+        log.debug("Fetched {} expenses, totalElements={}", expenses.getNumberOfElements(), expenses.getTotalElements());
+
         return expenses.map(this::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ExpenseResponse getExpenseById(Long id) {
+
+        log.debug("Fetching expense with id={}", id);
+
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: "+id));
+                .orElseThrow(() -> {
+                    log.info("Expense not found with id={}", id);
+                    return new ExpenseNotFoundException("Expense not found with id: "+id);
+                });
         return mapToResponse(expense);
     }
 
     @Override
     @Transactional
     public ExpenseResponse updateExpense(Long id, UpdateExpenseResponse request) {
+
+        log.info("Updating expense with id={}", id);
+
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: "+id));
+                .orElseThrow(() -> {
+                    log.warn("Cannot update expense. Expense not found with id={}", id);
+
+                    return new ExpenseNotFoundException("Expense not found with id: "+id);
+                });
 
         expense.setAmount(request.getAmount());
         expense.setCategory(request.getCategory());
@@ -89,16 +115,27 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Expense updatedExpense = expenseRepository.save(expense);
 
+        log.info("Expense updated successfully with id={}", updatedExpense.getId());
+
         return mapToResponse(updatedExpense);
     }
 
     @Override
     @Transactional
     public void deleteExpense(Long id) {
+
+        log.info("Deleting expense with id={}", id);
+
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new  ExpenseNotFoundException("Expense not found with id: "+id));
+                .orElseThrow(() -> {
+                    log.warn("Cannot delete expense. Expense not found with id={}", id);
+
+                    return new  ExpenseNotFoundException("Expense not found with id: "+id);
+                });
 
         expenseRepository.delete(expense);
+
+        log.info("Expense deleted successfully with id={}", id);
     }
 
     private ExpenseResponse mapToResponse(Expense expense) {
