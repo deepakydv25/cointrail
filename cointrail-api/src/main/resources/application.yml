@@ -24,5 +24,25 @@ logging:
     root: INFO
     com.deepak.cointrailapi: DEBUG
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+  endpoint:
+    health:
+      show-details: always
+
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: CoinTrail API
+    description: Personal Finance and Expense Tracker API
+    version: 1.0.0
+
 server:
   port: 8081
