@@ -44,5 +44,9 @@ info:
     description: Personal Finance and Expense Tracker API
     version: 1.0.0
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3600000
+
 server:
   port: 8081
