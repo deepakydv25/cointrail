@@ -4,6 +4,7 @@ import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
+import com.deepak.cointrailapi.entity.User;
 import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,9 @@ public class ExpenseServiceImpl implements ExpenseService {
         expense.setCreatedAt(now);
         expense.setUpdatedAt(now);
 
+        User currentUser = getCurrentUser();
+        expense.setUser(currentUser);
+
         Expense savedExpense = expenseRepository.save(expense);
 
         log.info("Expense created successfully with id={}", savedExpense.getId());
@@ -62,9 +67,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional(readOnly = true)
     public Page<ExpenseResponse> getAllExpenses(ExpenseCategory category, Pageable pageable) {
 
+        User currentUser = getCurrentUser();
+
         log.debug("Fetching expenses: category={}, page={}, size={}, sort={}", category, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
-        Specification<Expense> specification = Specification.allOf();
+        Specification<Expense> specification = ExpenseSpecification.belongsToUser(currentUser.getId());
 
         if (category != null) {
             specification = specification.and(
@@ -85,7 +92,9 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         log.debug("Fetching expense with id={}", id);
 
-        Expense expense = expenseRepository.findById(id)
+        User currentUser = getCurrentUser();
+
+        Expense expense = expenseRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> {
                     log.info("Expense not found with id={}", id);
                     return new ExpenseNotFoundException("Expense not found with id: "+id);
@@ -97,9 +106,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public ExpenseResponse updateExpense(Long id, UpdateExpenseResponse request) {
 
-        log.info("Updating expense with id={}", id);
+        User currentUser = getCurrentUser();
 
-        Expense expense = expenseRepository.findById(id)
+        log.info("Updating expense with id={} for userId={}", id, currentUser.getId());
+
+        Expense expense = expenseRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> {
                     log.warn("Cannot update expense. Expense not found with id={}", id);
 
@@ -124,9 +135,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public void deleteExpense(Long id) {
 
-        log.info("Deleting expense with id={}", id);
+        User currentUser = getCurrentUser();
 
-        Expense expense = expenseRepository.findById(id)
+        log.info("Deleting expense with id={} for userId={}", id, currentUser.getId());
+
+        Expense expense = expenseRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> {
                     log.warn("Cannot delete expense. Expense not found with id={}", id);
 
@@ -151,5 +164,10 @@ public class ExpenseServiceImpl implements ExpenseService {
         response.setUpdatedAt(expense.getUpdatedAt());
 
         return response;
+    }
+
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return (User) principal;
     }
 }
