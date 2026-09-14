@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../servcies/authService";
 
 function LoginPage() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const navigate = useNavigate();
 
     return (
         <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4 py-8">
@@ -18,13 +23,30 @@ function LoginPage() {
                 </p>
 
                 <form
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                         e.preventDefault();
 
-                        console.log({
-                            email,
-                            password,
-                        });
+                        setError('');
+                        setIsLoading(true);
+
+                        try {
+                            const response = await loginUser({
+                                email,
+                                password,
+                            });
+
+                            localStorage.setItem(
+                                'accessToken',
+                                response.accessToken
+                            );
+
+                            navigate('/dashboard')
+                        } catch(err) {
+                            console.error(err);
+                            setError('Invalid email or password');
+                        } finally {
+                            setIsLoading(false);
+                        }
                     }}
                     className="space-y-5"
                 >
@@ -64,11 +86,17 @@ function LoginPage() {
                         />
                     </div>
 
+                    {error && (
+                        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                            {error}
+                        </p>
+                    )}
                     <button
                         type="submit"
-                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-700"
+                        disabled={isLoading}
+                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        Login
+                        {isLoading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
 
