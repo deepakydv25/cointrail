@@ -4,9 +4,13 @@ import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
+import com.deepak.cointrailapi.entity.User;
 import com.deepak.cointrailapi.enums.ExpenseCategory;
+import com.deepak.cointrailapi.enums.Role;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
 import com.deepak.cointrailapi.repository.ExpenseRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +21,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,6 +45,23 @@ public class ExpenseServiceImplTest {
     @InjectMocks
     private ExpenseServiceImpl expenseService;
 
+    @BeforeEach
+    void setUpSecurityContext() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("user1@test.com");
+        user.setRole(Role.USER);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void getExpenseById_shouldReturnExpense_whenExpenseExists() {
 
@@ -53,7 +77,7 @@ public class ExpenseServiceImplTest {
         expense.setCreatedAt(LocalDateTime.now());
         expense.setUpdatedAt(LocalDateTime.now());
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId, 1L))
                 .thenReturn(Optional.of(expense));
 
         //Act
@@ -73,7 +97,7 @@ public class ExpenseServiceImplTest {
         //Arrange
         Long expenseId = 999L;
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId, 1L))
             .thenReturn(Optional.empty());
 
         //Act & Assert
@@ -224,7 +248,7 @@ public class ExpenseServiceImplTest {
         request.setDescription("Shoes");
         request.setExpenseDate(LocalDate.of(2026, 9, 11));
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId, 1L))
                 .thenReturn(Optional.of(existingExpense));
 
         when(expenseRepository.save(any(Expense.class)))
@@ -242,7 +266,7 @@ public class ExpenseServiceImplTest {
         assertEquals(LocalDate.of(2026, 9, 11), response.getExpenseDate());
 
 
-        verify(expenseRepository).findById(expenseId);
+        verify(expenseRepository).findByIdAndUserId(expenseId, 1L);
         verify(expenseRepository).save(existingExpense);
     }
 
@@ -258,7 +282,7 @@ public class ExpenseServiceImplTest {
         request.setDescription("Shoes");
         request.setExpenseDate(LocalDate.of(2026, 9, 11));
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId, 1L))
                 .thenReturn(Optional.empty());
 
         //Act & Assert
@@ -267,7 +291,7 @@ public class ExpenseServiceImplTest {
                         () -> expenseService.updateExpense(expenseId, request));
         assertEquals("Expense not found with id: 999", exception.getMessage());
 
-        verify(expenseRepository).findById(expenseId);
+        verify(expenseRepository).findByIdAndUserId(expenseId, 1L);
         verify(expenseRepository, never()).save(any(Expense.class));
     }
 
@@ -286,14 +310,14 @@ public class ExpenseServiceImplTest {
         expense.setCreatedAt(LocalDateTime.now());
         expense.setUpdatedAt(LocalDateTime.now());
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId, 1L))
                 .thenReturn(Optional.of(expense));
 
         //Act
         expenseService.deleteExpense(expenseId);
 
         //Assert
-        verify(expenseRepository).findById(expenseId);
+        verify(expenseRepository).findByIdAndUserId(expenseId, 1L);
         verify(expenseRepository).delete(expense);
     }
 
@@ -303,7 +327,7 @@ public class ExpenseServiceImplTest {
         //Arrange
         Long expenseId = 999L;
 
-        when(expenseRepository.findById(expenseId))
+        when(expenseRepository.findByIdAndUserId(expenseId,1L))
                 .thenReturn(Optional.empty());
 
         //Act & Assert
@@ -314,7 +338,7 @@ public class ExpenseServiceImplTest {
 
         assertEquals("Expense not found with id: 999", exception.getMessage());
 
-        verify(expenseRepository).findById(expenseId);
+        verify(expenseRepository).findByIdAndUserId(expenseId, 1L);
         verify(expenseRepository, never()).delete(any(Expense.class));
     }
 

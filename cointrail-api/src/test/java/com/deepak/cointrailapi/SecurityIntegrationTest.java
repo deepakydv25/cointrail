@@ -124,7 +124,7 @@ public class SecurityIntegrationTest {
                 .andExpect(status().isCreated());
     }
 
-    private String logingAndGetToken(String email, String password) throws Exception {
+    private String loginAndGetToken(String email, String password) throws Exception {
         String body = """
                 {
                     "email": "%s",
@@ -151,7 +151,7 @@ public class SecurityIntegrationTest {
     void getAllExpenses_withValidToken_shouldReturn200() throws Exception {
         registerUser("User One", "user1@test.com", "password123");
 
-        String token = logingAndGetToken("user1@test.com", "password123");
+        String token = loginAndGetToken("user1@test.com", "password123");
 
         mockMvc.perform(
                         get("/api/v1/expenses")
@@ -202,9 +202,9 @@ public class SecurityIntegrationTest {
                 "password123"
         );
 
-        String user1Token = logingAndGetToken("user1@test.com", "password123");
+        String user1Token = loginAndGetToken("user1@test.com", "password123");
 
-        String user2Token = logingAndGetToken("user2@test.com", "password123");
+        String user2Token = loginAndGetToken("user2@test.com", "password123");
 
         createExpense(user1Token, new BigDecimal("100.00"), "User 1 Expense");
 
@@ -233,9 +233,9 @@ public class SecurityIntegrationTest {
                 "password123"
         );
 
-        String user1Token = logingAndGetToken("user1@test.com", "password123");
+        String user1Token = loginAndGetToken("user1@test.com", "password123");
 
-        String user2Token = logingAndGetToken("user2@test.com", "password123");
+        String user2Token = loginAndGetToken("user2@test.com", "password123");
 
         createExpense(user1Token, new BigDecimal("100.00"), "User 1 Expense");
 
@@ -264,9 +264,9 @@ public class SecurityIntegrationTest {
                 "password123"
         );
 
-        String user1Token = logingAndGetToken("user1@test.com", "password123");
+        String user1Token = loginAndGetToken("user1@test.com", "password123");
 
-        String user2Token = logingAndGetToken("user2@test.com", "password123");
+        String user2Token = loginAndGetToken("user2@test.com", "password123");
 
         createExpense(user2Token, new BigDecimal("500.00"), "Private User 2 Expense");
 
@@ -299,9 +299,9 @@ public class SecurityIntegrationTest {
                 "password123"
         );
 
-        String user1Token = logingAndGetToken("user1@test.com", "password123");
+        String user1Token = loginAndGetToken("user1@test.com", "password123");
 
-        String user2Token = logingAndGetToken("user2@test.com", "password123");
+        String user2Token = loginAndGetToken("user2@test.com", "password123");
 
         createExpense(user2Token, new BigDecimal("500.00"), "Private User 2 Expense");
 
@@ -347,9 +347,9 @@ public class SecurityIntegrationTest {
                 "password123"
         );
 
-        String user1Token = logingAndGetToken("user1@test.com", "password123");
+        String user1Token = loginAndGetToken("user1@test.com", "password123");
 
-        String user2Token = logingAndGetToken("user2@test.com", "password123");
+        String user2Token = loginAndGetToken("user2@test.com", "password123");
 
         createExpense(user2Token, new BigDecimal("500.00"), "Private User 2 Expense");
 

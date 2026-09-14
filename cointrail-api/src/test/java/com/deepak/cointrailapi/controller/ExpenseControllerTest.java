@@ -5,9 +5,11 @@ import com.deepak.cointrailapi.dto.ExpenseResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
+import com.deepak.cointrailapi.security.JwtAuthenticationFilter;
 import com.deepak.cointrailapi.service.ExpenseService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.*;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ExpenseController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class ExpenseControllerTest {
 
     @Autowired
@@ -36,6 +39,9 @@ public class ExpenseControllerTest {
 
     @MockitoBean
     private ExpenseService expenseService;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     void createExpense_shouldReturn201Created() throws Exception {
