@@ -1,11 +1,20 @@
+import { Route, Routes } from "react-router-dom"
+import DashboardPage from "./pages/DashboardPage"
+import LoginPage from "./pages/LoginPage"
+import RegisterPage from "./pages/RegisterPage"
+import ExpensesPage from "./pages/ExpensesPage"
+
 function App() {
 
   return (
-    <div>
-      <h1>CoinTrail</h1>
-      <p>Personal Finance & Expense Tracker</p>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/expenses" element={<ExpensesPage />} />
+    </Routes>
+  );
 }
 
 export default App
