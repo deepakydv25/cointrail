@@ -3,9 +3,9 @@ spring:
     name: cointrail-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/cointrail
-    username: cointrail
-    password: cointrail
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/cointrail}
+    username: ${DB_USERNAME:cointrail}
+    password: ${DB_PASSWORD:cointrail}
     driver-class-name: org.postgresql.Driver
 
   jpa:
