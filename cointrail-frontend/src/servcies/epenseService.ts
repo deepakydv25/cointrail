@@ -11,12 +11,17 @@ export interface ExpensePage {
 
 export const getExpenses = async (
     page: number = 0,
-    size: number = 10
+    size: number = 10,
+    sortBy: string = 'expenseDate',
+    direction: string = 'desc',
+    category: string = ''
 ): Promise<ExpensePage> => {
     const response = await api.get<ExpensePage>('/expenses', {
         params: {
             page,
             size,
+            sort: `${sortBy},${direction}`,
+            ...(category && { category }),
         },
     });
     return response.data;

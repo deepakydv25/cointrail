@@ -11,6 +11,9 @@ function ExpensesPage() {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [sortBy, setSortBy] = useState('expenseDate');
+    const [direction, setDirection] = useState('desc');
+    const [category, setCategory] = useState('');
 
     const pageSize = 5;
 
@@ -22,7 +25,10 @@ function ExpensesPage() {
             try {
                 const response = await getExpenses(
                     currentPage,
-                    pageSize
+                    pageSize,
+                    sortBy,
+                    direction,
+                    category
                 );
 
                 setExpenses(response.content);
@@ -37,7 +43,7 @@ function ExpensesPage() {
         };
 
         fetchExpense();
-    }, [currentPage]);
+    }, [currentPage, sortBy, direction, category]);
 
     if (isLoading) {
         return (
@@ -76,6 +82,85 @@ function ExpensesPage() {
                 >
                     + Add Expense
                 </Link>
+            </div>
+
+            <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+
+                    <div className="flex-1">
+                        <label
+                            htmlFor="category"
+                            className="mb-2 block text-sm font-medium text-gray-700"
+                        >
+                            Category
+                        </label>
+
+                        <select
+                            id="category"
+                            value={category}
+                            onChange={(e) => {
+                                setCategory(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-blue-500"
+                        >
+                            <option value="">All Categories</option>
+                            <option value="FOOD">Food</option>
+                            <option value="TRAVEL">Travel</option>
+                            <option value="SHOPPING">Shopping</option>
+                            <option value="ENTERTAINMENT">Entertainment</option>
+                            <option value="BILLS">Bills</option>
+                            <option value="HEALTH">Health</option>
+                            <option value="EDUCATION">Education</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="flex-1">
+                        <label
+                            htmlFor="sortBy"
+                            className="mb-2 block text-sm font-medium text-gray-700"
+                        >
+                            Sort By
+                        </label>
+
+                        <select
+                            id="sortBy"
+                            value={sortBy}
+                            onChange={(e) => {
+                                setSortBy(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-blue-500"
+                        >
+                            <option value="expenseDate">Expense Date</option>
+                            <option value="amount">Amount</option>
+                        </select>
+                    </div>
+
+                    <div className="flex-1">
+                        <label
+                            htmlFor="direction"
+                            className="mb-2 block text-sm font-medium text-gray-700"
+                        >
+                            Order
+                        </label>
+
+                        <select
+                            id="direction"
+                            value={direction}
+                            onChange={(e) => {
+                                setDirection(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-blue-500"
+                        >
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                </div>
+
             </div>
         
 
