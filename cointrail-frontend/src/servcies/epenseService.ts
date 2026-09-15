@@ -9,8 +9,16 @@ export interface ExpensePage {
     number: number;
 }
 
-export const getExpenses = async (): Promise<ExpensePage> => {
-    const response = await api.get('/expenses');
+export const getExpenses = async (
+    page: number = 0,
+    size: number = 10
+): Promise<ExpensePage> => {
+    const response = await api.get<ExpensePage>('/expenses', {
+        params: {
+            page,
+            size,
+        },
+    });
     return response.data;
 };
 

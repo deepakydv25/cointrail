@@ -8,13 +8,26 @@ function ExpensesPage() {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+
+    const pageSize = 5;
 
     useEffect(() => {
         const fetchExpense = async () => {
+            setIsLoading(true);
+            setError('');
+
             try {
-                const response = await getExpenses();
+                const response = await getExpenses(
+                    currentPage,
+                    pageSize
+                );
 
                 setExpenses(response.content);
+                setTotalPages(response.totalPages);
+                setTotalElements(response.totalElements);
             } catch (err) {
                 console.error(err);
                 setError('Unable to load expenses.');
@@ -24,7 +37,7 @@ function ExpensesPage() {
         };
 
         fetchExpense();
-    }, []);
+    }, [currentPage]);
 
     if (isLoading) {
         return (
@@ -109,6 +122,35 @@ function ExpensesPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {totalPages > 1 && (
+                <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-6 sm:flex-row">
+                    <p className="text-sm text-gray-500">
+                        Page {currentPage + 1} of {totalPages}
+                        {' '}• {totalElements} expenses
+                    </p>
+
+                    <div className="flex w-full gap-3 sm:w-auto">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage((page) => page-1)}
+                            disabled={currentPage === 0}
+                            className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                        >
+                            ← Previous
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage((page) => page+1)}
+                            disabled={currentPage >= totalPages-1}
+                            className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                        >
+                            Next →
+                        </button>
+                    </div>
                 </div>
             )}
         </main>
