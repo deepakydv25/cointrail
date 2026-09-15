@@ -24,3 +24,11 @@ export const createExpense = async (
 
     return response.data;
 };
+
+export const getExpenseById = async (
+    id: number
+) : Promise<Expense> => {
+    const response = await api.get<Expense>(`/expenses/${id}`);
+
+    return response.data;
+};

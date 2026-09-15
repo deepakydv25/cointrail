@@ -98,6 +98,15 @@ function ExpensesPage() {
                                     ₹{expense.amount}
                                 </p>
                             </div>
+
+                            <div className="mt-4 border-t border-gray-100 pt-3">
+                                <Link
+                                    to={`/expenses/${expense.id}`}
+                                    className="text-sm font-medium text-blue-600 hover:underline"
+                                >
+                                    View details
+                                </Link>
+                            </div>
                         </div>
                     ))}
                 </div>

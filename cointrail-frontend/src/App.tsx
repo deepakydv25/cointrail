@@ -6,6 +6,7 @@ import ExpensesPage from "./pages/ExpensesPage"
 import Navbar from "./components/Navbar"
 import ProctectedRoute from "./routes/ProtectedRouter"
 import CreateExpensePage from "./pages/CreateExpensePage"
+import ExpenseDetailsPage from "./pages/ExpenseDetailsPage"
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/create" element={<CreateExpensePage />} />
+          <Route path="/expenses/:id" element={<ExpenseDetailsPage/>} />
         </Route>
       </Routes>
     </>
