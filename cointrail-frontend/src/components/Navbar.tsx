@@ -1,9 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
 
     const [isOpen, setIsOpen] = useState(false);
+    const { isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        setIsOpen(false);
+        navigate('/login');
+    };
 
     return(
         <nav className="border-b border-gray-200 bg-white">
@@ -14,22 +23,47 @@ function Navbar() {
                 >CoinTrail</Link>
 
                 <div className="hidden items-center gap-6 md:flex">
-                    <Link 
-                        to="/dashboard"
-                        className="text-gray-700 transition hover:text-blue-600"
-                    >Dashboard</Link>
-                    <Link 
-                        to="/expenses"
-                        className="text-gray-700 transition hover:text-blue-600"
-                    >Expenses</Link>
-                    <Link 
-                        to="/login"
-                        className="text-gray-700 transition hover:text-blue-600"
-                    >Login</Link>
-                    <Link 
-                        to="/register"
-                        className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-                    >Register</Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link 
+                                to="/dashboard"
+                                className="text-gray-700 transition hover:text-blue-600"
+                            >
+                                Dashboard
+                            </Link>
+                            
+                            <Link 
+                                to="/expenses"
+                                className="text-gray-700 transition hover:text-blue-600"
+                            >
+                                Expenses
+                            </Link>
+
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="rounded-lg bg-red-500 px-4 py-2 font-medium text-white transition hover:bg-red-600"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link 
+                                to="/login"
+                                className="text-gray-700 transition hover:text-blue-600"
+                            >
+                                Login
+                            </Link>
+                    
+                            <Link 
+                                to="/register"
+                                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+                            >
+                                Register
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 <button 
@@ -45,37 +79,52 @@ function Navbar() {
             {isOpen && (
                 <div className="border-t border-gray-200 bg-white px-4 py-4 md:hidden">
                     <div className="flex flex-col gap-4">
-                        <Link
-                            to="/dashboard"
-                            onClick={() => setIsOpen(false)}
-                            className="text-gray-700 hover:text-blue-600"
-                        >
-                            Dashboard
-                        </Link>
+                        {isAuthenticated ? (
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-gray-700 hover:text-blue-600"
+                                >
+                                    Dashboard
+                                </Link>
 
-                        <Link
-                            to="/expenses"
-                            onClick={() => setIsOpen(false)}
-                            className="text-gray-700 hover:text-blue-600"
-                        >
-                            Expenses
-                        </Link>
+                                <Link
+                                    to="/expenses"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-gray-700 hover:text-blue-600"
+                                >
+                                    Expenses
+                                </Link>
 
-                        <Link
-                            to="/login"
-                            onClick={() => setIsOpen(false)}
-                            className="text-gray-700 hover:text-blue-600"
-                        >
-                            Login
-                        </Link>
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="rounded-lg bg-red-500 px-4 py-2 text-center font-medium text-white"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-gray-700 hover:text-blue-600"
+                                >
+                                    Login
+                                </Link>
 
-                        <Link
-                            to="/register"
-                            onClick={() => setIsOpen(false)}
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
-                        >
-                            Register
-                        </Link>
+                                <Link
+                                    to="/register"
+                                    onClick={() => setIsOpen(false)}
+                                    className="rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700"
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        )}
+                    
                     </div>
                 </div>
             )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../servcies/authService";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
 
@@ -8,6 +9,7 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const { login } = useAuth();
     
     const navigate = useNavigate();
 
@@ -35,11 +37,7 @@ function LoginPage() {
                                 password,
                             });
 
-                            localStorage.setItem(
-                                'accessToken',
-                                response.accessToken
-                            );
-
+                            login(response.accessToken);
                             navigate('/dashboard')
                         } catch(err) {
                             console.error(err);

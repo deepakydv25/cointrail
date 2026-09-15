@@ -1,9 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function ProctectedRoute() {
-    const token = localStorage.getItem('accessToken');
 
-    if (!token) {
+    const { isAuthenticated } = useAuth();
+
+    if (!isAuthenticated) {
         return <Navigate to="/login" replace />
     }
 
