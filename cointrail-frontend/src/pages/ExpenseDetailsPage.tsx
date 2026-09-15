@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import type { Expense } from "../types/expense";
-import { getExpenseById } from "../servcies/epenseService";
+import { getExpenseById, deleteExpense } from "../servcies/epenseService";
 
 function ExpenseDetailsPage() {
     const { id } = useParams();
@@ -9,6 +9,11 @@ function ExpenseDetailsPage() {
     const [expense, setExpense] = useState<Expense | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const navigate = useNavigate();
+
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
 
     useEffect(() => {
         const fetchExpense = async () => {
@@ -57,6 +62,33 @@ function ExpenseDetailsPage() {
         );
     }
 
+    const handleDelete = async () => {
+        if (!expense) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this expense?'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        setDeleteError('');
+        setIsDeleting(true);
+
+        try {
+            await deleteExpense(expense.id);
+            navigate('/expenses');
+        } catch (err) {
+            console.error(err);
+            setDeleteError('Unable to delete expense.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
         <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
             <div className="mb-6">
@@ -83,7 +115,7 @@ function ExpenseDetailsPage() {
                     </p>
                 </div>
 
-                <div className="mt-6 grid gird-cols-1 gap-6 sm:grid-cols-2">
+                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
                         <p className="text-sm text-gray-500">
                             Description
@@ -112,7 +144,21 @@ function ExpenseDetailsPage() {
                     </div>
                 </div>
 
+                {deleteError && (
+                    <p className="mt-6 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                        {deleteError}
+                    </p>
+                )}
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="w-full cursor-pointer rounded-lg border border-red-500 px-5 py-3 font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete Expense'}
+                    </button>
+
                     <Link
                         to={`/expenses/${expense.id}/edit`}
                         className="w-full rounded-lg bg-blue-600 px-5 py-3 text-center font-medium text-white transition hover:bg-blue-700 sm:w-auto"

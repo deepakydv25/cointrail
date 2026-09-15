@@ -45,3 +45,6 @@ export const updateExpense = async (
     return response.data;
 };
 
+export const deleteExpense = async (id: number): Promise<void> => {
+    await api.delete(`/expenses/${id}`);
+};
