@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Expense } from "../types/expense";
 import { getExpenses } from "../servcies/epenseService";
 import { Link } from "react-router-dom";
+import { formatCurrency, formatDate } from "../utils/formatters";
 
 function ExpensesPage() {
 
@@ -167,11 +168,13 @@ function ExpensesPage() {
             {expenses.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
                     <h2 className="text-lg font-semibold text-gray-900">
-                        No expenses yet
+                        {category ? 'No expenses found' : 'No expenses yet'}
                     </h2>
 
                     <p className="mt-2 text-sm text-gray-500">
-                        Add your first expense to start tracking your spending.
+                        {category
+                            ? `You don't have any expenses in the ${category.toLowerCase()} category`
+                            : 'Add your first expense to start tracking your spending.'}
                     </p>
                 </div>
             ) : (
@@ -188,12 +191,12 @@ function ExpensesPage() {
                                     </p>
 
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {expense.category} • {expense.expenseDate}
+                                        {expense.category} • {formatDate(expense.expenseDate)}
                                     </p>
                                 </div>
 
                                 <p className="shrink-0 font-semibold text-gray-900">
-                                    ₹{expense.amount}
+                                    {formatCurrency(expense.amount)}
                                 </p>
                             </div>
 

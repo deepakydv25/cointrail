@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import type { Expense } from "../types/expense";
 import { getExpenseById, deleteExpense } from "../servcies/epenseService";
+import { formatCurrency, formatDate } from "../utils/formatters";
 
 function ExpenseDetailsPage() {
     const { id } = useParams();
@@ -111,7 +112,7 @@ function ExpenseDetailsPage() {
                     </p>
 
                     <p className="mt-1 text-3xl font-bold text-gray-900">
-                        ₹{expense.amount}
+                        {formatCurrency(expense.amount)}
                     </p>
                 </div>
 
@@ -139,7 +140,7 @@ function ExpenseDetailsPage() {
                             Expnese Date
                         </p>
                         <p className="mt-1 font-medium text-gray-900">
-                            {expense.expenseDate}
+                            {formatDate(expense.expenseDate)}
                         </p>
                     </div>
                 </div>
