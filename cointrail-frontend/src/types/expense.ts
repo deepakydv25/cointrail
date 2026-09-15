@@ -7,3 +7,10 @@ export interface Expense {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface CreateExpenseRequest {
+    amount: number;
+    category: string;
+    description: string;
+    expenseDate: string;
+}

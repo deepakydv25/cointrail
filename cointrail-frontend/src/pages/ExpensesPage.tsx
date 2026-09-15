@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Expense } from "../types/expense";
 import { getExpenses } from "../servcies/epenseService";
+import { Link } from "react-router-dom";
 
 function ExpensesPage() {
 
@@ -45,16 +46,25 @@ function ExpensesPage() {
 
     return (
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                        Expenses
+                    </h1>
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                    Expenses
-                </h1>
+                    <p className="mt-1 text-gray-500">
+                        Track and manage your expenses.
+                    </p>
+                </div>
 
-                <p className="mt-1 text-gray-500">
-                    Track and manage your expenses.
-                </p>
+                <Link
+                    to="/expenses/create"
+                    className="w-full rounded-lg bg-blue-600 px-4 py-3 text-center font-medium text-white transition hover:bg-blue-700 sm:w-auto"
+                >
+                    + Add Expense
+                </Link>
             </div>
+        
 
             {expenses.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">

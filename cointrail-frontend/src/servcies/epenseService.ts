@@ -1,5 +1,5 @@
 import api from '../api/axios';
-import type { Expense } from '../types/expense';
+import type { CreateExpenseRequest, Expense } from '../types/expense';
 
 export interface ExpensePage {
     content: Expense[];
@@ -11,5 +11,16 @@ export interface ExpensePage {
 
 export const getExpenses = async (): Promise<ExpensePage> => {
     const response = await api.get('/expenses');
+    return response.data;
+};
+
+export const createExpense = async (
+    data: CreateExpenseRequest
+) : Promise<Expense> => {
+    const response = await api.post<Expense>(
+        '/expenses/create',
+        data
+    );
+
     return response.data;
 };
