@@ -14,3 +14,10 @@ export interface CreateExpenseRequest {
     description: string;
     expenseDate: string;
 }
+
+export interface UpdateExpenseRequest {
+    amount: number;
+    category: string;
+    description: string;
+    expenseDate:string;
+}

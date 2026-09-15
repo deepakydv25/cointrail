@@ -111,6 +111,15 @@ function ExpenseDetailsPage() {
                         </p>
                     </div>
                 </div>
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                    <Link
+                        to={`/expenses/${expense.id}/edit`}
+                        className="w-full rounded-lg bg-blue-600 px-5 py-3 text-center font-medium text-white transition hover:bg-blue-700 sm:w-auto"
+                    >
+                        Edit Expense
+                    </Link>
+                </div>
             </div>
         </main>
     );

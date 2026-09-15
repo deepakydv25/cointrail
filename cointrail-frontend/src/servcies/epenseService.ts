@@ -1,5 +1,5 @@
 import api from '../api/axios';
-import type { CreateExpenseRequest, Expense } from '../types/expense';
+import type { CreateExpenseRequest, Expense, UpdateExpenseRequest } from '../types/expense';
 
 export interface ExpensePage {
     content: Expense[];
@@ -32,3 +32,16 @@ export const getExpenseById = async (
 
     return response.data;
 };
+
+export const updateExpense = async (
+    id: number,
+    data: UpdateExpenseRequest
+) : Promise<Expense> => {
+    const response = await api.put<Expense>(
+        `/expenses/${id}`,
+        data
+    );
+
+    return response.data;
+};
+
