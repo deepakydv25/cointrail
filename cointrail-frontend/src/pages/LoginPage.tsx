@@ -16,7 +16,7 @@ function LoginPage() {
     return (
         <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4 py-8">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-md sm:p-8">
-                <h1 className="mb-2 text-center text-3xl fond-bold text-gray-900">
+                <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
                     Welcome Back
                 </h1>
 

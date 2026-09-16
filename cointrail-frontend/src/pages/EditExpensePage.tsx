@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExpenseById, updateExpense } from "../servcies/epenseService";
+import type { ExpenseCategory } from "../types/expense";
 
 function EditExpensePage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState('');
+    const [category, setCategory] = useState<ExpenseCategory>('FOOD');
     const [description, setDescription] = useState('');
     const [expenseDate, setExpenseDate] = useState('');
 
@@ -138,7 +139,7 @@ function EditExpensePage() {
                         id="category"
                         required
                         value={category}
-                        onChange={(e) => setCategory(e.target.value)}
+                        onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
                         >
                         <option value="FOOD">Food</option>
