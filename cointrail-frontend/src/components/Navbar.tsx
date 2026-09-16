@@ -11,7 +11,7 @@ function Navbar() {
     const handleLogout = () => {
         logout();
         setIsOpen(false);
-        navigate('/login');
+        navigate('/');
     };
 
     return(
@@ -71,7 +71,7 @@ function Navbar() {
                 <button 
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
+                    className="cursor-pointer rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
                     aria-label="Toggle navigation menu"   
                 >
                     {isOpen ? '✕' : '☰'}
@@ -102,7 +102,7 @@ function Navbar() {
                                 <button
                                     type="button"
                                     onClick={handleLogout}
-                                    className="rounded-lg bg-red-500 px-4 py-2 text-center font-medium text-white"
+                                    className="cursor-pointer rounded-lg bg-red-500 px-4 py-2 text-center font-medium text-white"
                                 >
                                     Logout
                                 </button>

@@ -4,11 +4,13 @@ import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import ExpensesPage from "./pages/ExpensesPage"
 import Navbar from "./components/Navbar"
-import ProctectedRoute from "./routes/ProtectedRouter"
+import ProctectedRoute from "./routes/ProtectedRoute"
 import CreateExpensePage from "./pages/CreateExpensePage"
 import ExpenseDetailsPage from "./pages/ExpenseDetailsPage"
 import EditExpensePage from "./pages/EditExpensePage"
 import LandingPage from "./pages/LandingPage"
+import PublicRoute from "./routes/PublicRoute"
+import NotFoundPage from "./pages/NotFoundPage"
 
 function App() {
 
@@ -18,8 +20,11 @@ function App() {
       
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+
+        <Route element={<PublicRoute/>}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
         <Route element={<ProctectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -28,6 +33,8 @@ function App() {
           <Route path="/expenses/:id" element={<ExpenseDetailsPage/>} />
           <Route path="/expenses/:id/edit" element={<EditExpensePage/>} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage/>}/>
       </Routes>
     </>
   );
