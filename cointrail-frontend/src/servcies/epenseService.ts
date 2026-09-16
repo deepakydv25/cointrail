@@ -1,5 +1,5 @@
 import api from '../api/axios';
-import type { CreateExpenseRequest, Expense, UpdateExpenseRequest } from '../types/expense';
+import type { CreateExpenseRequest, Expense, UpdateExpenseRequest, ExpenseSummary } from '../types/expense';
 
 export interface ExpensePage {
     content: Expense[];
@@ -60,4 +60,12 @@ export const updateExpense = async (
 
 export const deleteExpense = async (id: number): Promise<void> => {
     await api.delete(`/expenses/${id}`);
+};
+
+export const getExpenseSummary = async (): Promise<ExpenseSummary> => {
+    const response = await api.get<ExpenseSummary>(
+        '/expenses/summary'
+    );
+
+    return response.data;
 };

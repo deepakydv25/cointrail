@@ -1,3 +1,5 @@
+import type { ExpenseCategory } from "../types/expense";
+
 export const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -13,4 +15,8 @@ export const formatDate = (date: string): string => {
         year: 'numeric',
         timeZone: 'UTC',
     }).format(new Date(`${date}T00:00:00Z`));
+};
+
+export const formatCategory = (category: ExpenseCategory): string => {
+    return category.charAt(0) + category.slice(1).toLowerCase();
 };

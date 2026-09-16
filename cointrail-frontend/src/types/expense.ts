@@ -1,7 +1,7 @@
 export interface Expense {
     id: number;
     amount: number;
-    category: string;
+    category: ExpenseCategory;
     description: string;
     expenseDate: string;
     createdAt: string;
@@ -10,14 +10,30 @@ export interface Expense {
 
 export interface CreateExpenseRequest {
     amount: number;
-    category: string;
+    category: ExpenseCategory;
     description: string;
     expenseDate: string;
 }
 
 export interface UpdateExpenseRequest {
     amount: number;
-    category: string;
+    category: ExpenseCategory;
     description: string;
     expenseDate:string;
 }
+
+export interface ExpenseSummary {
+    totalAmount: number;
+    totalExpenses: number;
+    categoryBreakdown: Partial<Record<ExpenseCategory, number>>;
+}
+
+export type ExpenseCategory = 
+    | 'FOOD'
+    | 'TRAVEL'
+    | 'SHOPPING'
+    | 'ENTERTAINMENT'
+    | 'BILLS'
+    | 'HEALTH'
+    | 'EDUCATION'
+    | 'OTHER';
