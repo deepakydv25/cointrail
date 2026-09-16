@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.controller;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.ExpenseSummaryResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.service.ExpenseService;
@@ -64,5 +65,12 @@ public class ExpenseController {
         expenseService.deleteExpense(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<ExpenseSummaryResponse> getExpenseSummary() {
+        ExpenseSummaryResponse summary = expenseService.getExpenseSummary();
+
+        return ResponseEntity.ok(summary);
     }
 }

@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.service;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.ExpenseSummaryResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
 import com.deepak.cointrailapi.entity.User;
@@ -18,8 +19,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
@@ -149,6 +153,33 @@ public class ExpenseServiceImpl implements ExpenseService {
         expenseRepository.delete(expense);
 
         log.info("Expense deleted successfully with id={}", id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExpenseSummaryResponse getExpenseSummary() {
+        User currentUser = getCurrentUser();
+
+        BigDecimal totalAmount = expenseRepository.getTotalAmountByUserId(currentUser.getId());
+
+        long totalExpenses = expenseRepository.countByUserId(currentUser.getId());
+
+        List<Object[]> categoryResults = expenseRepository.getCategoryBreakdownByUserId(currentUser.getId());
+
+        Map<ExpenseCategory, BigDecimal> categoryBreakdown = new EnumMap<>(ExpenseCategory.class);
+
+        for(Object[] result : categoryResults) {
+            ExpenseCategory category = (ExpenseCategory) result[0];
+            BigDecimal amount = (BigDecimal) result[1];
+
+            categoryBreakdown.put(category, amount);
+        }
+
+        return new ExpenseSummaryResponse(
+                totalAmount,
+                totalExpenses,
+                categoryBreakdown
+        );
     }
 
     private ExpenseResponse mapToResponse(Expense expense) {
