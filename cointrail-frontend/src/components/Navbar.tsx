@@ -19,8 +19,10 @@ function Navbar() {
             <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
                 <Link 
                     to="/"
-                    className="text-2xl font-bold text-blue-600"
-                >CoinTrail</Link>
+                    className="text-xl font-bold text-gray-900"
+                >
+                    CoinTrail
+                </Link>
 
                 <div className="hidden items-center gap-6 md:flex">
                     {isAuthenticated ? (
