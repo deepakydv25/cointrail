@@ -532,4 +532,96 @@ public class ExpenseIntegrationTest {
 
         return expense;
     }
+
+    @Test
+    void getExpenseSummary_shouldReturnOnlyLoggedInUsersExpenses() throws Exception {
+
+        //Arrange - User 1
+        registerUser(
+                "User One",
+                "user1@test.com",
+                "password123"
+        );
+
+        String userOneToken = loginAndGetToken("user1@test.com", "password123");
+
+        User userOne = userRepository.findByEmail("user1@test.com").orElseThrow();
+
+        //Arrange - User 2
+        registerUser(
+                "User Two",
+                "user2@test.com",
+                "password123"
+        );
+
+        User userTwo = userRepository.findByEmail("user2@test.com").orElseThrow();
+
+        //User 1 expenses
+        Expense foodExpense = createExpense(
+                new BigDecimal("500.00"),
+                ExpenseCategory.FOOD,
+                "Dinner",
+                LocalDate.of(2026, 9, 12)
+        );
+        foodExpense.setUser(userOne);
+
+        Expense travelExpense = createExpense(
+                new BigDecimal("1000.00"),
+                ExpenseCategory.TRAVEL,
+                "Cab",
+                LocalDate.of(2026, 9, 13)
+        );
+        travelExpense.setUser(userOne);
+
+        //User 2 expense - must NOT appear in User 1 summary
+        Expense shoppingExpense = createExpense(
+                new BigDecimal("5000.00"),
+                ExpenseCategory.SHOPPING,
+                "Phone",
+                LocalDate.of(2026, 9, 14)
+        );
+
+        shoppingExpense.setUser(userTwo);
+
+        expenseRepository.save(foodExpense);
+        expenseRepository.save(travelExpense);
+        expenseRepository.save(shoppingExpense);
+
+        //Act & Assert
+        mockMvc.perform(
+                        get("/api/v1/expenses/summary")
+                                .header("Authorization", "Bearer " + userOneToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAmount").value(1500.00))
+                .andExpect(jsonPath("$.totalExpenses").value(2))
+                .andExpect(jsonPath("$.categoryBreakdown.FOOD").value(500.00))
+                .andExpect(jsonPath("$.categoryBreakdown.TRAVEL").value(1000.00))
+
+                //User 2 category must not be present
+                .andExpect(jsonPath("$.categoryBreakdown.SHOPPING").doesNotExist());
+    }
+
+    @Test
+    void getExpenseSummary_shouldReturnZero_whenUserHasNoExpenses() throws Exception {
+
+        //Arrange
+        registerUser(
+                "User One",
+                "user1@test.com",
+                "password123"
+        );
+
+        String token = loginAndGetToken("user1@test.com", "password123");
+
+        //Act & Assert
+        mockMvc.perform(
+                        get("/api/v1/expenses/summary")
+                                .header("Authorization", "Bearer "+token)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAmount").value(0))
+                .andExpect(jsonPath("$.totalExpenses").value(0))
+                .andExpect(jsonPath("$.categoryBreakdown").isEmpty());
+    }
 }

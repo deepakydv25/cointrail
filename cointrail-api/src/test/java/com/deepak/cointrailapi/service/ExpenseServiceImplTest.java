@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.service;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.ExpenseSummaryResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.entity.Expense;
 import com.deepak.cointrailapi.entity.User;
@@ -342,4 +343,38 @@ public class ExpenseServiceImplTest {
         verify(expenseRepository, never()).delete(any(Expense.class));
     }
 
+    @Test
+    void getExpenseSummary_shouldReturnSummaryForCurrentUser() {
+
+        //Arrange
+        when(expenseRepository.getTotalAmountByUserId(1L))
+                .thenReturn(new BigDecimal("2500.00"));
+
+        when(expenseRepository.countByUserId(1L))
+                .thenReturn(3L);
+
+        List<Object[]> categoryResults = List.of(
+                new Object[]{
+                        ExpenseCategory.FOOD,
+                        new BigDecimal("500.00")
+                },
+                new Object[]{
+                        ExpenseCategory.TRAVEL,
+                        new BigDecimal("2000.00")
+                }
+        );
+
+        when(expenseRepository.getCategoryBreakdownByUserId(1L))
+                .thenReturn(categoryResults);
+
+        //Act
+        ExpenseSummaryResponse response = expenseService.getExpenseSummary();
+
+        //Assert
+        assertNotNull(response);
+        assertEquals(new BigDecimal("2500.00"), response.totalAmount());
+        assertEquals(3L, response.totalExpenses());
+        assertEquals(new BigDecimal("500.00"), response.categoryBreakdown().get(ExpenseCategory.FOOD));
+        assertEquals(new BigDecimal("2000.00"), response.categoryBreakdown().get(ExpenseCategory.TRAVEL));
+    }
 }

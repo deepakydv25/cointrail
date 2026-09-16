@@ -2,6 +2,7 @@ package com.deepak.cointrailapi.controller;
 
 import com.deepak.cointrailapi.dto.CreateExpenseRequest;
 import com.deepak.cointrailapi.dto.ExpenseResponse;
+import com.deepak.cointrailapi.dto.ExpenseSummaryResponse;
 import com.deepak.cointrailapi.dto.UpdateExpenseResponse;
 import com.deepak.cointrailapi.enums.ExpenseCategory;
 import com.deepak.cointrailapi.exception.ExpenseNotFoundException;
@@ -19,7 +20,10 @@ import tools.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
 
@@ -486,5 +490,37 @@ public class ExpenseControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(expenseService, never()).deleteExpense(anyLong());
+    }
+
+    @Test
+    void getExpenseSummary_shouldReturn200WithSummary() throws Exception {
+
+        //Arrange
+        Map<ExpenseCategory, BigDecimal> categoryBreakdown = new EnumMap<>(ExpenseCategory.class);
+
+        categoryBreakdown.put(ExpenseCategory.FOOD, new BigDecimal("500.00"));
+
+        categoryBreakdown.put(ExpenseCategory.TRAVEL, new BigDecimal("2000.00"));
+
+        ExpenseSummaryResponse response = new ExpenseSummaryResponse(
+                new BigDecimal("2500.00"),
+                3L,
+                categoryBreakdown
+        );
+
+        when(expenseService.getExpenseSummary())
+                .thenReturn(response);
+
+        //Act & Assert
+        mockMvc.perform(
+                        get("/api/v1/expenses/summary")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAmount").value(2500.00))
+                .andExpect(jsonPath("$.totalExpenses").value(3))
+                .andExpect(jsonPath("$.categoryBreakdown.FOOD").value(500.00))
+                .andExpect(jsonPath("$.categoryBreakdown.TRAVEL").value(2000.00));
+
+        verify(expenseService).getExpenseSummary();
     }
 }
