@@ -1,0 +1,67 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: cointrail-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: cointrail
+      POSTGRES_USER: cointrail
+      POSTGRES_PASSWORD: cointrail
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - cointrail-postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cointrail -d cointrail"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  cointrail-api:
+    build:
+      context: ./cointrail-api
+      dockerfile: Dockerfile
+
+    container_name: cointrail-api
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/cointrail
+      DB_USERNAME: cointrail
+      DB_PASSWORD: cointrail
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGIN: http://localhost:8080
+
+    ports:
+      - "8081:8081"
+
+
+  cointrail-frontend:
+    build:
+      context: ./cointrail-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8081/api/v1
+
+    container_name: cointrail-frontend
+    restart: unless-stopped
+
+    depends_on:
+      - cointrail-api
+
+    ports:
+      - "8080:80"
+
+
+volumes:
+  cointrail-postgres-data:

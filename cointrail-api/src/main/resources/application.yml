@@ -48,5 +48,9 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 3600000
 
+app:
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+
 server:
   port: 8081
