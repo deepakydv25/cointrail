@@ -8,7 +8,7 @@ import {
     getExpenseSummary,
 } from "../services/expenseService";
 
-vi.mock("../servcies/epenseService");
+vi.mock("../services/expenseService");
 
 vi.mock("../components/CategorySpendingChart", () => ({
     default: () => <div>Category Spending Chart</div>,

@@ -6,7 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import ExpensesPage from "./ExpensesPage";
 import { getExpenses } from "../services/expenseService";
 
-vi.mock("../servcies/epenseService");
+vi.mock("../services/expenseService");
 
 const mockedGetExpenses = vi.mocked(getExpenses);
 

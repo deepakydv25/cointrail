@@ -7,7 +7,7 @@ import LoginPage from "./LoginPage";
 import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
-vi.mock("../servcies/authService");
+vi.mock("../services/authService");
 vi.mock("../context/AuthContext");
 
 const mockedLoginUser = vi.mocked(loginUser);

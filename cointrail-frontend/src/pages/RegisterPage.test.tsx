@@ -6,7 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import RegisterPage from "./RegisterPage";
 import { registerUser } from "../services/authService";
 
-vi.mock("../servcies/authService");
+vi.mock("../services/authService");
 
 const mockedRegisterUser = vi.mocked(registerUser);
 
