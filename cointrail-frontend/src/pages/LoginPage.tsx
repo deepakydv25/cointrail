@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../servcies/authService";
+import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
@@ -10,7 +10,7 @@ function LoginPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
-    
+
     const navigate = useNavigate();
 
     return (
@@ -39,7 +39,7 @@ function LoginPage() {
 
                             login(response.accessToken);
                             navigate('/dashboard')
-                        } catch(err) {
+                        } catch (err) {
                             console.error(err);
                             setError('Invalid email or password');
                         } finally {
@@ -56,7 +56,7 @@ function LoginPage() {
                             Email
                         </label>
 
-                        <input 
+                        <input
                             id="email"
                             type="email"
                             value={email}
@@ -74,7 +74,7 @@ function LoginPage() {
                             Password
                         </label>
 
-                        <input 
+                        <input
                             id="password"
                             type="password"
                             value={password}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { registerUser } from "../servcies/authService";
+import { registerUser } from "../services/authService";
 
 function RegisterPage() {
     const [name, setName] = useState('');
@@ -41,14 +41,14 @@ function RegisterPage() {
                             setName('');
                             setEmail('');
                             setPassword('');
-                        } catch(err) {
+                        } catch (err) {
                             console.error(err);
                             setError('Registration failed.');
                         } finally {
                             setIsLoading(false);
                         }
                     }}
-                    className="space-y-5" 
+                    className="space-y-5"
                 >
                     <div>
                         <label
@@ -75,7 +75,7 @@ function RegisterPage() {
                             Email
                         </label>
 
-                        <input 
+                        <input
                             id="email"
                             type="email"
                             value={email}
@@ -90,10 +90,10 @@ function RegisterPage() {
                             htmlFor="password"
                             className="mb-2 block text-sm font-medium text-gray-700"
                         >
-                            Password                            
+                            Password
                         </label>
 
-                        <input 
+                        <input
                             id="password"
                             type="password"
                             value={password}

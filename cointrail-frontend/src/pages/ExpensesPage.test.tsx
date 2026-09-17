@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import ExpensesPage from "./ExpensesPage";
-import { getExpenses } from "../servcies/epenseService";
+import { getExpenses } from "../services/expenseService";
 
 vi.mock("../servcies/epenseService");
 

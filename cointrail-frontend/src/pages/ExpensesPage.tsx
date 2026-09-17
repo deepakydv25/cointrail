@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Expense } from "../types/expense";
-import { getExpenses } from "../servcies/epenseService";
+import { getExpenses } from "../services/expenseService";
 import { Link } from "react-router-dom";
 import { formatCurrency, formatDate } from "../utils/formatters";
 
@@ -163,7 +163,7 @@ function ExpensesPage() {
                 </div>
 
             </div>
-        
+
 
             {expenses.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
@@ -223,7 +223,7 @@ function ExpensesPage() {
                     <div className="flex w-full gap-3 sm:w-auto">
                         <button
                             type="button"
-                            onClick={() => setCurrentPage((page) => page-1)}
+                            onClick={() => setCurrentPage((page) => page - 1)}
                             disabled={currentPage === 0}
                             className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                         >
@@ -232,8 +232,8 @@ function ExpensesPage() {
 
                         <button
                             type="button"
-                            onClick={() => setCurrentPage((page) => page+1)}
-                            disabled={currentPage >= totalPages-1}
+                            onClick={() => setCurrentPage((page) => page + 1)}
+                            disabled={currentPage >= totalPages - 1}
                             className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                         >
                             Next →
@@ -242,7 +242,7 @@ function ExpensesPage() {
                 </div>
             )}
         </main>
-    ); 
+    );
 }
 
 export default ExpensesPage;

@@ -6,7 +6,7 @@ import DashboardPage from "./DashboardPage";
 import {
     getExpenses,
     getExpenseSummary,
-} from "../servcies/epenseService";
+} from "../services/expenseService";
 
 vi.mock("../servcies/epenseService");
 

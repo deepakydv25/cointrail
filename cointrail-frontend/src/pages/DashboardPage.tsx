@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Expense, ExpenseCategory, ExpenseSummary } from "../types/expense";
-import { getExpenses, getExpenseSummary } from "../servcies/epenseService";
+import { getExpenses, getExpenseSummary } from "../services/expenseService";
 import { formatCurrency, formatCategory, formatDate } from "../utils/formatters";
 import { Link } from "react-router-dom";
 import CategorySpendingChar from '../components/CategorySpendingChart';
@@ -25,7 +25,7 @@ function DashboardPage() {
 
                 setSummary(summaryResponse);
                 setRecentExpenses(expensesResponse.content);
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
                 setError('Unable to load dashboard.');
             } finally {
@@ -125,7 +125,7 @@ function DashboardPage() {
 
                         {/* Chart */}
                         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-                            <CategorySpendingChar 
+                            <CategorySpendingChar
                                 categoryBreakdown={summary.categoryBreakdown}
                             />
                         </div>
@@ -175,7 +175,7 @@ function DashboardPage() {
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                    
+
                     {recentExpenses.length === 0 ? (
                         <div className="p-8 text-center">
                             <p className="font-medium text-gray-900">
@@ -188,7 +188,7 @@ function DashboardPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100">
-                            
+
                             {recentExpenses.map((expense) => (
                                 <Link
                                     key={expense.id}

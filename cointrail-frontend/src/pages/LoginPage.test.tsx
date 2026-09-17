@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import LoginPage from "./LoginPage";
-import { loginUser } from "../servcies/authService";
+import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
 vi.mock("../servcies/authService");

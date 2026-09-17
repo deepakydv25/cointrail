@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import type { Expense } from "../types/expense";
-import { getExpenseById, deleteExpense } from "../servcies/epenseService";
+import { getExpenseById, deleteExpense } from "../services/expenseService";
 import { formatCurrency, formatDate } from "../utils/formatters";
 
 function ExpenseDetailsPage() {

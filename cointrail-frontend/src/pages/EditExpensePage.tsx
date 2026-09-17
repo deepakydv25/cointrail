@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getExpenseById, updateExpense } from "../servcies/epenseService";
+import { getExpenseById, updateExpense } from "../services/expenseService";
 import type { ExpenseCategory } from "../types/expense";
 
 function EditExpensePage() {
@@ -115,7 +115,7 @@ function EditExpensePage() {
                             Amount
                         </label>
 
-                        <input 
+                        <input
                             id="amount"
                             type="number"
                             min="0.01"
@@ -129,27 +129,27 @@ function EditExpensePage() {
 
                     <div>
                         <label
-                        htmlFor="category"
-                        className="mb-2 block text-sm font-medium text-gray-700"
+                            htmlFor="category"
+                            className="mb-2 block text-sm font-medium text-gray-700"
                         >
-                        Category
+                            Category
                         </label>
 
                         <select
-                        id="category"
-                        required
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
+                            id="category"
+                            required
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
                         >
-                        <option value="FOOD">Food</option>
-                        <option value="TRAVEL">Travel</option>
-                        <option value="SHOPPING">Shopping</option>
-                        <option value="ENTERTAINMENT">Entertainment</option>
-                        <option value="BILLS">Bills</option>
-                        <option value="HEALTH">Health</option>
-                        <option value="EDUCATION">Education</option>
-                        <option value="OTHER">Other</option>
+                            <option value="FOOD">Food</option>
+                            <option value="TRAVEL">Travel</option>
+                            <option value="SHOPPING">Shopping</option>
+                            <option value="ENTERTAINMENT">Entertainment</option>
+                            <option value="BILLS">Bills</option>
+                            <option value="HEALTH">Health</option>
+                            <option value="EDUCATION">Education</option>
+                            <option value="OTHER">Other</option>
                         </select>
                     </div>
 

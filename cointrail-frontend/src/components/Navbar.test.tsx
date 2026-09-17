@@ -30,7 +30,7 @@ describe("Navbar", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("CoinTrail"))
+        expect(screen.getByRole("link", { name: "CoinTrail home" }))
             .toBeInTheDocument();
 
         expect(screen.getByText("Login"))
@@ -92,8 +92,8 @@ describe("Navbar", () => {
                         path="/dashboard"
                         element={<Navbar />}
                     />
-                    
-                    <Route 
+
+                    <Route
                         path="/"
                         element={<div>Home Page</div>}
                     />

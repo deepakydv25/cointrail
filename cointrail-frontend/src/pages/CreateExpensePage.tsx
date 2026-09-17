@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createExpense } from "../servcies/epenseService";
+import { createExpense } from "../services/expenseService";
 import type { ExpenseCategory } from "../types/expense";
 
 function CreateExpensePage() {
@@ -51,7 +51,7 @@ function CreateExpensePage() {
                                 setIsLoading(false);
                             }
                         }}
-                        className="space-y-5"  
+                        className="space-y-5"
                     >
                         <div>
                             <label
@@ -61,7 +61,7 @@ function CreateExpensePage() {
                                 Amount
                             </label>
 
-                            <input 
+                            <input
                                 id="amount"
                                 type="number"
                                 min="0.01"
@@ -134,7 +134,7 @@ function CreateExpensePage() {
                                 required
                                 value={expenseDate}
                                 onChange={(e) => setExpenseDate(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500" 
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                             />
                         </div>
 

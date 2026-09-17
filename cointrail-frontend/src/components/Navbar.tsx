@@ -14,27 +14,40 @@ function Navbar() {
         navigate('/');
     };
 
-    return(
+    return (
         <nav className="border-b border-gray-200 bg-white">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-                <Link 
+                <Link
                     to="/"
-                    className="text-xl font-bold text-gray-900"
+                    className="group flex items-center gap-3"
+                    aria-label="CoinTrail home"
                 >
-                    CoinTrail
+                    <img
+                        src="/cointrail-mark.svg"
+                        alt=""
+                        className="h-10 w-10 transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <span className="flex flex-col leading-none">
+                        <span className="text-xl font-bold tracking-tight">
+                            <span className="text-blue-600">Coin</span><span className="text-slate-900">Trail</span>
+                        </span>
+                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                            Spend with intention
+                        </span>
+                    </span>
                 </Link>
 
                 <div className="hidden items-center gap-6 md:flex">
                     {isAuthenticated ? (
                         <>
-                            <Link 
+                            <Link
                                 to="/dashboard"
                                 className="text-gray-700 transition hover:text-blue-600"
                             >
                                 Dashboard
                             </Link>
-                            
-                            <Link 
+
+                            <Link
                                 to="/expenses"
                                 className="text-gray-700 transition hover:text-blue-600"
                             >
@@ -51,14 +64,14 @@ function Navbar() {
                         </>
                     ) : (
                         <>
-                            <Link 
+                            <Link
                                 to="/login"
                                 className="text-gray-700 transition hover:text-blue-600"
                             >
                                 Login
                             </Link>
-                    
-                            <Link 
+
+                            <Link
                                 to="/register"
                                 className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
                             >
@@ -68,11 +81,11 @@ function Navbar() {
                     )}
                 </div>
 
-                <button 
+                <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
                     className="cursor-pointer rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
-                    aria-label="Toggle navigation menu"   
+                    aria-label="Toggle navigation menu"
                 >
                     {isOpen ? '✕' : '☰'}
                 </button>
@@ -126,7 +139,7 @@ function Navbar() {
                                 </Link>
                             </>
                         )}
-                    
+
                     </div>
                 </div>
             )}
