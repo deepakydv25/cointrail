@@ -12,7 +12,7 @@ function RegisterPage() {
 
     return (
         <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4">
-            <div className="w-full max-w-md rounded-xl bg-white p-8 shodow-md">
+            <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
                 <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
                     Create Account
                 </h1>
@@ -43,7 +43,7 @@ function RegisterPage() {
                             setPassword('');
                         } catch(err) {
                             console.error(err);
-                            setError('Registraion failed.');
+                            setError('Registration failed.');
                         } finally {
                             setIsLoading(false);
                         }
@@ -117,7 +117,7 @@ function RegisterPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isLoading ? 'Registering...' : 'Register'}
                     </button>

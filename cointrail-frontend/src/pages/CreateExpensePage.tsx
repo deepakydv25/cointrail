@@ -70,7 +70,7 @@ function CreateExpensePage() {
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="Enter amount"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none foucs:border-blue-500"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                             />
                         </div>
 
@@ -148,7 +148,7 @@ function CreateExpensePage() {
                             <button
                                 type="button"
                                 onClick={() => navigate('/expenses')}
-                                className="w-full rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+                                className="w-full cursor-pointer rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -156,7 +156,7 @@ function CreateExpensePage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allwoed disabled:opacity-50 sm:w-auto"
+                                className="w-full cursor-pointer rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                             >
                                 {isLoading ? 'Adding...' : 'Add Expense'}
                             </button>
