@@ -1,6 +1,6 @@
 ﻿# 💰 CoinTrail
 
-**A clean, self-hosted personal expense tracker** — register, log in, log expenses, categorize spending, and watch your dashboard update in real time.
+A personal expense tracker for everyday spending — sign up, log in, add expenses, categorize them, and watch your dashboard update in real time.
 
 Built with Spring Boot, React, TypeScript, PostgreSQL, and Docker.
 
@@ -12,7 +12,7 @@ Built with Spring Boot, React, TypeScript, PostgreSQL, and Docker.
 
 ## 🎥 Demo
 
-See the full flow in action — landing page → registration → login → dashboard → adding, editing, and deleting an expense.
+See the full flow in action — landing page → sign up → login → dashboard → expense management.
 
 https://github.com/user-attachments/assets/fa640467-b855-46db-b4e8-e04f0a6ffdfb
 
