@@ -2,7 +2,6 @@ package com.deepak.cointrailapi.category;
 
 import com.deepak.cointrailapi.user.User;
 import jakarta.persistence.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
