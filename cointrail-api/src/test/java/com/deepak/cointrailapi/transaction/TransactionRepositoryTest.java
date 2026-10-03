@@ -15,6 +15,10 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -23,8 +27,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @DataJpaTest
@@ -134,6 +139,399 @@ public class TransactionRepositoryTest {
         ).isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    void shouldFilterTransactionsByUser() {
+
+        User user1 = createUser("user1@test.com");
+        User user2 = createUser("user2@test.com");
+
+        Account account1 = createAccount(user1);
+        Account account2 = createAccount(user2);
+
+        Category food =
+                findCategory("Food", CategoryType.EXPENSE);
+
+        Transaction user1Transaction = createTransaction(
+                user1,
+                account1,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("500.00")
+        );
+
+        Transaction user2Transaction = createTransaction(
+                user2,
+                account2,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("1000.00")
+        );
+
+        transactionRepository.saveAllAndFlush(List.of(user1Transaction, user2Transaction));
+
+        Specification<Transaction> specification =
+                TransactionSpecification.hasUserId(user1.getId());
+
+        Page<Transaction> result =
+                transactionRepository.findAll(
+                        specification,
+                        PageRequest.of(0, 20)
+                );
+
+        assertThat(result.getContent()).hasSize(1);
+
+        Transaction transaction =
+                result.getContent().getFirst();
+
+        assertThat(transaction.getUser().getId())
+                .isEqualTo(user1.getId());
+
+        assertThat(transaction.getAmount())
+                .isEqualByComparingTo("500.00");
+    }
+
+    @Test
+    void shouldFilterTransactionsByType() {
+
+        User user = createUser("type-filter@test.com");
+        Account account = createAccount(user);
+
+        Category food =
+                findCategory("Food", CategoryType.EXPENSE);
+
+        Category salary =
+                findCategory("Salary", CategoryType.INCOME);
+
+        Transaction expense = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("500.00")
+        );
+
+        Transaction income = createTransaction(
+                user,
+                account,
+                salary,
+                TransactionType.INCOME,
+                new BigDecimal("80000.00")
+        );
+
+        transactionRepository.saveAllAndFlush(
+                List.of(expense, income)
+        );
+
+        Specification<Transaction> specification =
+                TransactionSpecification.hasUserId(user.getId())
+                        .and(
+                                TransactionSpecification.hasType(
+                                        TransactionType.EXPENSE
+                                )
+                        );
+
+        Page<Transaction> result =
+                transactionRepository.findAll(
+                        specification,
+                        PageRequest.of(0, 20)
+                );
+
+        assertThat(result.getContent()).hasSize(1);
+
+        assertThat(result.getContent().getFirst().getType())
+                .isEqualTo(TransactionType.EXPENSE);
+
+        assertThat(result.getContent().getFirst().getAmount())
+                .isEqualByComparingTo("500.00");
+    }
+
+    @Test
+    void shouldFilterTransactionsByAccountAndCategory() {
+
+        User user =
+                createUser("account-category-filter@test.com");
+
+        Account hdfc =
+                createAccount(user, "HDFC");
+
+        Account icici =
+                createAccount(user, "ICICI");
+
+        Category food =
+                findCategory("Food", CategoryType.EXPENSE);
+
+        Category shopping =
+                findCategory("Shopping", CategoryType.EXPENSE);
+
+        Transaction foodHdfc = createTransaction(
+                user,
+                hdfc,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("500.00")
+        );
+
+        Transaction shoppingHdfc = createTransaction(
+                user,
+                hdfc,
+                shopping,
+                TransactionType.EXPENSE,
+                new BigDecimal("2000.00")
+        );
+
+        Transaction foodIcici = createTransaction(
+                user,
+                icici,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("700.00")
+        );
+
+        transactionRepository.saveAllAndFlush(
+                List.of(
+                        foodHdfc,
+                        shoppingHdfc,
+                        foodIcici
+                )
+        );
+
+        Specification<Transaction> specification =
+                TransactionSpecification
+                        .hasUserId(user.getId())
+                        .and(
+                                TransactionSpecification
+                                        .hasAccountId(hdfc.getId())
+                        )
+                        .and(
+                                TransactionSpecification
+                                        .hasCategoryId(food.getId())
+                        );
+
+        Page<Transaction> result =
+                transactionRepository.findAll(
+                        specification,
+                        PageRequest.of(0, 20)
+                );
+
+        assertThat(result.getContent()).hasSize(1);
+
+        Transaction transaction =
+                result.getContent().getFirst();
+
+        assertThat(transaction.getAccount().getId())
+                .isEqualTo(hdfc.getId());
+
+        assertThat(transaction.getCategory().getId())
+                .isEqualTo(food.getId());
+
+        assertThat(transaction.getAmount())
+                .isEqualByComparingTo("500.00");
+    }
+
+    @Test
+    void shouldFilterTransactionsByDateRange() {
+
+        User user =
+                createUser("date-filter@test.com");
+
+        Account account = createAccount(user);
+
+        Category food =
+                findCategory("Food", CategoryType.EXPENSE);
+
+        Transaction september = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("100.00"),
+                LocalDate.of(2026, 9, 30)
+        );
+
+        Transaction octoberFirst = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("200.00"),
+                LocalDate.of(2026, 10, 1)
+        );
+
+        Transaction octoberFifteenth = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("300.00"),
+                LocalDate.of(2026, 10, 15)
+        );
+
+        Transaction octoberThirtyFirst = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("400.00"),
+                LocalDate.of(2026, 10, 31)
+        );
+
+        Transaction november = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("500.00"),
+                LocalDate.of(2026, 11, 1)
+        );
+
+        transactionRepository.saveAllAndFlush(
+                List.of(
+                        september,
+                        octoberFirst,
+                        octoberFifteenth,
+                        octoberThirtyFirst,
+                        november
+                )
+        );
+
+        Specification<Transaction> specification =
+                TransactionSpecification
+                        .hasUserId(user.getId())
+                        .and(
+                                TransactionSpecification.dateFrom(
+                                        LocalDate.of(2026, 10, 1)
+                                )
+                        )
+                        .and(
+                                TransactionSpecification.dateTo(
+                                        LocalDate.of(2026, 10, 31)
+                                )
+                        );
+
+        Page<Transaction> result =
+                transactionRepository.findAll(
+                        specification,
+                        PageRequest.of(
+                                0,
+                                20,
+                                Sort.by(
+                                        Sort.Direction.ASC,
+                                        "transactionDate"
+                                )
+                        )
+                );
+
+        assertThat(result.getContent()).hasSize(3);
+
+        assertThat(result.getContent())
+                .extracting(Transaction::getAmount)
+                .containsExactly(
+                        new BigDecimal("200.00"),
+                        new BigDecimal("300.00"),
+                        new BigDecimal("400.00")
+                );
+    }
+
+    @Test
+    void shouldApplyCombinedFiltersWithPaginationAndSorting() {
+
+        User user =
+                createUser("combined-filter@test.com");
+
+        Account account = createAccount(user);
+
+        Category food =
+                findCategory("Food", CategoryType.EXPENSE);
+
+        Transaction first = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("100.00"),
+                LocalDate.of(2026, 10, 1)
+        );
+
+        Transaction second = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("300.00"),
+                LocalDate.of(2026, 10, 10)
+        );
+
+        Transaction third = createTransaction(
+                user,
+                account,
+                food,
+                TransactionType.EXPENSE,
+                new BigDecimal("200.00"),
+                LocalDate.of(2026, 10, 20)
+        );
+
+        transactionRepository.saveAllAndFlush(
+                List.of(first, second, third)
+        );
+
+        Specification<Transaction> specification =
+                TransactionSpecification
+                        .hasUserId(user.getId())
+                        .and(
+                                TransactionSpecification.hasType(
+                                        TransactionType.EXPENSE
+                                )
+                        )
+                        .and(
+                                TransactionSpecification.hasAccountId(
+                                        account.getId()
+                                )
+                        )
+                        .and(
+                                TransactionSpecification.hasCategoryId(
+                                        food.getId()
+                                )
+                        )
+                        .and(
+                                TransactionSpecification.dateFrom(
+                                        LocalDate.of(2026, 10, 1)
+                                )
+                        )
+                        .and(
+                                TransactionSpecification.dateTo(
+                                        LocalDate.of(2026, 10, 31)
+                                )
+                        );
+
+        Page<Transaction> result =
+                transactionRepository.findAll(
+                        specification,
+                        PageRequest.of(
+                                0,
+                                2,
+                                Sort.by(
+                                        Sort.Direction.DESC,
+                                        "amount"
+                                )
+                        )
+                );
+
+        assertThat(result.getContent()).hasSize(2);
+
+        assertThat(result.getTotalElements())
+                .isEqualTo(3);
+
+        assertThat(result.getTotalPages())
+                .isEqualTo(2);
+
+        assertThat(result.getContent())
+                .extracting(Transaction::getAmount)
+                .containsExactly(
+                        new BigDecimal("300.00"),
+                        new BigDecimal("200.00")
+                );
+    }
+
     private User createUser(String email) {
         User user = new User();
         user.setName("Test User");
@@ -152,6 +550,23 @@ public class TransactionRepositoryTest {
         account.setName("Test Bank");
         account.setType(AccountType.BANK);
         account.setOpeningBalance(new BigDecimal("50000.00"));
+        account.setActive(true);
+        account.setCreatedAt(LocalDateTime.now());
+        account.setUpdatedAt(LocalDateTime.now());
+
+        return accountRepository.saveAndFlush(account);
+    }
+
+    private Account createAccount(User user, String name) {
+
+        Account account = new Account();
+
+        account.setUser(user);
+        account.setName(name);
+        account.setType(AccountType.BANK);
+        account.setOpeningBalance(
+                new BigDecimal("50000.00")
+        );
         account.setActive(true);
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
@@ -186,6 +601,27 @@ public class TransactionRepositoryTest {
         transaction.setTransactionDate(LocalDate.now());
         transaction.setCreatedAt(LocalDateTime.now());
         transaction.setUpdatedAt(LocalDateTime.now());
+
+        return transaction;
+    }
+
+    private Transaction createTransaction(
+            User user,
+            Account account,
+            Category category,
+            TransactionType type,
+            BigDecimal amount,
+            LocalDate transactionDate) {
+
+        Transaction transaction = createTransaction(
+                user,
+                account,
+                category,
+                type,
+                amount
+        );
+
+        transaction.setTransactionDate(transactionDate);
 
         return transaction;
     }
