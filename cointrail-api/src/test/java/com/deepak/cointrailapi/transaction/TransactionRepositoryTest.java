@@ -10,6 +10,8 @@ import com.deepak.cointrailapi.user.Role;
 import com.deepak.cointrailapi.user.User;
 import com.deepak.cointrailapi.user.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -530,6 +532,80 @@ public class TransactionRepositoryTest {
                         new BigDecimal("300.00"),
                         new BigDecimal("200.00")
                 );
+    }
+
+    @Test
+    void budgetAggregateShouldGroupAcrossAccountsAndExcludeOtherUsersTypesCategoriesAndDates() {
+        User owner = createUser("budget-aggregate-owner@test.com");
+        User other = createUser("budget-aggregate-other@test.com");
+        Account first = createAccount(owner, "First");
+        Account second = createAccount(owner, "Second");
+        Account foreign = createAccount(other);
+        Category food = findCategory("Food", CategoryType.EXPENSE);
+        Category shopping = findCategory("Shopping", CategoryType.EXPENSE);
+        Category rent = findCategory("Rent", CategoryType.EXPENSE);
+        LocalDate start = LocalDate.of(2024, 2, 1);
+        LocalDate end = LocalDate.of(2024, 3, 1);
+        transactionRepository.saveAllAndFlush(List.of(
+                createTransaction(owner, first, food, TransactionType.EXPENSE, new BigDecimal("10.10"), start),
+                createTransaction(owner, second, food, TransactionType.EXPENSE, new BigDecimal("20.20"), start.plusDays(28)),
+                createTransaction(owner, first, shopping, TransactionType.EXPENSE, new BigDecimal("3.33"), start.plusDays(1)),
+                createTransaction(other, foreign, food, TransactionType.EXPENSE, new BigDecimal("1000"), start),
+                // The aggregate must filter transaction type itself, independent of category type.
+                createTransaction(owner, first, food, TransactionType.INCOME, new BigDecimal("2000"), start),
+                createTransaction(owner, first, rent, TransactionType.EXPENSE, new BigDecimal("3000"), start),
+                createTransaction(owner, first, food, TransactionType.EXPENSE, new BigDecimal("4000"), start.minusDays(1)),
+                createTransaction(owner, first, food, TransactionType.EXPENSE, new BigDecimal("5000"), end)));
+        List<CategoryExpenseTotal> result = transactionRepository.sumExpensesByCategory(
+                owner.getId(), List.of(food.getId(), shopping.getId()), start, end);
+        assertThat(result).hasSize(2);
+        assertThat(result.stream().filter(t -> t.getCategoryId().equals(food.getId())).findFirst().orElseThrow().getSpentAmount())
+                .isEqualByComparingTo("30.30");
+        assertThat(result.stream().filter(t -> t.getCategoryId().equals(shopping.getId())).findFirst().orElseThrow().getSpentAmount())
+                .isEqualByComparingTo("3.33");
+    }
+
+    @Test
+    void budgetAggregateShouldReturnNoGroupsWithoutMatchingExpenses() {
+        User owner = createUser("budget-empty-aggregate@test.com");
+        Category food = findCategory("Food", CategoryType.EXPENSE);
+        assertThat(transactionRepository.sumExpensesByCategory(owner.getId(), List.of(food.getId()),
+                LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1))).isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2024-02-01,2024-02-29,2024-03-01", "2024-12-01,2024-12-31,2025-01-01", "9999-12-01,9999-12-31,+10000-01-01"})
+    void budgetAggregateShouldUseInclusiveStartExclusiveEndAcrossCalendarBoundaries(String from, String last, String to) {
+        User owner = createUser("budget-calendar@test.com");
+        Account account = createAccount(owner);
+        Category food = findCategory("Food", CategoryType.EXPENSE);
+        LocalDate start = LocalDate.parse(from);
+        LocalDate end = LocalDate.parse(to);
+        transactionRepository.saveAllAndFlush(List.of(
+                createTransaction(owner, account, food, TransactionType.EXPENSE, new BigDecimal("0.01"), start),
+                createTransaction(owner, account, food, TransactionType.EXPENSE, new BigDecimal("0.02"), LocalDate.parse(last)),
+                createTransaction(owner, account, food, TransactionType.EXPENSE, new BigDecimal("100"), start.minusDays(1)),
+                createTransaction(owner, account, food, TransactionType.EXPENSE, new BigDecimal("200"), end)));
+        List<CategoryExpenseTotal> result = transactionRepository.sumExpensesByCategory(owner.getId(), List.of(food.getId()), start, end);
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getSpentAmount()).isEqualByComparingTo("0.03");
+    }
+
+    @Test
+    void budgetAggregateShouldRetainSpendingFromInactiveAccountAndCategory() {
+        User owner = createUser("budget-historical@test.com");
+        Account account = createAccount(owner);
+        Category food = findCategory("Food", CategoryType.EXPENSE);
+        transactionRepository.saveAndFlush(createTransaction(owner, account, food, TransactionType.EXPENSE,
+                new BigDecimal("12.34"), LocalDate.of(2024, 2, 20)));
+        account.setActive(false);
+        food.setActive(false);
+        accountRepository.saveAndFlush(account);
+        categoryRepository.saveAndFlush(food);
+        List<CategoryExpenseTotal> result = transactionRepository.sumExpensesByCategory(owner.getId(), List.of(food.getId()),
+                LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1));
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getSpentAmount()).isEqualByComparingTo("12.34");
     }
 
     private User createUser(String email) {
