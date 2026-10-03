@@ -1,6 +1,11 @@
 package com.deepak.cointrailapi.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+import java.util.Optional;
+
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
+
+    Optional<Transaction> findByIdAndUserId(Long id, Long userId);
 }
