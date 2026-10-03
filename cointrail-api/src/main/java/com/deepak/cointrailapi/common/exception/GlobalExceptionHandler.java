@@ -8,9 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,8 @@ public class GlobalExceptionHandler {
             ExpenseNotFoundException.class,
             AccountNotFoundException.class,
             CategoryNotFoundException.class,
-            TransactionNotFoundException.class
+            TransactionNotFoundException.class,
+            BudgetNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleResourceNotFound(RuntimeException e) {
 
@@ -54,6 +57,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidBudgetException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBudget(InvalidBudgetException e) {
+        log.warn("Invalid budget: {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(BudgetAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleBudgetAlreadyExists(BudgetAlreadyExistsException e) {
+        log.warn("Budget conflict: {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
 
@@ -127,6 +146,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestParameter(MissingServletRequestParameterException e) {
+        log.warn("Missing request parameter: {}", e.getParameterName());
+
+        Map<String, String> errors = Map.of(e.getParameterName(), "Required request parameter is missing");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid request parameter", errors));
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException e) {
+        if (e.isForReturnValue()) {
+            return handleUnexpectedException(e);
+        }
+
+        Map<String, String> errors = new HashMap<>();
+        e.getParameterValidationResults().forEach(result -> {
+            String name = result.getMethodParameter().getParameterName();
+            String key = name != null ? name : "arg" + result.getMethodParameter().getParameterIndex();
+            result.getResolvableErrors().forEach(error ->
+                    errors.put(key, error.getDefaultMessage() != null
+                            ? error.getDefaultMessage() : "Invalid value"));
+        });
+
+        log.warn("Request parameter validation failed: {}", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Validation Failed", errors));
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
