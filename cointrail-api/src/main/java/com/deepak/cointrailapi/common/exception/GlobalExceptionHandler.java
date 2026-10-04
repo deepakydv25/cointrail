@@ -60,6 +60,12 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    @ExceptionHandler(InvalidAnalyticsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAnalytics(InvalidAnalyticsException e) {
+        log.warn("Invalid analytics request: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ErrorResponse(400, e.getMessage()));
+    }
+
     @ExceptionHandler(InvalidDashboardException.class)
     public ResponseEntity<ErrorResponse> handleInvalidDashboard(InvalidDashboardException e) {
         log.warn("Invalid dashboard request: {}", e.getMessage());

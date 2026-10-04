@@ -15,6 +15,54 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
 
     @Query("""
+            select sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.INCOME then t.amount else 0 end) as income,
+                   sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.EXPENSE then t.amount else 0 end) as expense,
+                   count(t) as transactionCount
+            from Transaction t
+            where t.user.id = :userId and t.transactionDate >= :from and t.transactionDate < :to
+            """)
+    AnalyticsTotalsProjection analyticsTotals(@Param("userId") Long userId,
+            @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("""
+            select c.id as categoryId, c.name as categoryName, c.type as categoryType,
+                   c.system as system, c.active as active, sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.INCOME then t.amount else 0 end) as income,
+                   sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.EXPENSE then t.amount else 0 end) as expense,
+                   count(t) as transactionCount
+            from Transaction t join t.category c
+            where t.user.id = :userId and t.transactionDate >= :from and t.transactionDate < :to
+            group by c.id, c.name, c.type, c.system, c.active
+            order by c.id
+            """)
+    List<AnalyticsCategoryProjection> analyticsCategories(@Param("userId") Long userId,
+            @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("""
+            select a.id as accountId, a.name as accountName, a.type as accountType,
+                   a.active as active, sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.INCOME then t.amount else 0 end) as income,
+                   sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.EXPENSE then t.amount else 0 end) as expense,
+                   count(t) as transactionCount
+            from Transaction t join t.account a
+            where t.user.id = :userId and t.transactionDate >= :from and t.transactionDate < :to
+            group by a.id, a.name, a.type, a.active
+            order by a.id
+            """)
+    List<AnalyticsAccountProjection> analyticsAccounts(@Param("userId") Long userId,
+            @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+            select cast(date_trunc(:unit, cast(t.transaction_date as timestamp)) as date) as bucketStart,
+                   sum(case when t.type = 'INCOME' then t.amount else 0 end) as income,
+                   sum(case when t.type = 'EXPENSE' then t.amount else 0 end) as expense,
+                   count(*) as transactionCount
+            from transactions t
+            where t.user_id = :userId and t.transaction_date >= :from and t.transaction_date < :to
+            group by 1 order by 1
+            """, nativeQuery = true)
+    List<AnalyticsBucketProjection> analyticsBuckets(@Param("userId") Long userId,
+            @Param("from") LocalDate from, @Param("to") LocalDate to, @Param("unit") String unit);
+
+    @Query("""
             select sum(case when t.type = com.deepak.cointrailapi.transaction.TransactionType.INCOME
                             then t.amount else -t.amount end)
             from Transaction t join t.account a
