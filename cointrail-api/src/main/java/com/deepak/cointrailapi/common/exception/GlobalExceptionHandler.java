@@ -27,7 +27,8 @@ public class GlobalExceptionHandler {
             AccountNotFoundException.class,
             CategoryNotFoundException.class,
             TransactionNotFoundException.class,
-            BudgetNotFoundException.class
+            BudgetNotFoundException.class,
+            RecurringTransactionNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleResourceNotFound(RuntimeException e) {
 
@@ -75,6 +76,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
+
+    @ExceptionHandler(InvalidRecurringTransactionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRecurringTransaction(InvalidRecurringTransactionException e) {
+        log.warn("Invalid recurring transaction: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ErrorResponse(400, e.getMessage()));
+    }
+
+    @ExceptionHandler(RecurringTransactionConflictException.class)
+    public ResponseEntity<ErrorResponse> handleRecurringConflict(RecurringTransactionConflictException e) {
+        log.warn("Recurring transaction conflict: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(409, e.getMessage()));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException e) {

@@ -1,3 +1,7 @@
 jwt:
   secret: VGhpc0lzQVRlc3RPbmx5MzJCeXRlU2VjcmV0S2V5MTIzNDU2Nzg=
   expiration: 3600000
+app:
+  recurring:
+    timezone: UTC
+    enabled: false
