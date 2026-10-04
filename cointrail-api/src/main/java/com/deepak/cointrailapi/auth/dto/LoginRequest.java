@@ -1,6 +1,7 @@
 package com.deepak.cointrailapi.auth.dto;
 
 import jakarta.validation.constraints.Email;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequest {
@@ -10,6 +11,7 @@ public class LoginRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
+    @Schema(format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
 
     public LoginRequest() {

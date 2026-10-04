@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,11 +29,18 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private final String allowedOrigin;
+    private final boolean apiDocsEnabled;
+    private static final String[] DOCUMENTATION_PATHS = {
+            "/v3/api-docs", "/v3/api-docs.yaml", "/v3/api-docs/**",
+            "/swagger-ui.html", "/swagger-ui/**"
+    };
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          @Value("${app.cors.allowed-origin}") String allowedOrigin) {
+                          @Value("${app.cors.allowed-origin}") String allowedOrigin,
+                          @Value("${app.api-docs.enabled:false}") boolean apiDocsEnabled) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.allowedOrigin = allowedOrigin;
+        this.apiDocsEnabled = apiDocsEnabled;
     }
 
     @Bean
@@ -47,7 +55,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(
                         SessionCreationPolicy.STATELESS
                 ))
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    if (apiDocsEnabled) {
+                        auth.requestMatchers(HttpMethod.GET, DOCUMENTATION_PATHS).permitAll()
+                                .requestMatchers(HttpMethod.HEAD, DOCUMENTATION_PATHS).permitAll();
+                    }
+                    auth.requestMatchers(DOCUMENTATION_PATHS).denyAll()
+                        .requestMatchers("/webjars/swagger-ui/**").denyAll()
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                         "/actuator/health",
@@ -55,8 +69,8 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .anyRequest()
-                        .authenticated()
-                )
+                        .authenticated();
+                })
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(
                                 (request, response, authException) ->
