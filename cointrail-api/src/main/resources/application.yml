@@ -49,6 +49,12 @@ jwt:
   expiration: 3600000
 
 app:
+  recurring:
+    timezone: ${RECURRING_TIMEZONE}
+    enabled: ${RECURRING_ENABLED:false}
+    poll-interval: ${RECURRING_POLL_INTERVAL:PT1M}
+    template-batch-size: ${RECURRING_TEMPLATE_BATCH_SIZE:100}
+    occurrence-batch-size: ${RECURRING_OCCURRENCE_BATCH_SIZE:50}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
 
