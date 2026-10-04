@@ -24,6 +24,18 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
     @EntityGraph(attributePaths = {"account", "category"})
     Page<RecurringTransaction> findAll(Specification<RecurringTransaction> specification, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"account", "category"})
+    @Query("""
+            select r from RecurringTransaction r
+            where r.user.id = :userId
+              and r.status in (com.deepak.cointrailapi.recurringtransaction.RecurringTransactionStatus.ACTIVE,
+                               com.deepak.cointrailapi.recurringtransaction.RecurringTransactionStatus.BLOCKED)
+              and r.nextDueDate <= :throughDate
+            order by r.nextDueDate, r.id
+            """)
+    List<RecurringTransaction> findPendingForDashboard(@Param("userId") Long userId,
+            @Param("throughDate") LocalDate throughDate, Pageable pageable);
+
     interface Candidate {
         Long getId();
         LocalDate getNextDueDate();

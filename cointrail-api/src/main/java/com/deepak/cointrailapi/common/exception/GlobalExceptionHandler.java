@@ -60,6 +60,12 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    @ExceptionHandler(InvalidDashboardException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDashboard(InvalidDashboardException e) {
+        log.warn("Invalid dashboard request: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(new ErrorResponse(400, e.getMessage()));
+    }
+
     @ExceptionHandler(InvalidBudgetException.class)
     public ResponseEntity<ErrorResponse> handleInvalidBudget(InvalidBudgetException e) {
         log.warn("Invalid budget: {}", e.getMessage());
