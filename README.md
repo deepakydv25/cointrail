@@ -88,3 +88,17 @@ This project focuses on a clean personal finance workflow — the goal is to kee
 ---
 
 <p align="center">Made with care for people who just want to track where their money goes.</p>
+
+## V2 API documentation
+
+The backend includes generated OpenAPI and same-origin Swagger UI. Documentation is **disabled by default**, including its assets for authenticated users. Enable it explicitly for local/development use with `API_DOCS_ENABLED=true` alongside the existing database, JWT and recurring-timezone settings. Leave this switch false or unset in production; the absence of a Spring profile does not enable documentation.
+
+With the backend running on its default port 8081:
+
+- Swagger UI: http://localhost:8081/swagger-ui.html
+- OpenAPI JSON: http://localhost:8081/v3/api-docs
+- OpenAPI YAML: http://localhost:8081/v3/api-docs.yaml
+
+Register through `/api/v1/auth/register`, then log in through `/api/v1/auth/login`. Copy `accessToken`, open **Authorize** in Swagger UI, and paste the token **without** a `Bearer` prefix. Try a protected read such as `GET /api/accounts`. Authorization does not persist across reloads. Try-it also supports writes and deletes: use disposable local data and read each operation's deletion/cancellation description before executing it.
+
+The document covers Authentication, Accounts, Categories, Transactions, Budgets, Recurring Transactions, Dashboard and Analytics. Existing endpoint paths and API behavior are unchanged; legacy Expenses, Actuator and internal workers are excluded. See the [Recurring Transactions](cointrail-api/RECURRING_TRANSACTIONS.md), [Dashboard](cointrail-api/DASHBOARD_API.md) and [Analytics](cointrail-api/ANALYTICS_API.md) contracts for additional business details.

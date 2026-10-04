@@ -7,9 +7,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+@Tag(name = "Accounts")
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
@@ -20,6 +23,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @Operation(summary = "Create an account", description = "Creates an owned account with a signed opening balance. Name uniqueness follows existing owner rules.")
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
 
@@ -30,6 +34,7 @@ public class AccountController {
                 .body(response);
     }
 
+    @Operation(summary = "List active accounts", description = "Returns active owned accounts in created-at descending order.")
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAccounts() {
 
@@ -38,6 +43,7 @@ public class AccountController {
         );
     }
 
+    @Operation(summary = "Get an account", description = "Returns an owned account, including inactive accounts.")
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> getAccount(
             @PathVariable Long id) {
@@ -47,12 +53,14 @@ public class AccountController {
         );
     }
 
+    @Operation(summary = "Update an account", description = "Changes name/type only; opening balance is not an update field.")
     @PutMapping("/{id}")
     public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id, @Valid @RequestBody UpdateAccountRequest request) {
 
         return ResponseEntity.ok(accountService.updateAccount(id, request));
     }
 
+    @Operation(summary = "Deactivate an account", description = "Soft deactivation; existing financial history remains. Repeated deactivation is allowed.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deactivateAccount(
             @PathVariable Long id) {

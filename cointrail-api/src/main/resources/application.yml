@@ -49,6 +49,8 @@ jwt:
   expiration: 3600000
 
 app:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
   recurring:
     timezone: ${RECURRING_TIMEZONE}
     enabled: ${RECURRING_ENABLED:false}
@@ -60,3 +62,23 @@ app:
 
 server:
   port: 8081
+
+springdoc:
+  api-docs:
+    enabled: ${app.api-docs.enabled}
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: ${app.api-docs.enabled}
+    path: /swagger-ui.html
+    persist-authorization: false
+    validator-url: ""
+  override-with-generic-response: false
+  packages-to-scan:
+    - com.deepak.cointrailapi.auth
+    - com.deepak.cointrailapi.account
+    - com.deepak.cointrailapi.category
+    - com.deepak.cointrailapi.transaction
+    - com.deepak.cointrailapi.budget
+    - com.deepak.cointrailapi.recurringtransaction
+    - com.deepak.cointrailapi.dashboard
+    - com.deepak.cointrailapi.analytics
