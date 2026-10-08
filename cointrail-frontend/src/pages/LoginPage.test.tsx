@@ -5,10 +5,11 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import LoginPage from "./LoginPage";
 import { loginUser } from "../services/authService";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
+import { ApiError } from "../api/errors";
 
 vi.mock("../services/authService");
-vi.mock("../context/AuthContext");
+vi.mock("../context/useAuth");
 
 const mockedLoginUser = vi.mocked(loginUser);
 const mockedUseAuth = vi.mocked(useAuth);
@@ -22,6 +23,7 @@ describe("LoginPage", () => {
     it("renders the login form", () => {
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });
@@ -59,6 +61,7 @@ describe("LoginPage", () => {
 
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login,
             logout: vi.fn(),
         });
@@ -120,12 +123,13 @@ describe("LoginPage", () => {
 
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login,
             logout: vi.fn(),
         });
 
         mockedLoginUser.mockRejectedValue(
-            new Error("Invalid credentials")
+            new ApiError("Invalid email or password", "auth", 401)
         );
 
         render(

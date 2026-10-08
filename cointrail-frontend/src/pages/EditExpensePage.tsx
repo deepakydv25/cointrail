@@ -17,6 +17,7 @@ function EditExpensePage() {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        let active = true;
         const fetchExpense = async () => {
             if (!id) {
                 setError('Invalid expense.');
@@ -27,19 +28,22 @@ function EditExpensePage() {
             try {
                 const expense = await getExpenseById(Number(id));
 
+                if (!active) return;
                 setAmount(String(expense.amount));
                 setCategory(expense.category);
                 setDescription(expense.description);
                 setExpenseDate(expense.expenseDate);
             } catch (err) {
+                if (!active) return;
                 console.error(err);
                 setError('Unable to load expense.');
             } finally {
-                setIsLoading(false);
+                if (active) setIsLoading(false);
             }
         };
 
         fetchExpense();
+        return () => { active = false; };
     }, [id]);
 
     if (isLoading) {

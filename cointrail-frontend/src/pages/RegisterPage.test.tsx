@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 
 import RegisterPage from "./RegisterPage";
 import { registerUser } from "../services/authService";
+import { ApiError } from "../api/errors";
 
 vi.mock("../services/authService");
 
@@ -51,7 +52,7 @@ describe("RegisterPage", () => {
     it("registers user successfully", async () => {
         const user = userEvent.setup();
 
-        mockedRegisterUser.mockResolvedValue({});
+        mockedRegisterUser.mockResolvedValue({ id: 1, name: 'Deepak Yadav', email: 'deepak@example.com', role: 'USER' });
 
         render(
             <MemoryRouter>
@@ -94,7 +95,7 @@ describe("RegisterPage", () => {
     it("clears the form after successful registration", async () => {
         const user = userEvent.setup();
 
-        mockedRegisterUser.mockResolvedValue({});
+        mockedRegisterUser.mockResolvedValue({ id: 1, name: 'Deepak Yadav', email: 'deepak@example.com', role: 'USER' });
 
         render(
             <MemoryRouter>
@@ -127,7 +128,7 @@ describe("RegisterPage", () => {
         const user = userEvent.setup();
 
         mockedRegisterUser.mockRejectedValue(
-            new Error("Registration failed")
+            new ApiError("Registration failed.", "server", 500)
         );
 
         render(

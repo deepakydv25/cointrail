@@ -1,13 +1,8 @@
 import api from '../api/axios';
+import type { PageResponse } from '../types/api';
 import type { CreateExpenseRequest, Expense, UpdateExpenseRequest, ExpenseSummary } from '../types/expense';
 
-export interface ExpensePage {
-    content: Expense[];
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-}
+export type ExpensePage = PageResponse<Expense>;
 
 export const getExpenses = async (
     page: number = 0,
@@ -16,7 +11,7 @@ export const getExpenses = async (
     direction: string = 'desc',
     category: string = ''
 ): Promise<ExpensePage> => {
-    const response = await api.get<ExpensePage>('/expenses', {
+    const response = await api.get<ExpensePage>('/api/v1/expenses', {
         params: {
             page,
             size,
@@ -31,7 +26,7 @@ export const createExpense = async (
     data: CreateExpenseRequest
 ) : Promise<Expense> => {
     const response = await api.post<Expense>(
-        '/expenses/create',
+        '/api/v1/expenses/create',
         data
     );
 
@@ -41,7 +36,7 @@ export const createExpense = async (
 export const getExpenseById = async (
     id: number
 ) : Promise<Expense> => {
-    const response = await api.get<Expense>(`/expenses/${id}`);
+    const response = await api.get<Expense>(`/api/v1/expenses/${id}`);
 
     return response.data;
 };
@@ -51,7 +46,7 @@ export const updateExpense = async (
     data: UpdateExpenseRequest
 ) : Promise<Expense> => {
     const response = await api.put<Expense>(
-        `/expenses/${id}`,
+        `/api/v1/expenses/${id}`,
         data
     );
 
@@ -59,12 +54,12 @@ export const updateExpense = async (
 };
 
 export const deleteExpense = async (id: number): Promise<void> => {
-    await api.delete(`/expenses/${id}`);
+    await api.delete(`/api/v1/expenses/${id}`);
 };
 
 export const getExpenseSummary = async (): Promise<ExpenseSummary> => {
     const response = await api.get<ExpenseSummary>(
-        '/expenses/summary'
+        '/api/v1/expenses/summary'
     );
 
     return response.data;

@@ -17,6 +17,7 @@ function ExpenseDetailsPage() {
     const [deleteError, setDeleteError] = useState('');
 
     useEffect(() => {
+        let active = true;
         const fetchExpense = async () => {
             if (!id) {
                 setError('Invalid expense.');
@@ -26,16 +27,18 @@ function ExpenseDetailsPage() {
 
             try {
                 const response = await getExpenseById(Number(id));
-                setExpense(response);
+                if (active) setExpense(response);
             } catch (err) {
+                if (!active) return;
                 console.error(err);
                 setError('Unable to load expenese.');
             } finally {
-                setIsLoading(false);
+                if (active) setIsLoading(false);
             }
         };
 
         fetchExpense();
+        return () => { active = false; };
     }, [id]);
 
     if (isLoading) {

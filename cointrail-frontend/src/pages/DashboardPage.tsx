@@ -4,6 +4,7 @@ import { getExpenses, getExpenseSummary } from "../services/expenseService";
 import { formatCurrency, formatCategory, formatDate } from "../utils/formatters";
 import { Link } from "react-router-dom";
 import CategorySpendingChar from '../components/CategorySpendingChart';
+import { LoadingState, EmptyState, ErrorState } from '../components/ui/States';
 
 function DashboardPage() {
 
@@ -13,6 +14,7 @@ function DashboardPage() {
     const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
 
     useEffect(() => {
+        let active = true;
         const fetchDashboard = async () => {
             setIsLoading(true);
             setError('');
@@ -23,26 +25,27 @@ function DashboardPage() {
                     getExpenses(0, 5, 'expenseDate', 'desc')
                 ]);
 
+                if (!active) return;
                 setSummary(summaryResponse);
                 setRecentExpenses(expensesResponse.content);
             } catch (err) {
+                if (!active) return;
                 console.error(err);
                 setError('Unable to load dashboard.');
             } finally {
-                setIsLoading(false);
+                if (active) setIsLoading(false);
             }
         };
 
         fetchDashboard();
+        return () => { active = false; };
     }, []);
 
 
     if (isLoading) {
         return (
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <p className="text-gray-500">
-                    Loading dashboard...
-                </p>
+                <LoadingState message="Loading dashboard..." />
             </main>
         );
     }
@@ -50,9 +53,7 @@ function DashboardPage() {
     if (error || !summary) {
         return (
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="rounded-lg bg-red-50 p-4 text-red-700">
-                    {error || 'Unable to load dashboard.'}
-                </div>
+                <ErrorState message={error || 'Unable to load dashboard.'} />
             </main>
         );
     }
@@ -111,15 +112,9 @@ function DashboardPage() {
                 </div>
 
                 {categoryEntries.length === 0 ? (
-                    <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-                        <p className="font-medium text-gray-900">
-                            No spending data yet
-                        </p>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                            Add an expense to see your spending breakdown.
-                        </p>
-                    </div>
+                    <EmptyState title="No spending data yet">
+                        <p>Add an expense to see your spending breakdown.</p>
+                    </EmptyState>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 

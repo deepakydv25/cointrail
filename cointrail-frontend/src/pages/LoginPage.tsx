@@ -1,20 +1,30 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../services/authService";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
+
+import axios from 'axios';
+import { normalizeApiError } from '../api/errors';
+import type { ApiError } from '../api/errors';
+import { FormError, FieldError } from '../components/ui/FormFeedback';
+import { safeReturnPath } from '../routes/returnPath';
 
 function LoginPage() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [error, setError] = useState<ApiError | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, sessionExpired } = useAuth();
+    const location = useLocation();
 
     const navigate = useNavigate();
 
+    const mounted = useRef(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+
     return (
-        <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4 py-8">
+        <main className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4 py-8">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-md sm:p-8">
                 <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
                     Welcome Back
@@ -24,11 +34,13 @@ function LoginPage() {
                     Login to continue using CoinTrail
                 </p>
 
+                {sessionExpired && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-amber-900">Your session expired. Please log in again.</p>}
+
                 <form
                     onSubmit={async (e) => {
                         e.preventDefault();
 
-                        setError('');
+                        setError(null);
                         setIsLoading(true);
 
                         try {
@@ -37,16 +49,17 @@ function LoginPage() {
                                 password,
                             });
 
+                            if (!mounted.current) return;
                             login(response.accessToken);
-                            navigate('/dashboard')
+                            navigate(safeReturnPath(location.state?.from), { replace: true });
                         } catch (err) {
-                            console.error(err);
-                            setError('Invalid email or password');
+                            if (mounted.current && !axios.isCancel(err)) setError(normalizeApiError(err));
                         } finally {
-                            setIsLoading(false);
+                            if (mounted.current) setIsLoading(false);
                         }
                     }}
                     className="space-y-5"
+                    aria-busy={isLoading}
                 >
                     <div>
                         <label
@@ -58,12 +71,16 @@ function LoginPage() {
 
                         <input
                             id="email"
+                            aria-invalid={!!error?.fieldErrors.email}
+                            aria-describedby={error?.fieldErrors.email ? 'email-error' : undefined}
+                            autoComplete="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
+                        <FieldError field="email" error={error} />
                     </div>
 
                     <div>
@@ -76,19 +93,19 @@ function LoginPage() {
 
                         <input
                             id="password"
+                            aria-invalid={!!error?.fieldErrors.password}
+                            aria-describedby={error?.fieldErrors.password ? 'password-error' : undefined}
+                            autoComplete="current-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter your password"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
+                        <FieldError field="password" error={error} />
                     </div>
 
-                    {error && (
-                        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                            {error}
-                        </p>
-                    )}
+                    <FormError error={error} fields={["email", "password"]} />
                     <button
                         type="submit"
                         disabled={isLoading}
@@ -109,7 +126,7 @@ function LoginPage() {
                 </p>
             </div>
 
-        </div>
+        </main>
     );
 }
 

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./Navbar";
 
-vi.mock("../context/AuthContext", () => ({
+vi.mock("../context/useAuth", () => ({
     useAuth: vi.fn(),
 }));
 
@@ -19,6 +19,7 @@ describe("Navbar", () => {
     it("shows login and register when user is not authenticated", () => {
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });
@@ -39,7 +40,7 @@ describe("Navbar", () => {
         expect(screen.getByText("Register"))
             .toBeInTheDocument();
 
-        expect(screen.queryByText("Dashboard"))
+        expect(screen.queryByText("Legacy Overview"))
             .not.toBeInTheDocument();
 
         expect(screen.queryByText("Logout"))
@@ -50,6 +51,7 @@ describe("Navbar", () => {
     it("shows dashboard, expenses and logout when user is authenticated", () => {
         mockedUseAuth.mockReturnValue({
             isAuthenticated: true,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });
@@ -60,10 +62,10 @@ describe("Navbar", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("Dashboard"))
+        expect(screen.getByText("Legacy Overview"))
             .toBeInTheDocument();
 
-        expect(screen.getByText("Expenses"))
+        expect(screen.getByText("Legacy Expenses"))
             .toBeInTheDocument();
 
         expect(screen.getByText("Logout"))
@@ -81,6 +83,7 @@ describe("Navbar", () => {
 
         mockedUseAuth.mockReturnValue({
             isAuthenticated: true,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout,
         });
@@ -113,6 +116,7 @@ describe("Navbar", () => {
     it("opens the mobile navigation menu", () => {
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });
@@ -130,16 +134,18 @@ describe("Navbar", () => {
 
         fireEvent.click(menuButton);
 
-        /*
-         * Desktop + mobile versions now exist in the DOM,
-         * so there should be two Login Links.
-         */
+        expect(menuButton).toHaveAttribute("aria-expanded", "true");
+        expect(menuButton).toHaveAttribute("aria-controls", "primary-navigation");
         expect(
             screen.getAllByText("Login")
-        ).toHaveLength(2);
+        ).toHaveLength(1);
 
         expect(
             screen.getAllByText("Register")
-        ).toHaveLength(2);
+        ).toHaveLength(1);
+
+        fireEvent.keyDown(menuButton, { key: "Escape" });
+        expect(menuButton).toHaveAttribute("aria-expanded", "false");
+        expect(menuButton).toHaveFocus();
     });
 });
