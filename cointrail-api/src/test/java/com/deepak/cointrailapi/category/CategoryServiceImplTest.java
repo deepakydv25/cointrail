@@ -11,6 +11,11 @@ import com.deepak.cointrailapi.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
+import java.sql.SQLException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -113,7 +118,7 @@ class CategoryServiceImplTest {
                 ))
                 .thenReturn(false);
 
-        when(categoryRepository.save(any(Category.class)))
+        when(categoryRepository.saveAndFlush(any(Category.class)))
                 .thenAnswer(invocation -> {
                     Category category = invocation.getArgument(0);
                     category.setId(100L);
@@ -131,7 +136,7 @@ class CategoryServiceImplTest {
         assertThat(response.active()).isTrue();
 
         verify(categoryRepository)
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -158,7 +163,7 @@ class CategoryServiceImplTest {
                 ))
                 .thenReturn(false);
 
-        when(categoryRepository.save(any(Category.class)))
+        when(categoryRepository.saveAndFlush(any(Category.class)))
                 .thenAnswer(invocation ->
                         invocation.getArgument(0));
 
@@ -192,7 +197,7 @@ class CategoryServiceImplTest {
                 );
 
         verify(categoryRepository, never())
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -224,7 +229,7 @@ class CategoryServiceImplTest {
                 .isInstanceOf(CategoryAlreadyExistsException.class);
 
         verify(categoryRepository, never())
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -321,7 +326,7 @@ class CategoryServiceImplTest {
                 ))
                 .thenReturn(false);
 
-        when(categoryRepository.save(customCategory))
+        when(categoryRepository.saveAndFlush(customCategory))
                 .thenReturn(customCategory);
 
         CategoryResponse response =
@@ -331,7 +336,7 @@ class CategoryServiceImplTest {
         assertThat(response.type())
                 .isEqualTo(CategoryType.EXPENSE);
 
-        verify(categoryRepository).save(customCategory);
+        verify(categoryRepository).saveAndFlush(customCategory);
     }
 
     @Test
@@ -360,7 +365,7 @@ class CategoryServiceImplTest {
                 ))
                 .thenReturn(false);
 
-        when(categoryRepository.save(customCategory))
+        when(categoryRepository.saveAndFlush(customCategory))
                 .thenReturn(customCategory);
 
         CategoryResponse response =
@@ -384,7 +389,7 @@ class CategoryServiceImplTest {
                         100L
                 );
 
-        verify(categoryRepository).save(customCategory);
+        verify(categoryRepository).saveAndFlush(customCategory);
     }
 
     @Test
@@ -411,7 +416,7 @@ class CategoryServiceImplTest {
                 .isInstanceOf(CategoryAlreadyExistsException.class);
 
         verify(categoryRepository, never())
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -432,7 +437,7 @@ class CategoryServiceImplTest {
                 .hasMessage("Category not found");
 
         verify(categoryRepository, never())
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -456,7 +461,7 @@ class CategoryServiceImplTest {
                 .isInstanceOf(CategoryNotFoundException.class);
 
         verify(categoryRepository, never())
-                .save(any(Category.class));
+                .saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -489,5 +494,31 @@ class CategoryServiceImplTest {
 
         verify(categoryRepository, never())
                 .save(any(Category.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"uq_categories_user_name_type,23505,true", "other_unique,23505,false", "uq_categories_user_name_type,23503,false",
+            "uq_categories_user_name_type,23514,false", "uq_categories_user_name_type,22003,false", ",23505,false"})
+    void translatesOnlyDomainUniqueViolationOnCreate(String name, String state, boolean duplicate) {
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("write failed",
+                new RuntimeException(new ConstraintViolationException("constraint", new SQLException("database", state), "insert", name)));
+        when(categoryRepository.saveAndFlush(any())).thenThrow(failure);
+        if (duplicate) {
+            assertThatThrownBy(() -> categoryService.createCategory(new CreateCategoryRequest("Race", CategoryType.EXPENSE))).isInstanceOf(CategoryAlreadyExistsException.class).hasMessage("Category with this name and type already exists").hasCause(failure);
+        } else {
+            assertThatThrownBy(() -> categoryService.createCategory(new CreateCategoryRequest("Race", CategoryType.EXPENSE))).isSameAs(failure);
+        }
+    }
+
+    @Test
+    void translatesUniqueViolationOnRenameAndRethrowsMissingMetadata() {
+        when(categoryRepository.findByIdAndUserIdAndActiveTrue(100L, 1L)).thenReturn(Optional.of(customCategory));
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("write failed",
+                new ConstraintViolationException("constraint", new SQLException("database", "23505"), "update", "uq_categories_user_name_type"));
+        when(categoryRepository.saveAndFlush(any())).thenThrow(failure);
+        assertThatThrownBy(() -> categoryService.updateCategory(100L, new UpdateCategoryRequest("Race"))).isInstanceOf(CategoryAlreadyExistsException.class).hasMessage("Category with this name and type already exists").hasCause(failure);
+        DataIntegrityViolationException unknown = new DataIntegrityViolationException("unknown integrity failure");
+        doThrow(unknown).when(categoryRepository).saveAndFlush(any());
+        assertThatThrownBy(() -> categoryService.updateCategory(100L, new UpdateCategoryRequest("Race"))).isSameAs(unknown);
     }
 }

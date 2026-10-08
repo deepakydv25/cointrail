@@ -3,6 +3,7 @@ package com.deepak.cointrailapi.transaction.dto;
 import com.deepak.cointrailapi.transaction.TransactionType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
@@ -22,6 +23,8 @@ public class UpdateTransactionRequest {
 
     @NotNull
     @DecimalMin(value = "0.01")
+    @Digits(integer = 17, fraction = 2,
+            message = "Transaction amount must have at most 17 integer and 2 fractional digits")
     private BigDecimal amount;
 
     @Size(max = 500)

@@ -9,6 +9,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -111,7 +112,8 @@ public class AccountRepositoryTest {
 
         assertThatThrownBy(() ->
                 accountRepository.saveAndFlush(duplicateAccount)
-        ).isInstanceOf(DataIntegrityViolationException.class);
+        ).isInstanceOf(DataIntegrityViolationException.class)
+                .hasRootCauseInstanceOf(java.sql.SQLException.class);
     }
 
     @Test
@@ -164,4 +166,18 @@ public class AccountRepositoryTest {
         return account;
     }
 
+
+    @Test
+    void duplicateReportsExpectedPostgresUniqueIndex() {
+        User user = createUser("constraint-name@test.com");
+        accountRepository.saveAndFlush(createAccount(user, "Constraint", AccountType.BANK, BigDecimal.ZERO));
+        try {
+            accountRepository.saveAndFlush(createAccount(user, "constraint", AccountType.BANK, BigDecimal.ZERO));
+            org.junit.jupiter.api.Assertions.fail("Expected unique violation");
+        } catch (DataIntegrityViolationException failure) {
+            ConstraintViolationException violation = (ConstraintViolationException) failure.getCause();
+            assertThat(violation.getConstraintName()).isEqualTo("uq_accounts_user_name");
+            assertThat(violation.getSQLState()).isEqualTo("23505");
+        }
+    }
 }

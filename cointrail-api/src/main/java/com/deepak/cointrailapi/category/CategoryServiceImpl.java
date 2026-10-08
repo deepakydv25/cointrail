@@ -10,6 +10,8 @@ import com.deepak.cointrailapi.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -61,7 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setUpdatedAt(now);
 
         return toResponse(
-                categoryRepository.save(category)
+                saveWithDuplicateTranslation(category)
         );
     }
 
@@ -126,7 +128,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(
-                categoryRepository.save(category)
+                saveWithDuplicateTranslation(category)
         );
     }
 
@@ -256,5 +258,20 @@ public class CategoryServiceImpl implements CategoryService {
                 category.getCreatedAt(),
                 category.getUpdatedAt()
         );
+    }
+
+    private Category saveWithDuplicateTranslation(Category category) {
+        try {
+            return categoryRepository.saveAndFlush(category);
+        } catch (DataIntegrityViolationException exception) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause instanceof ConstraintViolationException violation
+                        && "uq_categories_user_name_type".equals(violation.getConstraintName())
+                        && "23505".equals(violation.getSQLState())) {
+                    throw new CategoryAlreadyExistsException("Category with this name and type already exists", exception);
+                }
+            }
+            throw exception;
+        }
     }
 }

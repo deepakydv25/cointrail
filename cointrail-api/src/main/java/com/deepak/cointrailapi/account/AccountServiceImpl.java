@@ -10,6 +10,8 @@ import com.deepak.cointrailapi.user.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -49,7 +51,7 @@ public class AccountServiceImpl implements AccountService{
         account.setCreatedAt(now);
         account.setUpdatedAt(now);
 
-        Account saved = accountRepository.save(account);
+        Account saved = saveWithDuplicateTranslation(account);
         return toResponse(saved);
     }
 
@@ -93,7 +95,7 @@ public class AccountServiceImpl implements AccountService{
         account.setType(request.type());
         account.setUpdatedAt(LocalDateTime.now());
 
-        return toResponse(accountRepository.save(account));
+        return toResponse(saveWithDuplicateTranslation(account));
     }
 
     @Override
@@ -136,5 +138,20 @@ public class AccountServiceImpl implements AccountService{
                 account.getCreatedAt(),
                 account.getUpdatedAt()
         );
+    }
+
+    private Account saveWithDuplicateTranslation(Account account) {
+        try {
+            return accountRepository.saveAndFlush(account);
+        } catch (DataIntegrityViolationException exception) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause instanceof ConstraintViolationException violation
+                        && "uq_accounts_user_name".equals(violation.getConstraintName())
+                        && "23505".equals(violation.getSQLState())) {
+                    throw new AccountAlreadyExistsException("Account with this name already exists", exception);
+                }
+            }
+            throw exception;
+        }
     }
 }

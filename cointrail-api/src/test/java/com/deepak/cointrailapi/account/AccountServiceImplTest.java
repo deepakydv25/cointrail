@@ -11,6 +11,11 @@ import com.deepak.cointrailapi.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
+import java.sql.SQLException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -94,7 +99,7 @@ class AccountServiceImplTest {
                 "HDFC Savings"
         )).thenReturn(false);
 
-        when(accountRepository.save(any(Account.class)))
+        when(accountRepository.saveAndFlush(any(Account.class)))
                 .thenAnswer(invocation -> {
 
                     Account saved =
@@ -124,7 +129,7 @@ class AccountServiceImplTest {
                 );
 
         verify(accountRepository)
-                .save(any(Account.class));
+                .saveAndFlush(any(Account.class));
     }
 
     @Test
@@ -142,7 +147,7 @@ class AccountServiceImplTest {
                 "HDFC Savings"
         )).thenReturn(false);
 
-        when(accountRepository.save(any(Account.class)))
+        when(accountRepository.saveAndFlush(any(Account.class)))
                 .thenAnswer(invocation ->
                         invocation.getArgument(0)
                 );
@@ -185,7 +190,7 @@ class AccountServiceImplTest {
                 );
 
         verify(accountRepository, never())
-                .save(any(Account.class));
+                .saveAndFlush(any(Account.class));
     }
 
     @Test
@@ -276,7 +281,7 @@ class AccountServiceImplTest {
                 ))
                 .thenReturn(false);
 
-        when(accountRepository.save(account))
+        when(accountRepository.saveAndFlush(account))
                 .thenReturn(account);
 
         AccountResponse response =
@@ -296,7 +301,7 @@ class AccountServiceImplTest {
                 .isEqualByComparingTo("50000.00");
 
         verify(accountRepository)
-                .save(account);
+                .saveAndFlush(account);
     }
 
     @Test
@@ -332,7 +337,7 @@ class AccountServiceImplTest {
                 );
 
         verify(accountRepository, never())
-                .save(any(Account.class));
+                .saveAndFlush(any(Account.class));
     }
 
     @Test
@@ -356,7 +361,7 @@ class AccountServiceImplTest {
                 .hasMessage("Account not found");
 
         verify(accountRepository, never())
-                .save(any(Account.class));
+                .saveAndFlush(any(Account.class));
     }
 
     @Test
@@ -389,5 +394,31 @@ class AccountServiceImplTest {
 
         verify(accountRepository, never())
                 .save(any(Account.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"uq_accounts_user_name,23505,true", "other_unique,23505,false", "uq_accounts_user_name,23503,false",
+            "uq_accounts_user_name,23514,false", "uq_accounts_user_name,22003,false", ",23505,false"})
+    void translatesOnlyDomainUniqueViolationOnCreate(String name, String state, boolean duplicate) {
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("write failed",
+                new RuntimeException(new ConstraintViolationException("constraint", new SQLException("database", state), "insert", name)));
+        when(accountRepository.saveAndFlush(any())).thenThrow(failure);
+        if (duplicate) {
+            assertThatThrownBy(() -> accountService.createAccount(new CreateAccountRequest("Race", AccountType.BANK, BigDecimal.ZERO))).isInstanceOf(AccountAlreadyExistsException.class).hasMessage("Account with this name already exists").hasCause(failure);
+        } else {
+            assertThatThrownBy(() -> accountService.createAccount(new CreateAccountRequest("Race", AccountType.BANK, BigDecimal.ZERO))).isSameAs(failure);
+        }
+    }
+
+    @Test
+    void translatesUniqueViolationOnRenameAndRethrowsMissingMetadata() {
+        when(accountRepository.findByIdAndUserId(10L, 1L)).thenReturn(Optional.of(account));
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("write failed",
+                new ConstraintViolationException("constraint", new SQLException("database", "23505"), "update", "uq_accounts_user_name"));
+        when(accountRepository.saveAndFlush(any())).thenThrow(failure);
+        assertThatThrownBy(() -> accountService.updateAccount(10L, new UpdateAccountRequest("Race", AccountType.BANK))).isInstanceOf(AccountAlreadyExistsException.class).hasMessage("Account with this name already exists").hasCause(failure);
+        DataIntegrityViolationException unknown = new DataIntegrityViolationException("unknown integrity failure");
+        doThrow(unknown).when(accountRepository).saveAndFlush(any());
+        assertThatThrownBy(() -> accountService.updateAccount(10L, new UpdateAccountRequest("Race", AccountType.BANK))).isSameAs(unknown);
     }
 }

@@ -5,6 +5,8 @@ import com.deepak.cointrailapi.account.dto.CreateAccountRequest;
 import com.deepak.cointrailapi.account.dto.UpdateAccountRequest;
 import com.deepak.cointrailapi.common.security.JwtService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -267,5 +269,24 @@ class AccountControllerTest {
 
         verify(accountService)
                 .createAccount(any(CreateAccountRequest.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1.001", "100000000000000000.00", "-100000000000000000.00", "null"})
+    void rejectsUnrepresentableOpeningBalance(String amount) throws Exception {
+        mockMvc.perform(post("/api/accounts").contentType("application/json")
+                .content("{\"name\":\"Balance\",\"type\":\"BANK\",\"openingBalance\":" + amount + "}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.openingBalance").exists());
+        verifyNoInteractions(accountService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1.23", "99999999999999999.99", "-99999999999999999.99"})
+    void acceptsSignedOpeningBalanceBoundaries(String amount) throws Exception {
+        when(accountService.createAccount(any())).thenReturn(accountResponse());
+        mockMvc.perform(post("/api/accounts").contentType("application/json")
+                .content("{\"name\":\"Balance\",\"type\":\"BANK\",\"openingBalance\":" + amount + "}"))
+                .andExpect(status().isCreated());
+        verify(accountService).createAccount(argThat(r -> r.openingBalance().compareTo(new BigDecimal(amount)) == 0));
     }
 }
