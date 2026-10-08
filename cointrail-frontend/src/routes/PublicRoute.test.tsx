@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import PublicRoute from "./PublicRoute";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
-vi.mock("../context/AuthContext", () => ({
+vi.mock("../context/useAuth", () => ({
     useAuth: vi.fn(),
 }));
 
@@ -20,6 +20,7 @@ describe("PublicRoute", () => {
 
         mockedUseAuth.mockReturnValue({
             isAuthenticated: false,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });
@@ -46,6 +47,7 @@ describe("PublicRoute", () => {
 
         mockedUseAuth.mockReturnValue({
             isAuthenticated: true,
+            isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
         });

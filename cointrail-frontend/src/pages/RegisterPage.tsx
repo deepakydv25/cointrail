@@ -1,17 +1,25 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { registerUser } from "../services/authService";
+
+import axios from 'axios';
+import { normalizeApiError } from '../api/errors';
+import type { ApiError } from '../api/errors';
+import { FormError, FieldError } from '../components/ui/FormFeedback';
 
 function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
+    const [error, setError] = useState<ApiError | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    const mounted = useRef(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+
     return (
-        <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4">
+        <main className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-4">
             <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
                 <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
                     Create Account
@@ -26,7 +34,7 @@ function RegisterPage() {
                         e.preventDefault();
 
                         setMessage('');
-                        setError('');
+                        setError(null);
                         setIsLoading(true);
 
                         try {
@@ -36,19 +44,20 @@ function RegisterPage() {
                                 password,
                             });
 
+                            if (!mounted.current) return;
                             setMessage('Registration successful.');
 
                             setName('');
                             setEmail('');
                             setPassword('');
                         } catch (err) {
-                            console.error(err);
-                            setError('Registration failed.');
+                            if (mounted.current && !axios.isCancel(err)) setError(normalizeApiError(err));
                         } finally {
-                            setIsLoading(false);
+                            if (mounted.current) setIsLoading(false);
                         }
                     }}
                     className="space-y-5"
+                    aria-busy={isLoading}
                 >
                     <div>
                         <label
@@ -59,12 +68,16 @@ function RegisterPage() {
                         </label>
                         <input
                             id="name"
+                            aria-invalid={!!error?.fieldErrors.name}
+                            aria-describedby={error?.fieldErrors.name ? 'name-error' : undefined}
+                            autoComplete="name"
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Enter your name"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
+                        <FieldError field="name" error={error} />
                     </div>
 
                     <div>
@@ -77,12 +90,16 @@ function RegisterPage() {
 
                         <input
                             id="email"
+                            aria-invalid={!!error?.fieldErrors.email}
+                            aria-describedby={error?.fieldErrors.email ? 'email-error' : undefined}
+                            autoComplete="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
+                        <FieldError field="email" error={error} />
                     </div>
 
                     <div>
@@ -95,25 +112,25 @@ function RegisterPage() {
 
                         <input
                             id="password"
+                            aria-invalid={!!error?.fieldErrors.password}
+                            aria-describedby={error?.fieldErrors.password ? 'password-error' : undefined}
+                            autoComplete="new-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter your password"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                         />
+                        <FieldError field="password" error={error} />
                     </div>
 
                     {message && (
-                        <p className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                        <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
                             {message}
                         </p>
                     )}
 
-                    {error && (
-                        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                            {error}
-                        </p>
-                    )}
+                    <FormError error={error} fields={["name", "email", "password"]} />
                     <button
                         type="submit"
                         disabled={isLoading}
@@ -135,7 +152,7 @@ function RegisterPage() {
 
             </div>
 
-        </div>
+        </main>
     );
 }
 

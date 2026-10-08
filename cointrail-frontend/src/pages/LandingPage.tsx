@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 function LandingPage() {
-    const token = localStorage.getItem('token');
-    const isLoggedIn = !!token;
+    const { isAuthenticated: isLoggedIn } = useAuth();
     
     return (
         <main>

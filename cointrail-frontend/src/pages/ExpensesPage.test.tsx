@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
@@ -170,6 +170,25 @@ describe("ExpensesPage", () => {
             "desc",
             ""
         );
+    });
+
+    it("ignores a late page response after a newer filter request", async () => {
+        let resolveOld!: (value: typeof expensePage) => void;
+        const pendingOld = new Promise<typeof expensePage>(resolve => { resolveOld = resolve; });
+        mockedGetExpenses.mockResolvedValue(expensePage)
+            .mockResolvedValueOnce(expensePage)
+            .mockReturnValueOnce(pendingOld)
+            .mockResolvedValueOnce({ ...expensePage, content: [{ ...expensePage.content[0], description: 'Newest result' }] });
+        const user = userEvent.setup();
+        render(<MemoryRouter><ExpensesPage /></MemoryRouter>);
+        await screen.findByText('Dinner');
+        await user.selectOptions(screen.getByLabelText('Category'), 'FOOD');
+        // Keep controls available so a newer filter can supersede the pending request.
+        await user.selectOptions(screen.getByLabelText('Category'), 'TRAVEL');
+        await screen.findByText('Newest result');
+        await act(async () => resolveOld(expensePage));
+        expect(screen.queryByText('Dinner')).not.toBeInTheDocument();
+        expect(screen.getByText('Newest result')).toBeInTheDocument();
     });
 
     it("shows error when expenses cannot be loaded", async () => {

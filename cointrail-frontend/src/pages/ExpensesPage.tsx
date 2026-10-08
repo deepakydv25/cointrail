@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Expense } from "../types/expense";
 import { getExpenses } from "../services/expenseService";
 import { Link } from "react-router-dom";
+import { LoadingState, ErrorState } from "../components/ui/States";
 import { formatCurrency, formatDate } from "../utils/formatters";
 
 function ExpensesPage() {
@@ -19,6 +20,7 @@ function ExpensesPage() {
     const pageSize = 5;
 
     useEffect(() => {
+        let active = true;
         const fetchExpense = async () => {
             setIsLoading(true);
             setError('');
@@ -32,37 +34,23 @@ function ExpensesPage() {
                     category
                 );
 
+                if (!active) return;
                 setExpenses(response.content);
                 setTotalPages(response.totalPages);
                 setTotalElements(response.totalElements);
             } catch (err) {
+                if (!active) return;
                 console.error(err);
                 setError('Unable to load expenses.');
             } finally {
-                setIsLoading(false);
+                if (active) setIsLoading(false);
             }
         };
 
         fetchExpense();
+        return () => { active = false; };
     }, [currentPage, sortBy, direction, category]);
 
-    if (isLoading) {
-        return (
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <p className="text-gray-500">Loading expenses...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <p className="rounded-lg bg-red-50 p-4 text-red-700">
-                    {error}
-                </p>
-            </div>
-        );
-    }
 
     return (
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -165,7 +153,7 @@ function ExpensesPage() {
             </div>
 
 
-            {expenses.length === 0 ? (
+            {isLoading ? <LoadingState message="Loading expenses..." /> : error ? <ErrorState message={error} /> : expenses.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
                     <h2 className="text-lg font-semibold text-gray-900">
                         {category ? 'No expenses found' : 'No expenses yet'}
@@ -213,7 +201,7 @@ function ExpensesPage() {
                 </div>
             )}
 
-            {totalPages > 1 && (
+            {!isLoading && !error && totalPages > 1 && (
                 <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-6 sm:flex-row">
                     <p className="text-sm text-gray-500">
                         Page {currentPage + 1} of {totalPages}
