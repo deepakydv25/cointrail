@@ -10,6 +10,8 @@ export default defineConfig({
   ],
 
   test: {
+    // Test-only origin: suites must not depend on a developer's .env or CI secrets.
+    env: { VITE_API_BASE_URL: 'http://cointrail.test' },
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
