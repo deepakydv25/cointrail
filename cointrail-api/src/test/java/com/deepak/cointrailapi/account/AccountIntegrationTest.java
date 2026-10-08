@@ -1,6 +1,10 @@
 package com.deepak.cointrailapi.account;
 
 import com.deepak.cointrailapi.user.UserRepository;
+import java.math.BigDecimal;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +12,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.math.BigDecimal;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,7 +46,7 @@ class AccountIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
+    @MockitoSpyBean
     private AccountRepository accountRepository;
 
     @Autowired
@@ -481,5 +489,69 @@ class AccountIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()")
                         .value(0));
+    }
+
+    @Test
+    void concurrentCreatesReturnCreatedAndConflict() throws Exception {
+        registerUser("Race user", "race-create@test.com", "password123");
+        String token = loginAndGetToken("race-create@test.com", "password123");
+        coordinateRaceWrites();
+        assertRaceResponses(post("/api/accounts").content("{\"name\":\"Race\",\"type\":\"BANK\",\"openingBalance\":0}"),
+                post("/api/accounts").content("{\"name\":\"Race\",\"type\":\"BANK\",\"openingBalance\":0}"), token, 201);
+        assertThat(accountRepository.findAll().stream().filter(value -> value.getName().equals("Race")).count()).isEqualTo(1);
+    }
+
+    @Test
+    void concurrentRenamesReturnSuccessAndConflictWithoutChangingLosingRow() throws Exception {
+        registerUser("Race user", "race-rename@test.com", "password123");
+        String token = loginAndGetToken("race-rename@test.com", "password123");
+        Long first = createAccountThroughApi(token, "First", AccountType.BANK, BigDecimal.ZERO);
+        Long second = createAccountThroughApi(token, "Second", AccountType.BANK, BigDecimal.ZERO);
+        coordinateRaceWrites();
+        assertRaceResponses(put("/api/accounts/{id}", first).content("{\"name\":\"Race\",\"type\":\"BANK\",\"openingBalance\":0}"),
+                put("/api/accounts/{id}", second).content("{\"name\":\"Race\",\"type\":\"BANK\",\"openingBalance\":0}"), token, 200);
+        var names = accountRepository.findAll().stream().filter(value -> value.getId().equals(first) || value.getId().equals(second))
+                .map(Account::getName).toList();
+        assertThat(names).contains("Race");
+        assertThat(names.stream().filter(name -> name.equals("First") || name.equals("Second")).count()).isEqualTo(1);
+    }
+
+    private void coordinateRaceWrites() {
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        doAnswer(invocation -> {
+            Account value = invocation.getArgument(0);
+            if (value.getName().equals("Race")) barrier.await(10, TimeUnit.SECONDS);
+            // Spring wraps repository interfaces with a delegate to the original JPA proxy.
+            return org.mockito.Mockito.mockingDetails(accountRepository).getMockCreationSettings().getDefaultAnswer().answer(invocation);
+        }).when(accountRepository).saveAndFlush(any());
+    }
+
+    private void assertRaceResponses(MockHttpServletRequestBuilder first, MockHttpServletRequestBuilder second,
+            String token, int success) throws Exception {
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var left = executor.submit(() -> mockMvc.perform(first.contentType("application/json")
+                    .header("Authorization", "Bearer " + token)).andReturn());
+            var right = executor.submit(() -> mockMvc.perform(second.contentType("application/json")
+                    .header("Authorization", "Bearer " + token)).andReturn());
+            MvcResult a = left.get(30, TimeUnit.SECONDS), b = right.get(30, TimeUnit.SECONDS);
+            assertThat(java.util.List.of(a.getResponse().getStatus(), b.getResponse().getStatus()))
+                    .containsExactlyInAnyOrder(success, 409);
+            var conflict = a.getResponse().getStatus() == 409 ? a : b;
+            assertThat(objectMapper.readTree(conflict.getResponse().getContentAsString()).path("status").asInt()).isEqualTo(409);
+        }
+    }
+
+    @Test
+    void signedOpeningBalanceBoundariesRoundTripWithoutRounding() throws Exception {
+        registerUser("Money user", "money@test.com", "password123");
+        String token = loginAndGetToken("money@test.com", "password123");
+        for (String amount : java.util.List.of("99999999999999999.99", "-99999999999999999.99")) {
+            Long id = createAccountThroughApi(token, "Boundary " + amount, AccountType.BANK, new BigDecimal(amount));
+            String json = mockMvc.perform(get("/api/accounts/{id}", id).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(tools.jackson.databind.json.JsonMapper.builder().enable(tools.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                    .build().readTree(json).path("openingBalance").decimalValue()).isEqualByComparingTo(amount);
+            assertThat(accountRepository.findById(id).orElseThrow().getOpeningBalance()).isEqualByComparingTo(amount);
+        }
     }
 }

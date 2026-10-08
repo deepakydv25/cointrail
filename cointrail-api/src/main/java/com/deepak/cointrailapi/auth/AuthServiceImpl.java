@@ -17,6 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.time.LocalDateTime;
 
@@ -58,7 +60,19 @@ public class AuthServiceImpl implements AuthService {
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
 
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException exception) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause instanceof ConstraintViolationException violation
+                        && "users_email_key".equals(violation.getConstraintName())
+                        && "23505".equals(violation.getSQLState())) {
+                    throw new EmailAlreadyExistsException("User already exists with email: " + request.getEmail(), exception);
+                }
+            }
+            throw exception;
+        }
 
         log.info("User registered successfully with id={}", savedUser.getId());
 

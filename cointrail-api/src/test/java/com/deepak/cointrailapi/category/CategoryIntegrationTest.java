@@ -1,6 +1,9 @@
 package com.deepak.cointrailapi.category;
 
 import com.deepak.cointrailapi.user.UserRepository;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -16,6 +22,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,7 +44,7 @@ class CategoryIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
+    @MockitoSpyBean
     private CategoryRepository categoryRepository;
 
     @Autowired
@@ -580,5 +588,55 @@ class CategoryIntegrationTest {
                 .isEqualTo("Food");
 
         assertThat(unchanged.isActive()).isTrue();
+    }
+
+    @Test
+    void concurrentCreatesReturnCreatedAndConflict() throws Exception {
+        registerUser("Race user", "race-create@test.com", "password123");
+        String token = loginAndGetToken("race-create@test.com", "password123");
+        coordinateRaceWrites();
+        assertRaceResponses(post("/api/categories").content("{\"name\":\"Race\",\"type\":\"EXPENSE\"}"),
+                post("/api/categories").content("{\"name\":\"Race\",\"type\":\"EXPENSE\"}"), token, 201);
+        assertThat(categoryRepository.findAll().stream().filter(value -> value.getName().equals("Race")).count()).isEqualTo(1);
+    }
+
+    @Test
+    void concurrentRenamesReturnSuccessAndConflictWithoutChangingLosingRow() throws Exception {
+        registerUser("Race user", "race-rename@test.com", "password123");
+        String token = loginAndGetToken("race-rename@test.com", "password123");
+        Long first = createCategory(token, "First", CategoryType.EXPENSE);
+        Long second = createCategory(token, "Second", CategoryType.EXPENSE);
+        coordinateRaceWrites();
+        assertRaceResponses(put("/api/categories/{id}", first).content("{\"name\":\"Race\",\"type\":\"EXPENSE\"}"),
+                put("/api/categories/{id}", second).content("{\"name\":\"Race\",\"type\":\"EXPENSE\"}"), token, 200);
+        var names = categoryRepository.findAll().stream().filter(value -> value.getId().equals(first) || value.getId().equals(second))
+                .map(Category::getName).toList();
+        assertThat(names).contains("Race");
+        assertThat(names.stream().filter(name -> name.equals("First") || name.equals("Second")).count()).isEqualTo(1);
+    }
+
+    private void coordinateRaceWrites() {
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        doAnswer(invocation -> {
+            Category value = invocation.getArgument(0);
+            if (value.getName().equals("Race")) barrier.await(10, TimeUnit.SECONDS);
+            // Spring wraps repository interfaces with a delegate to the original JPA proxy.
+            return org.mockito.Mockito.mockingDetails(categoryRepository).getMockCreationSettings().getDefaultAnswer().answer(invocation);
+        }).when(categoryRepository).saveAndFlush(any());
+    }
+
+    private void assertRaceResponses(MockHttpServletRequestBuilder first, MockHttpServletRequestBuilder second,
+            String token, int success) throws Exception {
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var left = executor.submit(() -> mockMvc.perform(first.contentType("application/json")
+                    .header("Authorization", "Bearer " + token)).andReturn());
+            var right = executor.submit(() -> mockMvc.perform(second.contentType("application/json")
+                    .header("Authorization", "Bearer " + token)).andReturn());
+            MvcResult a = left.get(30, TimeUnit.SECONDS), b = right.get(30, TimeUnit.SECONDS);
+            assertThat(java.util.List.of(a.getResponse().getStatus(), b.getResponse().getStatus()))
+                    .containsExactlyInAnyOrder(success, 409);
+            var conflict = a.getResponse().getStatus() == 409 ? a : b;
+            assertThat(objectMapper.readTree(conflict.getResponse().getContentAsString()).path("status").asInt()).isEqualTo(409);
+        }
     }
 }

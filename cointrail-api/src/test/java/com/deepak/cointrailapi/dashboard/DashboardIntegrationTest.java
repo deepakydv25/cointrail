@@ -94,6 +94,7 @@ class DashboardIntegrationTest {
         active.setActive(false);accounts.saveAndFlush(active);expense.setActive(false);categories.saveAndFlush(expense);
         var result=dashboard(owner,2024,2);var items=result.at("/pendingRecurringTransactions/items");
         assertThat(items).hasSize(3);assertThat(items.get(0).get("status").asText()).isEqualTo("BLOCKED");assertThat(items.get(0).get("overdue").asBoolean()).isTrue();
+        assertThat(items.get(0).get("blockedReason").asText()).isNotBlank();
         assertThat(items.get(1).get("overdue").asBoolean()).isFalse();assertThat(items.get(1).get("blockedReason").isNull()).isTrue();
         assertThat(result.at("/pendingRecurringTransactions/throughDate").asText()).isEqualTo("2024-03-02");
         money(result,"/monthlySummary/expense","0");

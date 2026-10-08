@@ -4,10 +4,13 @@ import com.deepak.cointrailapi.common.exception.InvalidTransactionException;
 import com.deepak.cointrailapi.common.exception.TransactionNotFoundException;
 import com.deepak.cointrailapi.common.security.JwtAuthenticationFilter;
 import com.deepak.cointrailapi.common.validation.PageableValidator;
+import com.deepak.cointrailapi.common.config.PaginationConfig;
 import com.deepak.cointrailapi.transaction.dto.CreateTransactionRequest;
 import com.deepak.cointrailapi.transaction.dto.TransactionResponse;
 import com.deepak.cointrailapi.transaction.dto.UpdateTransactionRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -27,7 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(PageableValidator.class)
+@Import({PageableValidator.class, PaginationConfig.class})
 @WebMvcTest(TransactionController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class TransactionControllerTest {
@@ -582,27 +585,13 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_shouldReturn400BadRequest_whenPageSizeExceedsMaximum()
-            throws Exception {
-
-        mockMvc.perform(
-                        get("/api/transactions")
-                                .param("size", "101")
-                )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message")
-                        .value("Page size must not exceed 100"));
-
-        verify(transactionService, never())
-                .getTransactions(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        any(Pageable.class)
-                );
+    void getTransactions_capsPageSizeAtProductionMaximum() throws Exception {
+        when(transactionService.getTransactions(any(), any(), any(), any(), any(), any(Pageable.class)))
+                .thenAnswer(invocation -> Page.empty(invocation.getArgument(5)));
+        mockMvc.perform(get("/api/transactions").param("size", "101"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size").value(100));
+        verify(transactionService).getTransactions(isNull(), isNull(), isNull(), isNull(), isNull(),
+                argThat(pageable -> pageable.getPageSize() == 100 && pageable.getPageNumber() == 0));
     }
 
     @Test
@@ -674,5 +663,30 @@ public class TransactionControllerTest {
         response.setUpdatedAt(LocalDateTime.of(2026, 10, 3, 20, 0));
 
         return response;
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1", "1.001", "100000000000000000.00"})
+    void rejectsUnrepresentableAmountsOnCreateAndUpdate(String amount) throws Exception {
+        String body = "{\"accountId\":10,\"categoryId\":20,\"type\":\"EXPENSE\",\"amount\":" + amount
+                + ",\"transactionDate\":\"" + LocalDate.now() + "\"}";
+        mockMvc.perform(post("/api/transactions").contentType("application/json").content(body))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.amount").exists());
+        mockMvc.perform(put("/api/transactions/100").contentType("application/json").content(body))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.amount").exists());
+        verifyNoInteractions(transactionService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0.01", "99999999999999999.99"})
+    void acceptsRepresentableAmountsOnCreateAndUpdate(String amount) throws Exception {
+        when(transactionService.createTransaction(any())).thenReturn(createResponse());
+        when(transactionService.updateTransaction(eq(100L), any())).thenReturn(createResponse());
+        String body = "{\"accountId\":10,\"categoryId\":20,\"type\":\"EXPENSE\",\"amount\":" + amount
+                + ",\"transactionDate\":\"" + LocalDate.now() + "\"}";
+        mockMvc.perform(post("/api/transactions").contentType("application/json").content(body)).andExpect(status().isCreated());
+        mockMvc.perform(put("/api/transactions/100").contentType("application/json").content(body)).andExpect(status().isOk());
+        verify(transactionService).createTransaction(argThat(r -> r.getAmount().compareTo(new BigDecimal(amount)) == 0));
+        verify(transactionService).updateTransaction(eq(100L), argThat(r -> r.getAmount().compareTo(new BigDecimal(amount)) == 0));
     }
 }

@@ -1,9 +1,14 @@
 package com.deepak.cointrailapi.common.security;
 
 import com.deepak.cointrailapi.expense.Expense;
-import com.deepak.cointrailapi.user.User;
 import com.deepak.cointrailapi.expense.ExpenseRepository;
+import com.deepak.cointrailapi.user.User;
 import com.deepak.cointrailapi.user.UserRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -20,12 +27,12 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,8 +47,10 @@ public class SecurityIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockitoSpyBean
     private UserRepository userRepository;
+
+    @Autowired JdbcTemplate jdbc;
 
     @Autowired
     private ExpenseRepository expenseRepository;
@@ -365,5 +374,28 @@ public class SecurityIntegrationTest {
                                 .header("Authorization", "Bearer "+user1Token)
                 )
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void concurrentRegistrationsUseConfirmedEmailConstraintAndReturn409() throws Exception {
+        assertThat(jdbc.queryForObject("select conname from pg_constraint where conrelid='users'::regclass and contype='u'", String.class))
+                .isEqualTo("users_email_key");
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        doAnswer(invocation -> {
+            barrier.await(10, TimeUnit.SECONDS);
+            // Spring wraps repository interfaces with a delegate to the original JPA proxy.
+            return org.mockito.Mockito.mockingDetails(userRepository).getMockCreationSettings().getDefaultAnswer().answer(invocation);
+        }).when(userRepository).saveAndFlush(any());
+        String body = "{\"name\":\"Race\",\"email\":\"registration-race@test.com\",\"password\":\"password123\"}";
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(() -> mockMvc.perform(post("/api/v1/auth/register").contentType("application/json").content(body)).andReturn());
+            var second = executor.submit(() -> mockMvc.perform(post("/api/v1/auth/register").contentType("application/json").content(body)).andReturn());
+            var a = first.get(30, TimeUnit.SECONDS); var b = second.get(30, TimeUnit.SECONDS);
+            assertThat(java.util.List.of(a.getResponse().getStatus(), b.getResponse().getStatus())).containsExactlyInAnyOrder(201, 409);
+            var conflict = a.getResponse().getStatus() == 409 ? a : b;
+            assertThat(objectMapper.readTree(conflict.getResponse().getContentAsString()).path("message").asText())
+                    .isEqualTo("User already exists with email: registration-race@test.com");
+        }
+        assertThat(userRepository.count()).isEqualTo(1);
     }
 }

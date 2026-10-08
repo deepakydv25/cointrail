@@ -45,6 +45,12 @@ https://github.com/user-attachments/assets/fa640467-b855-46db-b4e8-e04f0a6ffdfb
 
 ### With Docker
 
+Set `JWT_SECRET` and an explicit `RECURRING_TIMEZONE` before starting either Compose configuration.
+For a new disposable/local database, `RECURRING_TIMEZONE=UTC` is an example; keep the established
+IANA timezone unchanged for existing recurring series. Compose rejects a missing or empty timezone.
+`RECURRING_ENABLED` and `API_DOCS_ENABLED` default to `false`; enable posting only for an explicit
+rollout and enable documentation only for local/development use. Leave production documentation disabled.
+
 ```bash
 docker compose up --build
 ```

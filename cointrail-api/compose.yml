@@ -38,6 +38,9 @@ services:
       DB_USERNAME: cointrail
       DB_PASSWORD: cointrail
       JWT_SECRET: ${JWT_SECRET}
+      RECURRING_TIMEZONE: ${RECURRING_TIMEZONE:?Set RECURRING_TIMEZONE to the stable IANA timezone for this deployment}
+      RECURRING_ENABLED: ${RECURRING_ENABLED:-false}
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED:-false}
 
     ports:
       - "8081:8081"

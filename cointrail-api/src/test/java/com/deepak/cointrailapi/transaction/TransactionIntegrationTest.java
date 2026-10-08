@@ -562,4 +562,25 @@ public class TransactionIntegrationTest {
                 )
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void moneyBoundariesAndProductionPageCapRoundTrip() throws Exception {
+        registerUser("Money user", "transaction-money@test.com", "password123");
+        String token = loginAndGetToken("transaction-money@test.com", "password123");
+        User user = userRepository.findByEmail("transaction-money@test.com").orElseThrow();
+        Account account = createAccount(user, "Money");
+        Category category = findCategory("Food", CategoryType.EXPENSE);
+        Long id = createTransactionThroughApi(token, account.getId(), category.getId(), TransactionType.EXPENSE,
+                new BigDecimal("99999999999999999.99"), "Boundary", java.time.LocalDate.now().toString());
+        assertEquals(0, transactionRepository.findById(id).orElseThrow().getAmount().compareTo(new BigDecimal("99999999999999999.99")));
+        String updated = mockMvc.perform(put("/api/transactions/{id}", id).header("Authorization", "Bearer " + token)
+                .contentType("application/json").content(objectMapper.writeValueAsString(java.util.Map.of(
+                        "accountId", account.getId(), "categoryId", category.getId(), "type", "EXPENSE",
+                        "amount", new BigDecimal("0.01"), "transactionDate", java.time.LocalDate.now().toString()))))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(0, objectMapper.readTree(updated).path("amount").decimalValue().compareTo(new BigDecimal("0.01")));
+        assertEquals(0, transactionRepository.findById(id).orElseThrow().getAmount().compareTo(new BigDecimal("0.01")));
+        mockMvc.perform(get("/api/transactions").param("size", "101").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size").value(100));
+    }
 }

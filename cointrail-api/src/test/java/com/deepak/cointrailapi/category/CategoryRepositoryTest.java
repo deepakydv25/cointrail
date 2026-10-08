@@ -9,6 +9,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -195,5 +196,35 @@ public class CategoryRepositoryTest {
         category.setUpdatedAt(LocalDateTime.now());
 
         return category;
+    }
+
+    @Test
+    void duplicateReportsExpectedPostgresSystemIndex() {
+        Category category = new Category();
+        category.setName("food"); category.setType(CategoryType.EXPENSE);
+        category.setSystem(true); category.setActive(true);
+        category.setCreatedAt(LocalDateTime.now()); category.setUpdatedAt(LocalDateTime.now());
+        try {
+            categoryRepository.saveAndFlush(category);
+            org.junit.jupiter.api.Assertions.fail("Expected unique violation");
+        } catch (DataIntegrityViolationException failure) {
+            ConstraintViolationException violation = (ConstraintViolationException) failure.getCause();
+            assertThat(violation.getConstraintName()).isEqualTo("uq_categories_system_name_type");
+            assertThat(violation.getSQLState()).isEqualTo("23505");
+        }
+    }
+
+    @Test
+    void duplicateReportsExpectedPostgresCustomIndex() {
+        User user = createUser("custom-constraint-name@test.com");
+        categoryRepository.saveAndFlush(createCustomCategory(user, "Constraint", CategoryType.EXPENSE));
+        try {
+            categoryRepository.saveAndFlush(createCustomCategory(user, "constraint", CategoryType.EXPENSE));
+            org.junit.jupiter.api.Assertions.fail("Expected unique violation");
+        } catch (DataIntegrityViolationException failure) {
+            ConstraintViolationException violation = (ConstraintViolationException) failure.getCause();
+            assertThat(violation.getConstraintName()).isEqualTo("uq_categories_user_name_type");
+            assertThat(violation.getSQLState()).isEqualTo("23505");
+        }
     }
 }

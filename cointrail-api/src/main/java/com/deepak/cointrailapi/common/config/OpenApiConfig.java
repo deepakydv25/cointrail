@@ -1,6 +1,9 @@
 package com.deepak.cointrailapi.common.config;
 
 import io.swagger.v3.oas.models.Components;
+import com.deepak.cointrailapi.account.dto.CreateAccountRequest;
+import com.deepak.cointrailapi.transaction.dto.CreateTransactionRequest;
+import com.deepak.cointrailapi.transaction.dto.UpdateTransactionRequest;
 import com.deepak.cointrailapi.budget.dto.CreateBudgetRequest;
 import com.deepak.cointrailapi.budget.dto.UpdateBudgetRequest;
 import com.deepak.cointrailapi.recurringtransaction.dto.CreateRecurringTransactionRequest;
@@ -188,7 +191,8 @@ public class OpenApiConfig {
                     }
                 }
             });
-            for (Class<?> dto : List.of(CreateBudgetRequest.class, UpdateBudgetRequest.class,
+            for (Class<?> dto : List.of(CreateAccountRequest.class, CreateTransactionRequest.class,
+                    UpdateTransactionRequest.class, CreateBudgetRequest.class, UpdateBudgetRequest.class,
                     CreateRecurringTransactionRequest.class, UpdateRecurringTransactionRequest.class)) {
                 Schema<?> schema = api.getComponents().getSchemas().get(dto.getSimpleName());
                 if (schema == null) continue;
@@ -206,6 +210,7 @@ public class OpenApiConfig {
                 if (name.contains("Transaction")) nullableProperty(schema, "description");
                 if (name.equals("CreateRecurringTransactionRequest") || name.equals("RecurringTransactionResponse"))
                     nullableProperty(schema, "endDate");
+                if (name.equals("PendingRecurringTransaction")) nullableProperty(schema, "blockedReason");
                 if (name.equals("RecurringTransactionResponse")) {
                     nullableProperty(schema, "nextDueDate");
                     nullableProperty(schema, "blockedReason");

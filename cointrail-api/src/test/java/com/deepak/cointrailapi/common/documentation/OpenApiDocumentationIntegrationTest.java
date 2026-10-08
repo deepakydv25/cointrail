@@ -256,4 +256,20 @@ class OpenApiDocumentationIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         return objectMapper.readTree(response).path("accessToken").asText();
     }
+
+    @Test
+    void documentsPendingBlockedReasonAndMonetaryPrecision() throws Exception {
+        JsonNode doc = document();
+        JsonNode dashboard = schema(doc, doc.path("paths").path("/api/dashboard").path("get")
+                .at("/responses/200/content/application~1json/schema"));
+        JsonNode pending = schema(doc, dashboard.at("/properties/pendingRecurringTransactions"));
+        JsonNode item = schema(doc, pending.at("/properties/items/items"));
+        assertThat(item.at("/properties/blockedReason/type").toString()).contains("string", "null");
+        for (String dto : List.of("CreateTransactionRequest", "UpdateTransactionRequest", "CreateAccountRequest")) {
+            String field = dto.equals("CreateAccountRequest") ? "openingBalance" : "amount";
+            JsonNode money = doc.path("components").path("schemas").path(dto).path("properties").path(field);
+            assertThat(money.path("description").asText()).contains("17 integer", "2 fractional");
+            if (field.equals("openingBalance")) assertThat(money.has("minimum")).isFalse();
+        }
+    }
 }
