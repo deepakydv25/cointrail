@@ -24,14 +24,15 @@ export default function Navbar() {
                     </span>
                 </Link>
                 <button ref={button} type="button" onClick={() => setIsOpen(!isOpen)}
-                    className="rounded p-3 text-gray-700 hover:bg-gray-100 md:hidden"
+                    className="rounded p-3 text-gray-700 hover:bg-gray-100 lg:hidden"
                     aria-label="Toggle navigation menu" aria-expanded={isOpen} aria-controls="primary-navigation">
                     <span aria-hidden="true">{isOpen ? '✕' : '☰'}</span>
                 </button>
-                <div id="primary-navigation" className={`${isOpen ? 'flex' : 'hidden'} w-full flex-col gap-3 border-t border-gray-200 pt-4 md:flex md:w-auto md:flex-row md:items-center md:border-0 md:pt-0`}>
+                <div id="primary-navigation" className={`${isOpen ? 'flex' : 'hidden'} w-full flex-col gap-3 border-t border-gray-200 pt-4 lg:flex lg:w-auto lg:flex-row lg:items-center lg:border-0 lg:pt-0`}>
                     {isAuthenticated ? <>
                         <NavLink to="/app/accounts" className={linkClass} onClick={close}>Accounts</NavLink>
                         <NavLink to="/app/categories" className={linkClass} onClick={close}>Categories</NavLink>
+                        <NavLink to="/app/transactions" className={linkClass} onClick={close}>Transactions</NavLink>
                         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Legacy</span>
                         <NavLink to="/dashboard" className={linkClass} onClick={close}>Legacy Overview</NavLink>
                         <NavLink to="/expenses" className={linkClass} onClick={close}>Legacy Expenses</NavLink>

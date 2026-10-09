@@ -34,7 +34,8 @@ afterEach(() => { cleanup(); api.defaults.adapter = originalAdapter; logoutSessi
 describe('foundation app navigation with real session and transport', () => {
     it.each(['/dashboard', '/expenses', '/expenses/create', '/expenses/7', '/expenses/7/edit',
         '/app/accounts', '/app/accounts/create', '/app/accounts/9007199254740993', '/app/accounts/9007199254740993/edit',
-        '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit'])('protects existing and V2 namespace route %s', async path => {
+        '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit',
+        '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit'])('protects existing and V2 namespace route %s', async path => {
             renderApp(path);
             expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
             expect(screen.getByTestId('location')).toHaveTextContent('/login');
@@ -82,10 +83,11 @@ describe('foundation app navigation with real session and transport', () => {
     });
 
     it('keeps later /app screens unavailable and advertises delivered resource screens', async () => {
-        loginSession(makeToken()); renderApp('/app/transactions');
+        loginSession(makeToken()); renderApp('/app/dashboard');
         expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/app/accounts');
         expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('href', '/app/categories');
+        expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/app/transactions');
         expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main-content');
     });
 

@@ -19,6 +19,9 @@ import AccountDetailsPage from './pages/accounts/AccountDetailsPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import CategoryFormPage from './pages/categories/CategoryFormPage';
 import CategoryDetailsPage from './pages/categories/CategoryDetailsPage';
+import TransactionsPage from './pages/transactions/TransactionsPage';
+import TransactionFormPage from './pages/transactions/TransactionFormPage';
+import TransactionDetailsPage from './pages/transactions/TransactionDetailsPage';
 
 function SiteLayout() {
     const location = useLocation();
@@ -63,6 +66,10 @@ export default function App() {
                     <Route path="/app/categories/create" element={<CategoryFormPage key={pathname} />} />
                     <Route path="/app/categories/:id" element={<CategoryDetailsPage key={pathname} />} />
                     <Route path="/app/categories/:id/edit" element={<CategoryFormPage key={pathname} />} />
+                    <Route path="/app/transactions" element={<TransactionsPage />} />
+                    <Route path="/app/transactions/create" element={<TransactionFormPage key={pathname} />} />
+                    <Route path="/app/transactions/:id" element={<TransactionDetailsPage key={pathname} />} />
+                    <Route path="/app/transactions/:id/edit" element={<TransactionFormPage key={pathname} />} />
                     <Route path="/app/*" element={<NotFoundPage />} />
                 </Route>
             </Route>
