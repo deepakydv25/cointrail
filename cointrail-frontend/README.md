@@ -1,6 +1,6 @@
 # CoinTrail frontend
 
-The existing React + TypeScript application is migrating in phases. Phase 0 establishes shared transport, session, routing and UI foundations; it does not add V2 financial screens.
+The React + TypeScript application is migrating in phases. Phase 0 establishes the shared foundation; Phase 1 adds Accounts and Categories with exact monetary and identifier transport.
 
 ## Run and verify
 
@@ -25,7 +25,7 @@ For compatibility, a terminal `/api/v1` (with optional trailing slash) is remove
 Services specify complete paths:
 - Authentication: `/api/v1/auth/register`, `/api/v1/auth/login`.
 - Legacy expenses: `/api/v1/expenses`, `/summary`, `/{id}` and POST `/api/v1/expenses/create`.
-- Future V2 financial services: `/api/accounts`, `/api/categories`, `/api/transactions`, etc., using the same Axios client.
+- V2 resource services: `/api/accounts`, `/api/categories`, using the same Axios client with scoped precision transforms. Later phases add transactions and reports.
 
 The client only accepts local `/api/*` paths and its configured base; it never sends bearer tokens to arbitrary absolute URLs. It has a 15-second timeout, supports Axios AbortSignal cancellation, and never automatically retries/replays a mutation. Authentication requests do not send stored bearer tokens.
 
@@ -44,21 +44,23 @@ All existing V1 URLs are retained:
 
 A protected deep link returns to its validated local pathname/search after login; unsafe/external return locations fall back to `/dashboard`. Failed writes are never automatically resubmitted. Registration returns identity, not a token, and does not sign in.
 
-The protected `/app/*` namespace is ready for later V2 routes. For now `/app` returns to `/dashboard`, and unavailable child routes show the normal protected not-found page. Navigation does not advertise unfinished screens. Legacy Overview and Legacy Expenses remain accessible on desktop/mobile. Their records remain editable and are neither converted nor deleted automatically; they do not contribute to V2 reports.
+The protected `/app/accounts` and `/app/categories` routes support lists, `/create`, `/:id` details and `/:id/edit`. Navigation includes both domains on desktop/mobile. `/app` still returns to `/dashboard`; unavailable child routes use the protected not-found page. Legacy Overview and Legacy Expenses remain editable and accessible. Their records are neither converted nor deleted automatically and do not contribute to V2 reports.
+
+Start with an account, then review expense/income categories. Account names and category name/type combinations remain reserved after deactivation. Opening balance is a signed creation-only starting amount, never a current balance. Owned inactive account details and name/type edits remain supported without reactivation. Category type is immutable; system categories have read-only badges and no mutation controls, including at direct edit URLs. Inactive/inaccessible categories and other users' resources use authoritative 404 feedback. Confirmed deactivation preserves financial history; there is no restore action. Lists refetch when revisited after mutations. Failed requests retain form values and show accessible field/summary errors.
 
 ## Source conventions
 
 Keep the current React Router, Axios, Tailwind, Recharts and local component state:
-- `api/`: configuration, Axios, normalized errors and non-React session boundary.
+- `api/`: configuration, Axios, normalized errors, session boundary and scoped V2 precision transforms.
 - `context/`: AuthProvider, context type and useAuth.
 - `routes/`: guards, protected Outlet layout and safe login return navigation.
-- `services/`: existing auth/expense services; future small typed domain services.
+- `services/`: auth/expense services and typed V2 account/category services.
 - `types/`: shared raw `PageResponse<T>`, backend error/auth DTOs and existing V1 expense types.
 - `components/ui/`: small loading/empty/error and form feedback components.
-- `pages/`: retain current pages; later V2 pages use domain subdirectories with colocated tests.
+- `pages/`: retained legacy pages and V2 account/category subdirectories; resource journey tests exercise the app with real route/session wiring.
 - `utils/`: existing INR/en-IN and date-only formatting.
 
-No global financial store, generic CRUD/form engine, new component framework or financial precision dependency is introduced.
+No global financial store, generic CRUD/form engine or new component framework is introduced. The single added runtime dependency is `lossless-json` for V2 precision.
 
 Services return typed `response.data`; DELETE returns `Promise<void>`. Spring pages stay raw pages with content/number/size/totalElements/totalPages (additional metadata may exist); arrays remain arrays. No success envelope is invented. Future domain DTOs must follow the actual backend names/enums and use separate create/update/preview shapes. Nullable response fields are explicit `T | null`; an optional request field is distinct from a returned null.
 
@@ -72,6 +74,8 @@ Shared UI uses semantic roles, live status/error messages, visible keyboard focu
 
 Transport tests use controlled Axios adapters to assert full paths, payloads, headers, raw results, status errors and cancellation without a network dependency. Provider/route tests exercise real sessions (fake timers and storage events) rather than only mocked useAuth. Deferred requests check late-response isolation. Preserve existing V1 tests and focused edit/delete regressions. Fixtures must match actual controllers/DTOs; local/dev OpenAPI can be enabled explicitly for future contract checks, but is not a runtime frontend dependency.
 
-**Precision is a release gate before V2 monetary screens.** Backend money is BigDecimal/NUMERIC and JSON numbers allow 17 integer plus 2 fractional digits; aggregates can be larger. Long IDs/counts also exceed JavaScript's safe integer range. Ordinary JSON parsing into Number can lose digits before formatting or a decimal library can help. A precision-preserving policy/dependency or explicitly approved narrower UI contract must be decided and tested before V2 financial writes/reports ship. Phase 0 adds no financial JSON parser and does not silently narrow backend limits. INR is the approved monetary display convention; there is no currency conversion.
+**Precision policy approved for Phase 1:** `api/financial.ts` provides per-request Axios transforms backed by `lossless-json`. Parsing happens before ordinary JSON parsing, and all V2 numeric tokens become exact strings, including nested money, Long IDs and counts. Domain DTOs and inputs use strings; booleans, nulls, enums and local timestamps retain their wire types. Services explicitly wrap monetary request fields in `LosslessNumber` and stringify them as JSON numeric tokens without converting through Number. IDs remain decimal strings in routes and selectors; `identifierNumber` supports future numeric foreign-key payloads. `longId` checks positive resource IDs against Java Long's maximum using BigInt.
 
-Accounts/Categories, Transactions, V2 Dashboard, Budgets/Recurring, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, precision and any future legacy retirement/default landing change retain their approval gates.
+Opening balance accepts plain signed decimals with up to 17 integer digits and 2 fractional digits, including ±99999999999999999.99, 0.01 and zero. Excess precision is rejected, never rounded or truncated. INR display groups and pads decimal strings without Number conversion. The complete backend monetary range is preserved. Future report totals can exceed write limits and must remain exact strings; these screens do not compute financial totals. Apply the transforms and explicit numeric-field serialization to each later V2 service; do not globally change Axios defaults or send string-valued money/IDs in place of numeric JSON contracts. V1 expense numbers and formatting remain unchanged. Authentication/status-based error normalization, cancellation and ownership remain at the existing boundaries. Non-JSON HTTP failures still reach shared error handling.
+
+Transactions, V2 Dashboard, Budgets/Recurring, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, browser-runner additions and any future legacy retirement/default landing change retain their approval gates.
