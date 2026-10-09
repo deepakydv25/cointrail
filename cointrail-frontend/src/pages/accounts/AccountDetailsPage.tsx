@@ -1,3 +1,7 @@
+import { ConfirmationPanel } from '../../components/ui/ConfirmationPanel';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SurfaceCard } from '../../components/ui/SurfaceCard';
+import { Button, ButtonLink } from '../../components/ui/Button';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
@@ -15,6 +19,7 @@ export default function AccountDetailsPage() {
     const [pending, setPending] = useState(false);
     const [attempt, setAttempt] = useState(0);
     const deactivateButton = useRef<HTMLButtonElement>(null);
+    const page = useRef<HTMLElement>(null);
     const mounted = useRef(false);
     useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
     useEffect(() => {
@@ -24,17 +29,17 @@ export default function AccountDetailsPage() {
         });
         return () => controller.abort();
     }, [id, attempt]);
-    return <main className="mx-auto max-w-xl space-y-6 break-words px-4 py-8">
-        <h1 className="text-3xl font-bold">Account details</h1><Link className="text-blue-700 underline" to="/app/accounts">Back to accounts</Link>
-        {error && <ErrorState message={error} onRetry={!account ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
-        {!account ? !error && <LoadingState /> : <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="text-xl font-semibold">{account.name}</h2><p>{account.type.replaceAll('_', ' ')}</p>
-            <p>Opening balance: {formatMoney(account.openingBalance)} (immutable starting amount)</p>
+    return <main ref={page} className="ct-page ct-page--narrow">
+        <PageHeader title="Account details" back={<Link to="/app/accounts">Back to accounts</Link>} />
+        {error && <ErrorState appearance="clarity" message={error} onRetry={!account ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
+        {!account ? !error && <LoadingState appearance="clarity" /> : <SurfaceCard className="ct-stack">
+            <h2>{account.name}</h2><p>{account.type.replaceAll('_', ' ')}</p>
+            <p className="ct-amount ct-amount--neutral">Opening balance: {formatMoney(account.openingBalance)} (immutable starting amount)</p>
             <p>{account.active ? 'Active' : 'Inactive — financial history is preserved. This account cannot be selected for new transactions.'}</p>
-            <p className="text-sm text-gray-600">Created: {account.createdAt}<br />Updated: {account.updatedAt}</p>
-            <Link className="inline-block rounded border px-4 py-3 text-blue-700" to={`/app/accounts/${account.id}/edit`}>Edit account</Link>
-            {account.active && <button ref={deactivateButton} hidden={confirm} className="ml-3 rounded border px-4 py-3 text-red-700" onClick={() => setConfirm(true)}>Deactivate account</button>}
-            {account.active && confirm && <form className="space-y-3 rounded border border-red-200 p-4" onSubmit={async event => {
+            <p className="ct-meta ct-description">Created: {account.createdAt}<br />Updated: {account.updatedAt}</p>
+            <ButtonLink to={`/app/accounts/${account.id}/edit`}>Edit account</ButtonLink>
+            {account.active && <Button ref={deactivateButton} hidden={confirm} variant="danger" onClick={() => setConfirm(true)}>Deactivate account</Button>}
+            {account.active && confirm && <ConfirmationPanel title={`Deactivate ${account.name}?`} keepLabel="Keep account active" confirmLabel={pending ? 'Deactivating…' : 'Confirm deactivation'} pending={pending} triggerRef={deactivateButton} onCancel={() => setConfirm(false)} onConfirm={async event => {
                 event.preventDefault(); if (pending) return; setPending(true); setError('');
                 try {
                     await deactivateAccount(account.id);
@@ -42,16 +47,12 @@ export default function AccountDetailsPage() {
                     setConfirm(false);
                     // Refetch the authoritative inactive detail after the successful mutation.
                     setAccount(null); setAttempt(attempt + 1);
+                    requestAnimationFrame(() => { if (mounted.current) page.current?.querySelector('h1')?.focus(); });
                 } catch (error) { if (mounted.current && !axios.isCancel(error)) setError(normalizeApiError(error).message); }
                 finally { if (mounted.current) setPending(false); }
             }}>
-                <h3 className="font-semibold">Deactivate {account.name}?</h3>
                 <p>Existing financial history remains. The account will leave the active list and cannot be used for new transactions. Its name remains reserved. There is no restore action.</p>
-                <button autoFocus disabled={pending} type="button" className="rounded border px-4 py-3" onClick={() => {
-                    setConfirm(false); requestAnimationFrame(() => deactivateButton.current?.focus());
-                }}>Keep account active</button>
-                <button disabled={pending} className="ml-3 rounded bg-red-600 px-4 py-3 text-white">{pending ? 'Deactivating…' : 'Confirm deactivation'}</button>
-            </form>}
-        </section>}
+            </ConfirmationPanel>}
+        </SurfaceCard>}
     </main>;
 }

@@ -1,3 +1,8 @@
+import CategoryIcon from '../../components/CategoryIcon';
+import { ConfirmationPanel } from '../../components/ui/ConfirmationPanel';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SurfaceCard } from '../../components/ui/SurfaceCard';
+import { Button, ButtonLink } from '../../components/ui/Button';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -21,19 +26,18 @@ export default function TransactionDetailsPage() {
         });
         return () => controller.abort();
     }, [id, attempt]);
-    return <main className="mx-auto max-w-xl space-y-6 break-words px-4 py-8">
-        <h1 className="text-3xl font-bold">Transaction details</h1>
-        <Link className="text-blue-700 underline" to={`/app/transactions${search}`}>Back to transactions</Link>
-        {error && <ErrorState message={error} onRetry={!transaction ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
-        {!transaction ? !error && <LoadingState /> : <section className="space-y-4 rounded-xl border bg-white p-6">
-            <h2 className="text-xl font-semibold">{transaction.type} · {formatMoney(transaction.amount)}</h2>
+    return <main className="ct-page ct-page--narrow">
+        <PageHeader title="Transaction details" back={<Link to={`/app/transactions${search}`}>Back to transactions</Link>} />
+        {error && <ErrorState appearance="clarity" message={error} onRetry={!transaction ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
+        {!transaction ? !error && <LoadingState appearance="clarity" /> : <SurfaceCard className="ct-stack">
+            <h2>{transaction.type} · <span className={`ct-amount ct-amount--${transaction.type.toLowerCase()}`}>{formatMoney(transaction.amount)}</span></h2>
             <p>Date: {transaction.transactionDate}</p><p>Description: {transaction.description ?? 'No description'}</p>
-            <p>Account: {transaction.accountName}</p><p>Category: {transaction.categoryName}</p>
-            <p className="text-sm text-gray-600">Historical account and category names remain available even if the resources are no longer active.</p>
-            <p className="text-sm text-gray-600">Created: {transaction.createdAt}<br />Updated: {transaction.updatedAt}</p>
-            <Link className="inline-block rounded border px-4 py-3 text-blue-700" to={`/app/transactions/${transaction.id}/edit${search}`}>Edit transaction</Link>
-            <button ref={deleteButton} hidden={confirm} className="ml-3 rounded border px-4 py-3 text-red-700" onClick={() => setConfirm(true)}>Delete transaction</button>
-            {confirm && <form className="space-y-3 rounded border border-red-200 p-4" onSubmit={async event => {
+            <p>Account: {transaction.accountName}</p><div className="ct-category-heading"><CategoryIcon size="small" /><p>Category: {transaction.categoryName}</p></div>
+            <p className="ct-meta ct-description">Historical account and category names remain available even if the resources are no longer active.</p>
+            <p className="ct-meta ct-description">Created: {transaction.createdAt}<br />Updated: {transaction.updatedAt}</p>
+            <ButtonLink to={`/app/transactions/${transaction.id}/edit${search}`}>Edit transaction</ButtonLink>
+            <Button ref={deleteButton} hidden={confirm} variant="danger" onClick={() => setConfirm(true)}>Delete transaction</Button>
+            {confirm && <ConfirmationPanel title="Permanently delete this transaction?" keepLabel="Keep transaction" confirmLabel={pending ? 'Deleting…' : 'Confirm permanent deletion'} pending={pending} triggerRef={deleteButton} onCancel={() => setConfirm(false)} onConfirm={async event => {
                 event.preventDefault(); if (pending) return; setPending(true); setError('');
                 try {
                     await deleteTransaction(transaction.id);
@@ -41,11 +45,8 @@ export default function TransactionDetailsPage() {
                 } catch (error) { if (mounted.current && !axios.isCancel(error)) setError(normalizeApiError(error).message); }
                 finally { if (mounted.current) setPending(false); }
             }}>
-                <h3 className="font-semibold">Permanently delete this transaction?</h3>
                 <p>This removes the financial record and cannot be undone. If it was created by a recurring schedule, its processed occurrence will not be regenerated.</p>
-                <button autoFocus type="button" disabled={pending} className="rounded border px-4 py-3" onClick={() => { setConfirm(false); requestAnimationFrame(() => deleteButton.current?.focus()); }}>Keep transaction</button>
-                <button disabled={pending} className="ml-3 rounded bg-red-600 px-4 py-3 text-white">{pending ? 'Deleting…' : 'Confirm permanent deletion'}</button>
-            </form>}
-        </section>}
+            </ConfirmationPanel>}
+        </SurfaceCard>}
     </main>;
 }

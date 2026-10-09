@@ -1,3 +1,6 @@
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SurfaceCard } from '../../components/ui/SurfaceCard';
+import { ButtonLink } from '../../components/ui/Button';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -20,17 +23,16 @@ export default function AccountsPage() {
         });
         return () => controller.abort();
     }, [attempt]);
-    return <main className="mx-auto max-w-5xl space-y-6 break-words px-4 py-8 sm:px-6">
-        <h1 className="text-3xl font-bold">Accounts</h1>
-        <p>Create an account first, then review your expense and income categories. Opening balances are starting amounts, not current balances.</p>
-        <div className="flex flex-wrap gap-4"><Link className="rounded bg-blue-600 px-4 py-3 text-white" to="/app/accounts/create">Create account</Link>
-            <Link className="rounded px-4 py-3 text-blue-700 underline" to="/app/categories">Review categories</Link></div>
-        {error ? <ErrorState message={error} onRetry={() => { setError(''); setAccounts(null); setAttempt(attempt + 1); }} />
-            : accounts === null ? <LoadingState message="Loading accounts…" />
-            : accounts.length === 0 ? <EmptyState title="No active accounts">Create your first account to get started. Deactivated accounts keep their history and reserve their names.</EmptyState>
-            : <ul className="grid gap-4 sm:grid-cols-2">{accounts.map(account => <li key={account.id} className="rounded-xl border border-gray-200 bg-white p-5">
-                <Link className="text-lg font-semibold text-blue-700 underline" to={`/app/accounts/${account.id}`}>{account.name}</Link>
-                <p>{account.type.replaceAll('_', ' ')}</p><p>Opening balance: {formatMoney(account.openingBalance)}</p>
+    return <main className="ct-page">
+        <PageHeader title="Accounts" description="Create an account first, then review your expense and income categories. Opening balances are starting amounts, not current balances."
+            actions={<><ButtonLink variant="primary" to="/app/accounts/create">Create account</ButtonLink><ButtonLink to="/app/categories">Review categories</ButtonLink></>} />
+        {error ? <ErrorState appearance="clarity" message={error} onRetry={() => { setError(''); setAccounts(null); setAttempt(attempt + 1); }} />
+            : accounts === null ? <LoadingState appearance="clarity" message="Loading accounts…" />
+            : accounts.length === 0 ? <EmptyState appearance="clarity" title="No active accounts">Create your first account to get started. Deactivated accounts keep their history and reserve their names.</EmptyState>
+            : <ul className="ct-grid">{accounts.map(account => <li key={account.id}><SurfaceCard className="ct-stack">
+                <Link className="ct-row-title" to={`/app/accounts/${account.id}`}>{account.name}</Link>
+                <p className="ct-meta">{account.type.replaceAll('_', ' ')}</p><p className="ct-amount ct-amount--neutral">Opening balance: {formatMoney(account.openingBalance)}</p>
+            </SurfaceCard>
             </li>)}</ul>}
     </main>;
 }

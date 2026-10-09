@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ExpensesPage from './pages/ExpensesPage';
 import Navbar from './components/Navbar';
+import AppShell from './components/AppShell';
 import ProtectedRoute from './routes/ProtectedRoute';
 import CreateExpensePage from './pages/CreateExpensePage';
 import ExpenseDetailsPage from './pages/ExpenseDetailsPage';
@@ -23,21 +24,26 @@ import TransactionsPage from './pages/transactions/TransactionsPage';
 import TransactionFormPage from './pages/transactions/TransactionFormPage';
 import TransactionDetailsPage from './pages/transactions/TransactionDetailsPage';
 
-function SiteLayout() {
+function SiteLayout({ application = false }: { application?: boolean }) {
     const location = useLocation();
     const content = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const frame = requestAnimationFrame(() => {
+            // Do not steal focus if the user (or a confirmation panel) has
+            // already focused a control in the newly mounted page.
+            const focused = document.activeElement;
+            if (focused && focused !== content.current && content.current?.contains(focused) &&
+                focused.matches('a, button, input, select, textarea')) return;
             const heading = content.current?.querySelector('h1');
             if (heading) { heading.tabIndex = -1; heading.focus(); }
             else content.current?.focus();
         });
         return () => cancelAnimationFrame(frame);
     }, [location.pathname]);
+    const body = <div id="main-content" tabIndex={-1} ref={content}><Outlet /></div>;
     return <>
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">Skip to content</a>
-        <Navbar key={location.pathname} />
-        <div id="main-content" tabIndex={-1} ref={content}><Outlet /></div>
+        <a href="#main-content" className={`sr-only focus:not-sr-only focus:block focus:p-3 ${application ? 'ct-skip' : ''}`}>Skip to content</a>
+        {application ? <AppShell>{body}</AppShell> : <><Navbar key={location.pathname} />{body}</>}
     </>;
 }
 
@@ -50,7 +56,10 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
             </Route>
-            <Route element={<ProtectedRoute />}>
+            <Route path="*" element={<NotFoundPage />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+            <Route element={<SiteLayout application />}>
                 <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/expenses" element={<ExpensesPage />} />
@@ -73,7 +82,6 @@ export default function App() {
                     <Route path="/app/*" element={<NotFoundPage />} />
                 </Route>
             </Route>
-            <Route path="*" element={<NotFoundPage />} />
         </Route>
     </Routes>;
 }
