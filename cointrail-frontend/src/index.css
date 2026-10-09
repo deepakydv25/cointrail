@@ -150,6 +150,24 @@ form .ct-button--primary { min-height: 3rem; }
 .ct-row-value .ct-amount { margin-top: .5rem; }
 .ct-filter-grid { display: grid; gap: 1.25rem; }
 .ct-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+/* Dashboard V2 supplements exact values with relative, decorative chart geometry. */
+.ct-dashboard h2 { font: var(--ct-type-section); margin-bottom: .5rem; }
+.ct-dashboard-period, .ct-dashboard-grid, .ct-dashboard-metrics { display: grid; gap: 1.5rem; min-width: 0; }
+.ct-dashboard-grid > *, .ct-dashboard-metrics > * { min-width: 0; }
+.ct-dashboard-wide { grid-column: 1 / -1; }
+.ct-dashboard-chart { height: 15rem; width: 100%; min-width: 0; margin-top: 1rem; }
+.ct-dashboard-tooltip { background: var(--ct-surface); color: var(--ct-text); border: 1px solid var(--ct-border); border-radius: var(--ct-radius-control); padding: .75rem; max-width: 16rem; overflow-wrap: anywhere; }
+.ct-dashboard-values { display: grid; gap: 1rem; margin: 1.25rem 0; }
+.ct-dashboard-values > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; }
+.ct-dashboard-values dt { color: var(--ct-text-secondary); }
+.ct-dashboard-values dd { min-width: 0; overflow-wrap: anywhere; }
+@media (min-width: 768px) {
+    .ct-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ct-dashboard-period { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+    .ct-dashboard-period .ct-actions { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) { .ct-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .ct-dashboard-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 :is(.ct-navigation, .clarity-content) :is(a, button, input, select, textarea) {
     transition: color var(--ct-motion-fast) var(--ct-motion-easing), background-color var(--ct-motion-normal) var(--ct-motion-easing), border-color var(--ct-motion-fast) var(--ct-motion-easing);
 }

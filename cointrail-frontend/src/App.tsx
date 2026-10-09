@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
+import DashboardV2Page from './pages/dashboard/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ExpensesPage from './pages/ExpensesPage';
@@ -67,6 +68,7 @@ export default function App() {
                     <Route path="/expenses/:id" element={<ExpenseDetailsPage />} />
                     <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                     <Route path="/app" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/app/dashboard" element={<DashboardV2Page />} />
                     <Route path="/app/accounts" element={<AccountsPage />} />
                     <Route path="/app/accounts/create" element={<AccountFormPage key={pathname} />} />
                     <Route path="/app/accounts/:id" element={<AccountDetailsPage key={pathname} />} />
