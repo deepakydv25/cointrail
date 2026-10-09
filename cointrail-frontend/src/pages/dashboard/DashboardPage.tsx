@@ -53,7 +53,7 @@ function DashboardReport({ period }: { period: DashboardPeriod }) {
     const data = current?.data; const label = periodLabel(period); const range = monthRange(period);
     const transactions = (type: 'INCOME' | 'EXPENSE') => `/app/transactions?${new URLSearchParams({ type, ...range, page: '0' })}`;
     return <>
-        <div className="ct-actions"><p className="ct-description">Reporting month: {label}</p><Button variant="secondary" onClick={() => { setAttempt(attempt + 1); setCategoryAttempt(categoryAttempt + 1); }}>Refresh dashboard</Button></div>
+        <div className="ct-actions"><p className="ct-description">Reporting month: {label}</p><Button variant="secondary" onClick={() => { setAttempt(attempt + 1); setCategoryAttempt(categoryAttempt + 1); }}>Refresh dashboard</Button><ButtonLink variant="ghost" to={`/app/analytics?${new URLSearchParams({ ...range, grouping: 'DAILY' })}`}>View analytics</ButtonLink></div>
         <div className="ct-dashboard-grid">
             {current?.error ? <div className="ct-dashboard-wide"><ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /></div>
                 : !data ? <div className="ct-dashboard-wide"><LoadingState appearance="clarity" message="Loading Dashboard V2…" /></div> : <>
