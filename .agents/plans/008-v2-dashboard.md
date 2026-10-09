@@ -4,7 +4,7 @@
 
 Give users a truthful overview of their V2 finances: active-account ledger balance, selected-month income, expense and net cash flow, category spending, recent actuals, and compact supported budget/recurring summaries. Make the differing reporting scopes visible and provide useful paths to existing V2 screens. Use CoinTrail Clarity without importing or combining legacy Expenses.
 
-**Status: implementation approved and implemented; final delivery in progress.** The user explicitly approved the read-only category analytics integration and precision-safe normalized chart geometry, then authorized implementation, verification, commit/push and a PR against develop. Preserve the original planning record below; completed checkboxes reflect actual implementation and verification. No merge is authorized.
+**Status: implemented, verified and delivered in PR #22; not merged.** The user explicitly approved the read-only category analytics integration and precision-safe normalized chart geometry, then authorized implementation, verification, commit/push and a PR against develop. Preserve the original planning record below; completed checkboxes reflect actual implementation and verification. No merge is authorized.
 
 ## Existing State and Inspection Evidence
 
@@ -166,7 +166,7 @@ Proposed `getDashboard({year,month}, signal?)` and, only if approved, `getCatego
 - [x] Complete below tests/browser checks; record actual results and tooling gaps in this plan rather than asserting unperformed QA.
 - [x] Run npm run test:run, npm run build, npm run lint from frontend; run mvn clean verify from API as required by feature-delivery even with unchanged backend.
 - [x] Review complete diff/check, verify unchanged V1/API/precision/auth/defaults/dependencies/backend/migrations/instructions and update this plan only. Updating Plans006/007 needs explicit approval.
-- [ ] Only following implementation authorization and successful verification: commit/push/create focused PR targeting develop, inspect CI, do not merge. These actions are not authorized by this planning task.
+- [x] Only following implementation authorization and successful verification: commit/push/create focused PR targeting develop, inspect CI, do not merge. These actions are not authorized by this planning task.
 
 ## Expected Files After Approval
 
@@ -234,9 +234,9 @@ No backend/API/schema change is required for the recommended dashboard plus narr
 - [x] Fresh-fetch develop and verify identical inspected HEAD; record existing branch without creating one.
 - [x] Document supported widgets, missing filters/data, exact numeric-string contracts and separate approval gates.
 - [x] Review Plan008 implementation approval and settle category-read/chart-geometry choices before dependent code.
-- [ ] Implement/verify later phases and record actual results here after authorization.
+- [x] Implement/verify later phases and record actual results here after authorization.
 
-Planning-only validation: source/contract review, not fresh runtime/test evidence. Final workspace review shows only this new untracked plan; tracked diff and `git diff --check` are clean. No changes to Plans006/007, frontend/backend code, dependencies or instructions; no delivery actions.
+Original planning-only validation: source/contract review, not fresh runtime/test evidence. Final workspace review shows only this new untracked plan; tracked diff and `git diff --check` are clean. No changes to Plans006/007, frontend/backend code, dependencies or instructions; no delivery actions.
 
 
 ## Implementation and Verification Evidence - 2026-10-09
@@ -247,41 +247,41 @@ The implementation request explicitly approved the category read and normalized 
 
 - Protected /app/dashboard and Dashboard V2 navigation reuse AppShell and the existing overview glyph. /dashboard, /app redirect, login/default behavior and V1 bodies/contracts remain intact. Transaction details remain unchanged; browser Back restores dashboard period.
 - New dashboard/compact-preview/category DTOs use numeric strings. Two read-only services reuse shared Axios/financialConfig/signals/auth/error handling; no new dependencies, backend/schema/API changes, forecast metrics or management routes.
-- Native reporting controls validate partial/ambiguous/invalid URL periods and form values, preserve invalid edits, synchronize history and build exact inclusive bounds through years0001/0099/9999 and leap centuries. Missing period makes the device-local current month explicit.
+- Native reporting controls validate partial/ambiguous/invalid URL periods and form values, preserve invalid edits, synchronize history and build exact inclusive bounds through years 0001/0099/9999 and leap centuries. Missing period makes the device-local current month explicit.
 - Four MetricCards and read-only summaries use backend amounts, never client-computed financial totals. All-date balance/recent actuals, selected-month actuals/budgets and server recurring dates/zone/status/overdue/reasons are distinctly labeled. Category metadata retains inactive history and exact-ID transaction drill-down.
-- Chart BigInt minor units become bounded relative coordinates only. Original strings drive exact labels/tooltips; full category names remain available. Indigo bars, neutral tags and income/expense text tones match Clarity. More than12 expense groups show the complete exact list with an explicit omitted-chart notice; tiny amounts can have zero-length bars but visible exact text. Real API aggregates were plain scale2 decimals, so no exponent expansion/helper or row-range cap was introduced.
+- Chart BigInt minor units become bounded relative coordinates only. Original strings drive exact labels/tooltips; full category names remain available. Indigo bars, neutral tags and income/expense text tones match Clarity. More than 12 expense groups show the complete exact list with an explicit omitted-chart notice; tiny amounts can have zero-length bars but visible exact text. Real API aggregates were plain scale 2 decimals, so no exponent expansion/helper or row-range cap was introduced.
 - Independent requests/retries and period/attempt keys hide replaced data while loading; abort cleanup, session-version remounts and shared stale-session transport protect previous-user data. Refresh reloads both sources. Empty widgets do not infer nonexistent accounts or synthesize zeros during failures.
-- Dashboard-scoped CSS uses two metric columns on tablet/narrow desktop and four at1280px where width permits; other surfaces split at1024px. Full long names/descriptions/values wrap. Shared focus/skip/shell/primitives are unchanged.
+- Dashboard-scoped CSS uses two metric columns on tablet/narrow desktop and four at 1280px where width permits; other surfaces split at 1024px. Full long names/descriptions/values wrap. Shared focus/skip/shell/primitives are unchanged.
 - Added test-only pages/dashboard/fixtures.ts (not imported by application code). The obsolete unavailable-dashboard regression now targets still-unimplemented /app/budgets; existing V1 assertions remain.
 
 ### Automated verification
 
 | Check | Result |
 | --- | --- |
-| Final standard frontend suite | npm.cmd run test:run: **31 suites / 363 passed**, zero failures/skips; **57.70s**, exit0. Includes all285 foundation cases and78 added contract/precision/calendar/chart/page/navigation/session cases. |
-| Final build | npm.cmd run build: **passed**, exit0. CSS33.18kB /7.64kB gzip; JS803.16kB /235.97kB gzip. Inherited >500kB chunk warning remains; no unrelated splitting/dependency changes. |
-| Final lint | npm.cmd run lint: **passed**, exit0. |
+| Final standard frontend suite | npm.cmd run test:run: **31 suites / 363 passed**, zero failures/skips; **57.70s**, exit 0. Includes all 285 foundation cases and 78 added contract/precision/calendar/chart/page/navigation/session cases. |
+| Final build | npm.cmd run build: **passed**, exit 0. CSS 33.18 kB / 7.64 kB gzip; JS 803.16 kB / 235.97 kB gzip. Inherited >500kB chunk warning remains; no unrelated splitting/dependency changes. |
+| Final lint | npm.cmd run lint: **passed**, exit 0. |
 | Backend | mvn.cmd clean verify: **BUILD SUCCESS**, **529 tests**, zero failures/errors/skips; **8:28 minutes**. Initial sandbox attempt lacked Maven-cache access; authorized retry with existing cache/Docker completed. Java/Jansi/Unsafe warnings remain; backend source/tests unchanged. |
 | Review | All new source/tests and tracked route/navigation/CSS/README edits reviewed; git diff --check passed, and forbidden-scope path diff is empty. Only Plan008 is updated. |
 
-A full frontend run overlapped with browser QA and hit timing failures in new/existing suites. The standard run on its own passed all363 tests including affected cases. No assertions, test timeouts, worker settings or runner configuration were weakened/changed. Final source includes tooltip name/tone refinement and exact500-character description retention coverage.
+A full frontend run overlapped with browser QA and hit timing failures in new/existing suites. The standard run on its own passed all 363 tests including affected cases. No assertions, test timeouts, worker settings or runner configuration were weakened/changed. Final source includes tooltip name/tone refinement and exact 500-character description retention coverage.
 
 ### Browser verification
 
-Installed headless **Chrome155.0.8059.39**, existing Vite, isolated PostgreSQL17 and the unmodified API on18081 were used via Chrome's debugging protocol. Disposable sequences generated19-digit IDs above MAX_SAFE_INTEGER; real API-created actuals included maximum income/expense amounts, inactive history, budgets and a separately excluded V1 expense. Two income rows yielded `199999999999999999.98`. A BLOCKED/overdue operational cursor was seeded only in the disposable DB with scheduling disabled; this checks reporting, not scheduler execution. Each attempt removed its own API/container. No shared/production data changed and no browser dependency was installed.
+Installed headless **Chrome 155.0.8059.39**, existing Vite, isolated PostgreSQL 17 and the unmodified API on 18081 were used via Chrome's debugging protocol. Disposable sequences generated 19-digit IDs above MAX_SAFE_INTEGER; real API-created actuals included maximum income/expense amounts, inactive history, budgets and a separately excluded V1 expense. Two income rows yielded `199999999999999999.98`. A BLOCKED/overdue operational cursor was seeded only in the disposable DB with scheduling disabled; this checks reporting, not scheduler execution. Each attempt removed its own API/container. No shared/production data changed and no browser dependency was installed.
 
 The final complete browser run passed:
 
-- Ten viewports:320x568,375x812,390x844,767x800,768x1024,820x1180,1023x800,1024x800,1280x800,1440x900. One main/h1/navigation, intact described-by references, no document horizontal overflow,44px controls, neutral icons, appropriate sidebar widths and exact financial text/tones.
+- Ten viewports: 320x568,375x812,390x844,767x800,768x1024,820x1180,1023x800,1024x800,1280x800,1440x900. One main/h1/navigation, intact described-by references, no document horizontal overflow, 44px controls, neutral icons, appropriate sidebar widths and exact financial text/tones.
 - Both charts had visibly sized bars after ResizeObserver settled; original SVG-only checks were strengthened. Exact aggregate hover tooltip checked. Final mobile/desktop screenshots were visually inspected with bars present; tiny-category values stayed in the exact list.
 - Real Login returned to the selected reporting URL. Native period Apply/browser Back, inactive category Long-ID/date-filter drill-down, outside-month transaction detail/browser return, mobile Escape/trigger focus and native period Tab order passed.
-- Reduced motion, forced-colors, opaque fallback and text-spacing reflow passed. Independent endpoint500/retry was injected through CDP only and preserved the other successful real-API region.
+- Reduced motion, forced-colors, opaque fallback and text-spacing reflow passed. Independent endpoint 500/retry was injected through CDP only and preserved the other successful real-API region.
 - Empty owner returned exact zeros and separate widget empties. V1 overview/expense list/create/detail/edit routes loaded, /app still reached /dashboard, and real Logout removed the session.
 
 Temporary evidence: Windows temp cointrail-dashboard-qa/results.json and PNGs (dashboard-320.png, dashboard-1280.png, forced-colors.png, text-spacing.png, empty.png), not repository assets/credentials. Early harness issues (system category name collision, Windows encoding, old disposable profile and period-render waits) were corrected without application changes. Early snapshots preceded chart resize settlement under CPU load; a rendered diagnostic confirmed correct dimensions, and the final real-API run waited for painted bars before capturing screenshots.
 
-Manual checklist remains **partially open**: Firefox/Safari/iOS/physical devices, NVDA/VoiceOver, actual200% browser zoom (320CSS-pixel reflow was checked), exhaustive keyboard/hover/contrast audits, full manual legacy CRUD/error/filter/session variants, and exact500-character browser stress (100-character names and descriptions approaching500 were browser-tested; exact500 retention is automated). These are reported QA follow-ups, not completed checks or implementation blockers.
+Manual checklist remains **partially open**: Firefox/Safari/iOS/physical devices, NVDA/VoiceOver, actual 200% browser zoom (320 CSS-pixel reflow was checked), exhaustive keyboard/hover/contrast audits, full manual legacy CRUD/error/filter/session variants, and exact 500-character browser stress (100-character names and descriptions approaching 500 were browser-tested; exact 500 retention is automated). These are reported QA follow-ups, not completed checks or implementation blockers.
 
 ### Delivery
 
-Implementation and required verification are complete. Commit/push/PR and available CI status will be recorded after delivery. Do not merge.
+Feature commit `c9927a3c8f43f3237e66a1dca72b28c7ad657bbd` was pushed on `feature/v2-dashboard`. [PR #22](https://github.com/deepakydv25/cointrail/pull/22) is open against develop, mergeable and **not merged**. Available CoinTrail CI was inspected and is running; final status must be reviewed on GitHub. This documentation follow-up records delivery only; no production code changed after verification. Remaining manual QA is documented above. Do not merge.
