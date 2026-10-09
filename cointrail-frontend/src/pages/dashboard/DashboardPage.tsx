@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getDashboard } from '../../services/dashboardService';
 import type { DashboardPeriod, DashboardResponse } from '../../types/dashboard';
 import { ApiError, normalizeApiError } from '../../api/errors';
@@ -99,11 +99,12 @@ function DashboardReport({ period }: { period: DashboardPeriod }) {
                     {data.pendingRecurringTransactions.items.length === 0 ? <EmptyState appearance="clarity" title="No pending recurring transactions">No pending cursors in the returned window.</EmptyState>
                         : <ul className="ct-financial-list">{data.pendingRecurringTransactions.items.map(item => <li key={item.id}>
                             <div className="ct-financial-row"><CategoryIcon /><div className="ct-row-content">
-                                <p className="ct-label">{item.description || `${item.type} recurring transaction`}</p><p className="ct-row-metadata">Account: {item.accountName} · Category: {item.categoryName}</p>
+                                <p className="ct-label"><Link className="ct-row-title" to={`/app/recurring/${item.id}`}>{item.description || `${item.type} recurring transaction`}</Link></p><p className="ct-row-metadata">Account: {item.accountName} · Category: {item.categoryName}</p>
                                 <p className="ct-row-metadata">Next due: {item.nextDueDate} · {item.frequency}</p>
                                 <p className="ct-row-metadata">{item.status}{item.overdue && ' · Overdue'}</p>{item.blockedReason && <p className="ct-row-metadata">Blocked reason: {item.blockedReason}</p>}
                             </div><div className="ct-row-value"><span className="ct-badge">{item.type}</span><p className={`ct-amount ct-amount--${item.type.toLowerCase()}`}>{formatMoney(item.amount)}</p></div></div>
                         </li>)}</ul>}
+                    <ButtonLink variant="ghost" to="/app/recurring">View recurring rules</ButtonLink>
                 </section></SurfaceCard>
             </>}
         </div>
