@@ -13,6 +13,12 @@ import LandingPage from './pages/LandingPage';
 import PublicRoute from './routes/PublicRoute';
 import AppLayout from './routes/AppLayout';
 import NotFoundPage from './pages/NotFoundPage';
+import AccountsPage from './pages/accounts/AccountsPage';
+import AccountFormPage from './pages/accounts/AccountFormPage';
+import AccountDetailsPage from './pages/accounts/AccountDetailsPage';
+import CategoriesPage from './pages/categories/CategoriesPage';
+import CategoryFormPage from './pages/categories/CategoryFormPage';
+import CategoryDetailsPage from './pages/categories/CategoryDetailsPage';
 
 function SiteLayout() {
     const location = useLocation();
@@ -33,6 +39,7 @@ function SiteLayout() {
 }
 
 export default function App() {
+    const { pathname } = useLocation();
     return <Routes>
         <Route element={<SiteLayout />}>
             <Route path="/" element={<LandingPage />} />
@@ -48,6 +55,14 @@ export default function App() {
                     <Route path="/expenses/:id" element={<ExpenseDetailsPage />} />
                     <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                     <Route path="/app" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/app/accounts" element={<AccountsPage />} />
+                    <Route path="/app/accounts/create" element={<AccountFormPage key={pathname} />} />
+                    <Route path="/app/accounts/:id" element={<AccountDetailsPage key={pathname} />} />
+                    <Route path="/app/accounts/:id/edit" element={<AccountFormPage key={pathname} />} />
+                    <Route path="/app/categories" element={<CategoriesPage />} />
+                    <Route path="/app/categories/create" element={<CategoryFormPage key={pathname} />} />
+                    <Route path="/app/categories/:id" element={<CategoryDetailsPage key={pathname} />} />
+                    <Route path="/app/categories/:id/edit" element={<CategoryFormPage key={pathname} />} />
                     <Route path="/app/*" element={<NotFoundPage />} />
                 </Route>
             </Route>

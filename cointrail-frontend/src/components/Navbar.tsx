@@ -30,6 +30,8 @@ export default function Navbar() {
                 </button>
                 <div id="primary-navigation" className={`${isOpen ? 'flex' : 'hidden'} w-full flex-col gap-3 border-t border-gray-200 pt-4 md:flex md:w-auto md:flex-row md:items-center md:border-0 md:pt-0`}>
                     {isAuthenticated ? <>
+                        <NavLink to="/app/accounts" className={linkClass} onClick={close}>Accounts</NavLink>
+                        <NavLink to="/app/categories" className={linkClass} onClick={close}>Categories</NavLink>
                         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Legacy</span>
                         <NavLink to="/dashboard" className={linkClass} onClick={close}>Legacy Overview</NavLink>
                         <NavLink to="/expenses" className={linkClass} onClick={close}>Legacy Expenses</NavLink>
