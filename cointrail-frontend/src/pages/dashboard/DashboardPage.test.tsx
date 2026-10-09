@@ -45,7 +45,8 @@ describe('Dashboard V2 financial overview and previews', () => {
         expect(within(pending).getByText('ACTIVE')).toBeInTheDocument(); expect(within(pending).queryByText(/Blocked reason:/)).toBeNull();
         expect(within(pending).getByRole('link', { name: 'View recurring rules' })).toHaveAttribute('href', '/app/recurring');
         dashboard.pendingRecurringTransactions.items.forEach(item => expect(within(pending).getByRole('link', { name: item.description || `${item.type} recurring transaction` })).toHaveAttribute('href', `/app/recurring/${item.id}`));
-        expect(screen.queryByRole('link', { name: /Manage|Forecast|Analytics/ })).toBeNull();
+        expect(screen.queryByRole('link', { name: /Manage|Forecast/ })).toBeNull();
+        expect(screen.getByRole('link', { name: 'View analytics' })).toHaveAttribute('href', '/app/analytics?from=2026-10-01&to=2026-10-31&grouping=DAILY');
         expect(screen.getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('aria-current', 'page');
         expect(screen.getAllByRole('main')).toHaveLength(1); expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     });

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+.ct-analytics { display: grid; gap: 1.5rem; }
+.ct-analytics-controls, .ct-analytics-comparison { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.ct-analytics-category { display: flex; gap: .75rem; }
+.ct-analytics-category > div { min-width: 0; flex: 1; }
+.ct-analytics-table-region { overflow-x: auto; max-width: 100%; border-radius: .5rem; }
+.ct-analytics-table { border-collapse: collapse; width: 100%; text-align: left; }
+.ct-analytics-table caption { text-align: left; padding: .75rem; font-weight: 600; }
+.ct-analytics-table th, .ct-analytics-table td { padding: .75rem; border-bottom: 1px solid var(--ct-border); vertical-align: top; overflow-wrap: anywhere; min-width: 7rem; }
+.ct-analytics-table th { color: var(--ct-text-secondary); }
+.ct-analytics .ct-dashboard-chart { min-width: 0; }
+.ct-analytics .ct-dashboard-metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+.ct-analytics fieldset { min-width: 0; margin-block: 1rem; }
+.ct-analytics legend { font-weight: 600; margin-bottom: .75rem; }
+
 @layer base {
     :focus-visible {
         outline: 2px solid #2563eb;

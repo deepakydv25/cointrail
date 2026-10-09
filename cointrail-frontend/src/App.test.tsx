@@ -28,6 +28,11 @@ beforeEach(() => {
         if (config.url === '/api/categories') return response(config, '[]');
         if (config.url === '/api/dashboard') return response(config, '{"year":2026,"month":10,"totalActiveAccountBalance":0,"monthlySummary":{"income":0,"expense":0,"netCashFlow":0},"budgetSummary":{"budgetCount":0,"totalBudgetAmount":0,"spentOnBudgetedCategories":0,"remainingBudgetAmount":0,"overBudgetCount":0},"recentTransactions":[],"pendingRecurringTransactions":{"asOfDate":"2026-10-09","throughDate":"2026-11-08","timezone":"UTC","items":[]}}');
         if (config.url === '/api/analytics/categories') return response(config, '{"range":{"from":"2026-10-01","to":"2026-10-31","dayCount":31},"totals":{"income":0,"expense":0,"netCashFlow":0,"transactionCount":0},"items":[]}');
+        if (config.url?.startsWith('/api/analytics/')) {
+            const report = { range: { from: config.params.from, to: config.params.to, dayCount: 29 }, totals: { income: 0, expense: 0, netCashFlow: 0, transactionCount: 0 } };
+            return response(config, JSON.stringify(config.url.endsWith('/comparison') ? { current: report, baseline: { ...report, range: { ...report.range, from: config.params.compareFrom, to: config.params.compareTo } }, delta: report.totals } :
+                config.url.endsWith('/trends') ? { ...report, grouping: config.params.grouping, items: [{ from: config.params.from, to: config.params.to, totals: report.totals }] } : config.url.endsWith('/accounts') ? { ...report, items: [] } : report));
+        }
         if (config.url?.startsWith('/api/accounts/')) return response(config, accountJson);
         if (config.url === '/api/v1/expenses/summary') return response(config, { totalAmount: 12.34, totalExpenses: 1, categoryBreakdown: { FOOD: 12.34 } });
         if (config.url === '/api/v1/expenses') return response(config, { content: [expense], number: 0, size: 5, totalElements: 1, totalPages: 1 });
@@ -59,7 +64,7 @@ describe('foundation app navigation with real session and transport', () => {
         '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit',
         '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit', '/app/dashboard?year=2026&month=10',
         '/app/budgets?year=2024&month=2', '/app/budgets/create', '/app/budgets/9223372036854775807', '/app/budgets/9223372036854775807/edit',
-        '/app/recurring', '/app/recurring/create', '/app/recurring/9223372036854775807', '/app/recurring/9223372036854775807/edit'])('protects existing and V2 namespace route %s', async path => {
+        '/app/recurring', '/app/recurring/create', '/app/recurring/9223372036854775807', '/app/recurring/9223372036854775807/edit', '/app/analytics?from=2024-02-01&to=2024-02-29&grouping=DAILY'])('protects existing and V2 namespace route %s', async path => {
             renderApp(path);
             expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
             expect(screen.getByTestId('location')).toHaveTextContent('/login');
@@ -101,6 +106,17 @@ describe('foundation app navigation with real session and transport', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument(); expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
     });
 
+    it('returns to an Analytics comparison deep link after login and calls only the five V2 analytics endpoints', async () => {
+        const original = api.defaults.adapter; const paths: string[] = [];
+        api.defaults.adapter = async config => { paths.push(config.url!); return (original as (config: InternalAxiosRequestConfig) => Promise<AxiosResponse>)(config); };
+        const path = '/app/analytics?from=2024-02-01&to=2024-02-29&grouping=MONTHLY&compareFrom=2023-02-01&compareTo=2023-02-28';
+        renderApp(path); fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'owner@example.com' } }); fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Login' })); await screen.findByRole('heading', { name: 'Delta' });
+        expect(screen.getByTestId('location')).toHaveTextContent(path);
+        for (const endpoint of ['summary', 'categories', 'accounts', 'trends', 'comparison']) expect(paths).toContain(`/api/analytics/${endpoint}`);
+        expect(paths.some(value => value.startsWith('/api/v1/expenses'))).toBe(false);
+    });
+
     it('returns to a budget month deep link after login', async () => {
         const user = userEvent.setup(); renderApp('/app/budgets?year=2024&month=2');
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
@@ -140,8 +156,8 @@ describe('foundation app navigation with real session and transport', () => {
         expect(await screen.findByRole('link', { name: 'Other V2 owner' })).toBeInTheDocument();
     });
 
-    it('keeps later /app screens unavailable and advertises delivered resource screens', async () => {
-        loginSession(makeToken()); renderApp('/app/analytics');
+    it('keeps unknown /app screens unavailable and advertises delivered resource screens', async () => {
+        loginSession(makeToken()); renderApp('/app/unsupported');
         expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/app/accounts');
         expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('href', '/app/categories');

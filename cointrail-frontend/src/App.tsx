@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
 import DashboardV2Page from './pages/dashboard/DashboardPage';
+import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ExpensesPage from './pages/ExpensesPage';
@@ -75,6 +76,7 @@ export default function App() {
                     <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                     <Route path="/app" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/app/dashboard" element={<DashboardV2Page />} />
+                    <Route path="/app/analytics" element={<AnalyticsPage />} />
                     <Route path="/app/budgets" element={<BudgetsPage />} />
                     <Route path="/app/budgets/create" element={<BudgetFormPage key={pathname} />} />
                     <Route path="/app/budgets/:id" element={<BudgetDetailsPage key={pathname} />} />

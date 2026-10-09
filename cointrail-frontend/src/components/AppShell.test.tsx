@@ -27,6 +27,7 @@ describe('Clarity application shell', () => {
         expect(within(nav).getByRole('link', { name: 'Legacy Overview' })).toHaveAttribute('href', '/dashboard');
         expect(within(nav).getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
         expect(within(nav).getByRole('link', { name: 'Budgets' })).toHaveAttribute('href', '/app/budgets');
+        expect(within(nav).getByRole('link', { name: 'Analytics' })).toHaveAttribute('href', '/app/analytics');
         expect(within(nav).getByRole('link', { name: 'Recurring Transactions' })).toHaveAttribute('href', '/app/recurring');
     });
     it('closes with Escape and returns focus, then closes on route/history changes', async () => {
