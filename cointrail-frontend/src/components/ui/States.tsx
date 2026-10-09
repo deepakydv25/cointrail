@@ -1,17 +1,20 @@
 import type { ReactNode } from 'react';
+import { Button } from './Button';
+import { Icon } from './Icon';
 
-export function LoadingState({ message = 'Loading…' }: { message?: string }) {
-    return <p role="status" aria-live="polite" className="p-4 text-gray-600">{message}</p>;
+export function LoadingState({ message = 'Loading…', appearance = 'classic' }: { message?: string; appearance?: 'classic' | 'clarity' }) {
+    return <p role="status" aria-live="polite" className={appearance === 'clarity' ? 'ct-feedback ct-feedback--loading' : 'p-4 text-gray-600'}>{appearance === 'clarity' && <Icon name="info" />}{message}</p>;
 }
-export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
-    return <section className="rounded-xl border border-gray-200 bg-white p-6 text-center">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {children && <div className="mt-2 text-gray-600">{children}</div>}
+export function EmptyState({ title, children, appearance = 'classic' }: { title: string; children?: ReactNode; appearance?: 'classic' | 'clarity' }) {
+    return <section className={appearance === 'clarity' ? 'ct-feedback ct-feedback--empty' : 'rounded-xl border border-gray-200 bg-white p-6 text-center'}>
+        {appearance === 'clarity' && <Icon name="info" />}
+        <h2 className={appearance === 'clarity' ? '' : 'text-lg font-semibold text-gray-900'}>{title}</h2>
+        {children && <div className={appearance === 'clarity' ? 'ct-description' : 'mt-2 text-gray-600'}>{children}</div>}
     </section>;
 }
-export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
-    return <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-700">
+export function ErrorState({ message, onRetry, appearance = 'classic' }: { message: string; onRetry?: () => void; appearance?: 'classic' | 'clarity' }) {
+    return <div role="alert" className={appearance === 'clarity' ? 'ct-feedback ct-feedback--error' : 'rounded-lg bg-red-50 p-4 text-red-700'}>
         <p>{message}</p>
-        {onRetry && <button type="button" onClick={onRetry} className="mt-2 rounded border px-3 py-2 font-medium">Try again</button>}
+        {onRetry && (appearance === 'clarity' ? <Button variant="secondary" onClick={onRetry}>Try again</Button> : <button type="button" onClick={onRetry} className="mt-2 rounded border px-3 py-2 font-medium">Try again</button>)}
     </div>;
 }

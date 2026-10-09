@@ -57,7 +57,7 @@ describe('transaction forms and history', () => {
         expect(screen.getByText(`Category: ${type === 'INCOME' ? 'Salary' : 'Food'}`)).toBeInTheDocument();
         expect(service.createTransaction).toHaveBeenCalledWith({ type, accountId, categoryId: selectedCategory, amount: transaction.amount, description: null, transactionDate: '2026-10-01' });
         expect(screen.getByTestId('location')).toHaveTextContent(`/app/transactions/${id}?type=INCOME&sort=amount,asc&page=2`);
-    });
+    }, 10_000); // Full create/navigation journey across the expanded shell; keep every contract assertion.
     it('clears the category when transaction type changes', async () => {
         const user = userEvent.setup(); renderPage('/app/transactions/create'); await readyForm();
         await user.selectOptions(screen.getByLabelText('Category'), categoryId); await user.selectOptions(screen.getByLabelText('Type'), 'INCOME');
@@ -143,6 +143,20 @@ describe('transaction forms and history', () => {
 });
 
 describe('transaction list, detail and deletion', () => {
+    it.each(['INCOME', 'EXPENSE'] as const)('keeps the full %s amount and tone on details', async type => {
+        vi.mocked(service.getTransaction).mockResolvedValue({ ...transaction, type });
+        renderPage(`/app/transactions/${id}`);
+        expect(await screen.findByRole('heading', { level: 2 })).toHaveTextContent(`${type} · ₹99,99,99,99,99,99,99,999.99`);
+        expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toHaveClass(`ct-amount--${type.toLowerCase()}`);
+    });
+    it.each(['INCOME', 'EXPENSE'] as const)('shows complete %s amounts with a text label and neutral category icon', async type => {
+        vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [{ ...transaction, type }] });
+        renderPage('/app/transactions');
+        expect(await screen.findByRole('link', { name: 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}`);
+        expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toHaveClass(`ct-amount--${type.toLowerCase()}`);
+        expect(screen.getByText(type, { selector: '.ct-badge' })).toBeInTheDocument();
+        expect(document.querySelector('.ct-category-icon')).toHaveAttribute('aria-hidden', 'true');
+    });
     it('lists historical names, exact amounts and preserved query links', async () => {
         renderPage('/app/transactions?type=EXPENSE&accountId=1&page=1&sort=amount,desc');
         expect(await screen.findByRole('link', { name: 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}?type=EXPENSE&accountId=1&page=1&sort=amount,desc`);

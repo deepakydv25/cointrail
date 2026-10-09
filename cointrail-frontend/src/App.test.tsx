@@ -32,6 +32,23 @@ beforeEach(() => {
 afterEach(() => { cleanup(); api.defaults.adapter = originalAdapter; logoutSession(); vi.restoreAllMocks(); });
 
 describe('foundation app navigation with real session and transport', () => {
+    it('does not steal focus from a new-page control when heading focus is delayed', () => {
+        const frames: FrameRequestCallback[] = [];
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { frames.push(callback); return frames.length; });
+        loginSession(makeToken()); renderApp('/app/accounts/create');
+        const name = screen.getByLabelText('Name'); name.focus();
+        act(() => { frames.forEach(callback => callback(0)); });
+        expect(name).toHaveFocus();
+    });
+    it.each(['/dashboard', '/app/accounts'])('logs out from %s to the public landing page and removes protected content', async path => {
+        loginSession(makeToken()); renderApp(path);
+        await screen.findByRole('heading', { level: 1 });
+        await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+        expect(await screen.findByRole('link', { name: 'Get Started' })).toBeInTheDocument();
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/);
+        expect(localStorage.getItem('accessToken')).toBeNull();
+        expect(document.querySelector('.ct-shell')).toBeNull();
+    });
     it.each(['/dashboard', '/expenses', '/expenses/create', '/expenses/7', '/expenses/7/edit',
         '/app/accounts', '/app/accounts/create', '/app/accounts/9007199254740993', '/app/accounts/9007199254740993/edit',
         '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit',

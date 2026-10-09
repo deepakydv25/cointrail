@@ -38,6 +38,16 @@ beforeEach(() => {
 afterEach(() => { cleanup(); logoutSession(); });
 
 describe('Accounts', () => {
+    it('cancels deactivation with Escape, restores focus and preserves the account', async () => {
+        renderPage(`/app/accounts/${id}`);
+        const trigger = await screen.findByRole('button', { name: 'Deactivate account' });
+        fireEvent.click(trigger);
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Keep account active' })).toHaveFocus());
+        fireEvent.keyDown(screen.getByRole('button', { name: 'Keep account active' }), { key: 'Escape' });
+        await waitFor(() => expect(trigger).toHaveFocus());
+        expect(accounts.deactivateAccount).not.toHaveBeenCalled();
+        expect(screen.queryByRole('button', { name: 'Confirm deactivation' })).toBeNull();
+    });
     it('lists active accounts, exact IDs and opening balances with account-first navigation', async () => {
         renderPage('/app/accounts');
         expect(await screen.findByRole('link', { name: 'Savings' })).toHaveAttribute('href', `/app/accounts/${id}`);

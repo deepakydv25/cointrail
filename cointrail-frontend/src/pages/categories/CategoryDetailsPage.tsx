@@ -1,3 +1,8 @@
+import CategoryIcon from '../../components/CategoryIcon';
+import { ConfirmationPanel } from '../../components/ui/ConfirmationPanel';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SurfaceCard } from '../../components/ui/SurfaceCard';
+import { Button, ButtonLink } from '../../components/ui/Button';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -24,17 +29,17 @@ export default function CategoryDetailsPage() {
         });
         return () => controller.abort();
     }, [id, attempt]);
-    return <main className="mx-auto max-w-xl space-y-6 break-words px-4 py-8">
-        <h1 className="text-3xl font-bold">Category details</h1><Link className="text-blue-700 underline" to="/app/categories">Back to categories</Link>
-        {error && <ErrorState message={error} onRetry={!category ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
-        {!category ? !error && <LoadingState /> : <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="text-xl font-semibold">{category.name}</h2><p>Type (immutable): {category.type}</p>
+    return <main className="ct-page ct-page--narrow">
+        <PageHeader title="Category details" back={<Link to="/app/categories">Back to categories</Link>} />
+        {error && <ErrorState appearance="clarity" message={error} onRetry={!category ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
+        {!category ? !error && <LoadingState appearance="clarity" /> : <SurfaceCard className="ct-stack">
+            <div className="ct-category-heading"><CategoryIcon /><h2>{category.name}</h2></div><p>Type (immutable): {category.type}</p>
             <p>{category.system ? 'System · Read-only' : 'Custom'}</p>
-            <p className="text-sm text-gray-600">Created: {category.createdAt}<br />Updated: {category.updatedAt}</p>
+            <p className="ct-meta ct-description">Created: {category.createdAt}<br />Updated: {category.updatedAt}</p>
             {category.system ? <p>System categories cannot be renamed or deactivated.</p> : <>
-                <Link className="inline-block rounded border px-4 py-3 text-blue-700" to={`/app/categories/${category.id}/edit`}>Rename category</Link>
-                <button ref={deactivateButton} hidden={confirm} className="ml-3 rounded border px-4 py-3 text-red-700" onClick={() => setConfirm(true)}>Deactivate category</button>
-                {confirm && <form className="space-y-3 rounded border border-red-200 p-4" onSubmit={async event => {
+                <ButtonLink to={`/app/categories/${category.id}/edit`}>Rename category</ButtonLink>
+                <Button ref={deactivateButton} hidden={confirm} variant="danger" onClick={() => setConfirm(true)}>Deactivate category</Button>
+                {confirm && <ConfirmationPanel title={`Deactivate ${category.name}?`} keepLabel="Keep category active" confirmLabel={pending ? 'Deactivating…' : 'Confirm deactivation'} pending={pending} triggerRef={deactivateButton} onCancel={() => setConfirm(false)} onConfirm={async event => {
                     event.preventDefault(); if (pending) return; setPending(true); setError('');
                     try {
                         await deactivateCategory(category.id);
@@ -43,14 +48,9 @@ export default function CategoryDetailsPage() {
                     catch (error) { if (mounted.current && !axios.isCancel(error)) setError(normalizeApiError(error).message); }
                     finally { if (mounted.current) setPending(false); }
                 }}>
-                    <h3 className="font-semibold">Deactivate {category.name}?</h3>
                     <p>Existing financial history remains. This category will leave the active list and cannot be selected for new transactions. Its name and type remain reserved. There is no restore action.</p>
-                    <button autoFocus disabled={pending} type="button" className="rounded border px-4 py-3" onClick={() => {
-                        setConfirm(false); requestAnimationFrame(() => deactivateButton.current?.focus());
-                    }}>Keep category active</button>
-                    <button disabled={pending} className="ml-3 rounded bg-red-600 px-4 py-3 text-white">{pending ? 'Deactivating…' : 'Confirm deactivation'}</button>
-                </form>}
+                </ConfirmationPanel>}
             </>}
-        </section>}
+        </SurfaceCard>}
     </main>;
 }

@@ -1,3 +1,6 @@
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SurfaceCard } from '../../components/ui/SurfaceCard';
+import { Button } from '../../components/ui/Button';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -6,7 +9,8 @@ import { accountTypes } from '../../types/account';
 import type { AccountResponse, AccountType } from '../../types/account';
 import { ApiError, normalizeApiError } from '../../api/errors';
 import { formatMoney, monetaryNumber } from '../../api/financial';
-import { FieldError, FormError } from '../../components/ui/FormFeedback';
+import { FormError } from '../../components/ui/FormFeedback';
+import { FormField } from '../../components/ui/FormField';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 
 export default function AccountFormPage() {
@@ -32,12 +36,11 @@ export default function AccountFormPage() {
         return () => controller.abort();
     }, [id]);
     const fields = id ? ['name', 'type'] : ['name', 'type', 'openingBalance'];
-    const inputClass = 'mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3';
-    return <main className="mx-auto max-w-xl space-y-6 break-words px-4 py-8">
-        <h1 className="text-3xl font-bold">{id ? 'Edit account' : 'Create account'}</h1>
-        <Link className="text-blue-700 underline" to={id ? `/app/accounts/${id}` : '/app/accounts'}>Cancel</Link>
-        {loadError ? <ErrorState message={loadError} /> : id && !account ? <LoadingState /> :
-            <form noValidate className="space-y-5 rounded-xl border border-gray-200 bg-white p-6" onSubmit={async event => {
+    const inputClass = 'ct-control';
+    return <main className="ct-page ct-page--narrow">
+        <PageHeader title={id ? 'Edit account' : 'Create account'} back={<Link to={id ? `/app/accounts/${id}` : '/app/accounts'}>Cancel</Link>} />
+        {loadError ? <ErrorState appearance="clarity" message={loadError} /> : id && !account ? <LoadingState appearance="clarity" /> :
+            <SurfaceCard><form noValidate className="ct-stack" onSubmit={async event => {
                 event.preventDefault(); if (pending) return; setError(null);
                 if (!name.trim() || name.length > 100) {
                     setError(new ApiError('Check your input.', 'validation', 400, { name: 'Enter a name with at most 100 characters.' })); return;
@@ -52,19 +55,15 @@ export default function AccountFormPage() {
             }}>
                 {account && <p>{account.active ? 'Active account' : 'Inactive account — editing does not reactivate it.'} Opening balance (immutable): {formatMoney(account.openingBalance)}</p>}
                 <p>Names are reserved even after deactivation. Use a different name if one already exists.</p>
-                <div><label htmlFor="name">Name</label><input id="name" required maxLength={100} value={name} onChange={event => setName(event.target.value)}
-                    aria-invalid={!!error?.fieldErrors.name} aria-describedby="name-error" className={inputClass} /><FieldError field="name" error={error} /></div>
-                <div><label htmlFor="type">Type</label><select id="type" value={type} onChange={event => setType(event.target.value as AccountType)}
-                    aria-invalid={!!error?.fieldErrors.type} aria-describedby="type-error" className={inputClass}>
+                <FormField id="name" label="Name" error={error?.fieldErrors.name}>{props => <input {...props} required maxLength={100} value={name} onChange={event => setName(event.target.value)} className={inputClass} />}</FormField>
+                <FormField id="type" label="Type" error={error?.fieldErrors.type}>{props => <select {...props} value={type} onChange={event => setType(event.target.value as AccountType)} className={inputClass}>
                     {accountTypes.map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
-                </select><FieldError field="type" error={error} /></div>
-                {!id && <div><label htmlFor="openingBalance">Opening balance (INR)</label><input id="openingBalance" type="text" inputMode="decimal" required
-                    value={openingBalance} onChange={event => setOpeningBalance(event.target.value)} aria-invalid={!!error?.fieldErrors.openingBalance}
-                    aria-describedby="openingBalance-help openingBalance-error" className={inputClass} />
-                    <p id="openingBalance-help" className="text-sm text-gray-600">Signed starting amount: negative, zero or positive. Up to 17 integer digits and 2 decimal places. This cannot be changed later.</p>
-                    <FieldError field="openingBalance" error={error} /></div>}
-                <FormError error={error} fields={fields} />
-                <button disabled={pending} className="rounded-lg bg-blue-600 px-5 py-3 text-white disabled:opacity-50">{pending ? 'Saving…' : 'Save account'}</button>
-            </form>}
+                </select>}</FormField>
+                {!id && <FormField id="openingBalance" label="Opening balance (INR)" error={error?.fieldErrors.openingBalance}
+                    hint="Signed starting amount: negative, zero or positive. Up to 17 integer digits and 2 decimal places. This cannot be changed later.">{props => <input {...props} type="text" inputMode="decimal" required
+                        value={openingBalance} onChange={event => setOpeningBalance(event.target.value)} className={inputClass} />}</FormField>}
+                <FormError appearance="clarity" error={error} fields={fields} />
+                <Button type="submit" pending={pending}>{pending ? 'Saving…' : 'Save account'}</Button>
+            </form></SurfaceCard>}
     </main>;
 }
