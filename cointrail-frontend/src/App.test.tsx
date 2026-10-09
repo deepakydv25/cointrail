@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -42,6 +42,28 @@ beforeEach(() => {
 afterEach(() => { cleanup(); api.defaults.adapter = originalAdapter; logoutSession(); vi.restoreAllMocks(); });
 
 describe('foundation app navigation with real session and transport', () => {
+    it.each([false, true])('keeps landing public with no API calls when authenticated=%s', async authenticated => {
+        if (authenticated) loginSession(makeToken());
+        const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => response(config, {}));
+        api.defaults.adapter = adapter;
+        renderApp('/');
+        expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Understand where your money goes.');
+        expect(screen.getAllByRole('main')).toHaveLength(1);
+        expect(document.querySelector('.ct-landing-header')).toBeInTheDocument();
+        expect(document.querySelector('.ct-shell')).toBeNull();
+        expect(adapter).not.toHaveBeenCalled();
+        const main = within(screen.getByRole('main'));
+        expect(main.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' })[0]).toHaveAttribute('href', authenticated ? '/dashboard' : '/register');
+    });
+    it('preserves classic auth layout and restores title when leaving landing', async () => {
+        document.title = 'CoinTrail'; renderApp('/');
+        await userEvent.click(within(screen.getByRole('region', { name: 'Understand where your money goes.' })).getByRole('link', { name: 'Sign In' }));
+        expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
+        expect(document.querySelector('.ct-landing-header')).toBeNull();
+        expect(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/register');
+        expect(document.title).toBe('CoinTrail');
+    });
+
     it('does not steal focus from a new-page control when heading focus is delayed', () => {
         const frames: FrameRequestCallback[] = [];
         vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { frames.push(callback); return frames.length; });
@@ -54,7 +76,7 @@ describe('foundation app navigation with real session and transport', () => {
         loginSession(makeToken()); renderApp(path);
         await screen.findByRole('heading', { level: 1 });
         await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
-        expect(await screen.findByRole('link', { name: 'Get Started' })).toBeInTheDocument();
+        expect(within(await screen.findByRole('main')).getByRole('link', { name: 'Get Started' })).toBeInTheDocument();
         expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/);
         expect(localStorage.getItem('accessToken')).toBeNull();
         expect(document.querySelector('.ct-shell')).toBeNull();
@@ -185,7 +207,7 @@ describe('foundation app navigation with real session and transport', () => {
         expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
         expect(screen.queryByText('Legacy lunch')).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('link', { name: 'CoinTrail home' }));
-        expect(await screen.findByRole('link', { name: 'Get Started' })).toBeInTheDocument();
+        expect(within(await screen.findByRole('main')).getByRole('link', { name: 'Get Started' })).toBeInTheDocument();
     });
 
     it('clears old page data when another tab replaces the session', async () => {

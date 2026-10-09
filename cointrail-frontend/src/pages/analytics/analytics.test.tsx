@@ -179,6 +179,8 @@ describe('Analytics independent errors, cancellation and sessions', () => {
     });
     it('returns to login when logging out, with no protected report data', async () => {
         setup(); await loaded(); await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
-        expect(await screen.findByRole('link', { name: 'Get Started' })).toBeInTheDocument(); expect(screen.queryByRole('heading', { name: 'Analytics' })).toBeNull();
+        expect(within(await screen.findByRole('main')).getByRole('link', { name: 'Get Started' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Analytics', level: 1 })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Historical bank' })).toBeNull();
     });
 });

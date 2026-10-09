@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ExpensesPage from './pages/ExpensesPage';
 import Navbar from './components/Navbar';
+import PublicLandingNavigation from './components/landing/PublicLandingNavigation';
 import AppShell from './components/AppShell';
 import ProtectedRoute from './routes/ProtectedRoute';
 import CreateExpensePage from './pages/CreateExpensePage';
@@ -51,7 +52,7 @@ function SiteLayout({ application = false }: { application?: boolean }) {
     const body = <div id="main-content" tabIndex={-1} ref={content}><Outlet /></div>;
     return <>
         <a href="#main-content" className={`sr-only focus:not-sr-only focus:block focus:p-3 ${application ? 'ct-skip' : ''}`}>Skip to content</a>
-        {application ? <AppShell>{body}</AppShell> : <><Navbar key={location.pathname} />{body}</>}
+        {application ? <AppShell>{body}</AppShell> : <>{location.pathname === '/' ? <PublicLandingNavigation /> : <Navbar key={location.pathname} />}{body}</>}
     </>;
 }
 
