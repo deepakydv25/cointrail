@@ -225,7 +225,7 @@ The current V1 CategorySpendingChart's rainbow palette is an explicit legacy exc
 ### Phase E — delivery gate
 
 - [x] Follow feature-delivery after explicit implementation approval; it currently requires `mvn clean verify` even with unchanged backend. Record result/warnings without modifying backend tests just for a visual change.
-- [ ] Commit/push/create one concise PR targeting develop only when separately authorized and all required verification succeeds. Do not merge. Delivery is explicitly authorized by the implementation request; do not merge.
+- [x] Commit/push/create one concise PR targeting develop only when separately authorized and all required verification succeeds. Do not merge. Delivery is explicitly authorized by the implementation request; do not merge.
 
 ## Expected files
 
@@ -286,7 +286,7 @@ Use colocated suites only where the component has meaningful semantics/state; pu
 - [x] All fields use visible labels, correctly combined hint/error associations, native selection/validation affordances, preserved inputs on failed requests, and specific pending labels. Read-only restrictions are stated, not merely greyed out.
 - [x] Inline confirmation announces title/explanation, focuses the safe keep action, cancels with Escape when idle, restores trigger focus, retains failure feedback and never submits by opening/closing it. Successful navigation/refetch maintains useful page focus.
 - [ ] Layout works at 320px without document horizontal scrolling. At 200% zoom and a 320 CSS px reflow viewport, menus/filters/actions remain reachable; text-spacing overrides do not clip labels. Break money into a separate row rather than ellipsizing or shrinking it to unreadability.
-- [x] Exercise 100-character account/category names, 500-character descriptions, absent descriptions, maximum positive/negative opening balances, 17.2 transaction amount and 19-digit IDs. Copyable display values remain complete; DOM/service values remain exact strings.
+- [ ] Exercise 100-character account/category names, 500-character descriptions, absent descriptions, maximum positive/negative opening balances, 17.2 transaction amount and 19-digit IDs. Copyable display values remain complete; DOM/service values remain exact strings.
 - [x] Glass disabled/unsupported, reduced motion and forced-colors preserve affordances; no meaning depends on shadows/translucency. Neutral category icons remain consistent in normal mode; forced-colors may use system colors for access.
 - [x] Existing V1 actions/values/notices/chart remain available in the legacy area. No inaccessible placeholder links or fabricated metrics appear in navigation or content.
 
@@ -318,7 +318,7 @@ Use a local/dev or disposable backend and test-owned data. Record browser/versio
 - [ ] Keep/confirm deactivation and permanent deletion; verify distinct copy, focus restoration, duplicate-submit prevention, error retention and refreshed destinations.
 - [x] Inspect all category icon tiles for the same neutral background/charcoal stroke, with Income green/Expense red limited to amount meaning. Verify no selection changes the category tile color.
 - [ ] Smoke-test V1 overview/category chart, list/category/sort/page controls, create/edit/native-confirm delete, public login/register and original default. Compare legacy page-body screenshots for unintended token leakage.
-- [x] Inspect contrast on actual composited surfaces; scroll under sticky chrome and focus lower inputs to ensure they are not obscured. Check no clipped full monetary values, nav items or vertical action groups.
+- [ ] Inspect contrast on actual composited surfaces; scroll under sticky chrome and focus lower inputs to ensure they are not obscured. Check no clipped full monetary values, nav items or vertical action groups.
 
 If a listed browser/device is unavailable, record the gap explicitly; do not replace the missing manual result with a jsdom test claim. Approval can decide whether that gap blocks release. This planning task does not claim any manual QA has been run.
 
@@ -394,4 +394,4 @@ Opaque token contrast was recalculated from the implemented CSS: text/canvas 14.
 
 ### Delivery
 
-Implementation and required verification are complete. Commit/push/PR creation follow this evidence update; the delivery checkbox is updated only after those actions succeed. Merge and deployment remain excluded.
+Implementation and required verification are complete. Feature commit `3f9ef9224ad5d4f8b379117a60fa036ac528e4ef` was pushed on `feature/clarity-design-foundation`. [PR #21](https://github.com/deepakydv25/cointrail/pull/21) is open against develop and has not been merged. This documentation follow-up records successful delivery; no production code changed after final verification. Remaining unchecked items are partial/manual QA gaps documented above, including exact 500-character browser stress and exhaustive composited hover/focus inspection. Merge and deployment remain excluded.
