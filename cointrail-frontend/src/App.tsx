@@ -27,6 +27,9 @@ import TransactionDetailsPage from './pages/transactions/TransactionDetailsPage'
 import BudgetsPage from './pages/budgets/BudgetsPage';
 import BudgetFormPage from './pages/budgets/BudgetFormPage';
 import BudgetDetailsPage from './pages/budgets/BudgetDetailsPage';
+import RecurringTransactionsPage from './pages/recurring/RecurringTransactionsPage';
+import RecurringTransactionFormPage from './pages/recurring/RecurringTransactionFormPage';
+import RecurringTransactionDetailsPage from './pages/recurring/RecurringTransactionDetailsPage';
 
 function SiteLayout({ application = false }: { application?: boolean }) {
     const location = useLocation();
@@ -76,6 +79,10 @@ export default function App() {
                     <Route path="/app/budgets/create" element={<BudgetFormPage key={pathname} />} />
                     <Route path="/app/budgets/:id" element={<BudgetDetailsPage key={pathname} />} />
                     <Route path="/app/budgets/:id/edit" element={<BudgetFormPage key={pathname} />} />
+                    <Route path="/app/recurring" element={<RecurringTransactionsPage />} />
+                    <Route path="/app/recurring/create" element={<RecurringTransactionFormPage key={pathname} />} />
+                    <Route path="/app/recurring/:id" element={<RecurringTransactionDetailsPage key={pathname} />} />
+                    <Route path="/app/recurring/:id/edit" element={<RecurringTransactionFormPage key={pathname} />} />
                     <Route path="/app/accounts" element={<AccountsPage />} />
                     <Route path="/app/accounts/create" element={<AccountFormPage key={pathname} />} />
                     <Route path="/app/accounts/:id" element={<AccountDetailsPage key={pathname} />} />
