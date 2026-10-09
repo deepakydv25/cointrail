@@ -23,6 +23,7 @@ describe('Clarity application shell', () => {
         expect(screen.getAllByRole('navigation')).toHaveLength(1); expect(screen.getAllByRole('main')).toHaveLength(1);
         expect(within(nav).getByRole('link', { name: 'Accounts' })).toHaveAttribute('aria-current', 'page');
         expect(within(nav).getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/app/transactions');
+        expect(within(nav).getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('href', '/app/dashboard');
         expect(within(nav).getByRole('link', { name: 'Legacy Overview' })).toHaveAttribute('href', '/dashboard');
         expect(within(nav).getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
         expect(within(nav).queryByText('Budgets')).toBeNull();

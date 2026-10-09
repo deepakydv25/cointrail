@@ -23,6 +23,8 @@ beforeEach(() => {
     api.defaults.adapter = async config => {
         if (config.url === '/api/v1/auth/login') return response(config, { accessToken: makeToken(), tokenType: 'Bearer' });
         if (config.url === '/api/accounts') return response(config, `[${accountJson}]`);
+        if (config.url === '/api/dashboard') return response(config, '{"year":2026,"month":10,"totalActiveAccountBalance":0,"monthlySummary":{"income":0,"expense":0,"netCashFlow":0},"budgetSummary":{"budgetCount":0,"totalBudgetAmount":0,"spentOnBudgetedCategories":0,"remainingBudgetAmount":0,"overBudgetCount":0},"recentTransactions":[],"pendingRecurringTransactions":{"asOfDate":"2026-10-09","throughDate":"2026-11-08","timezone":"UTC","items":[]}}');
+        if (config.url === '/api/analytics/categories') return response(config, '{"range":{"from":"2026-10-01","to":"2026-10-31","dayCount":31},"totals":{"income":0,"expense":0,"netCashFlow":0,"transactionCount":0},"items":[]}');
         if (config.url?.startsWith('/api/accounts/')) return response(config, accountJson);
         if (config.url === '/api/v1/expenses/summary') return response(config, { totalAmount: 12.34, totalExpenses: 1, categoryBreakdown: { FOOD: 12.34 } });
         if (config.url === '/api/v1/expenses') return response(config, { content: [expense], number: 0, size: 5, totalElements: 1, totalPages: 1 });
@@ -52,7 +54,7 @@ describe('foundation app navigation with real session and transport', () => {
     it.each(['/dashboard', '/expenses', '/expenses/create', '/expenses/7', '/expenses/7/edit',
         '/app/accounts', '/app/accounts/create', '/app/accounts/9007199254740993', '/app/accounts/9007199254740993/edit',
         '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit',
-        '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit'])('protects existing and V2 namespace route %s', async path => {
+        '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit', '/app/dashboard?year=2026&month=10'])('protects existing and V2 namespace route %s', async path => {
             renderApp(path);
             expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
             expect(screen.getByTestId('location')).toHaveTextContent('/login');
@@ -74,6 +76,24 @@ describe('foundation app navigation with real session and transport', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/dashboard');
         expect(screen.getByRole('link', { name: 'Legacy Overview' })).toHaveAttribute('aria-current', 'page');
         expect(screen.getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
+    });
+
+    it('returns to a Dashboard V2 reporting deep link after login without using V1 expense APIs', async () => {
+        const original = api.defaults.adapter; const paths: string[] = [];
+        api.defaults.adapter = async config => { paths.push(config.url!); return (original as (config: InternalAxiosRequestConfig) => Promise<AxiosResponse>)(config); };
+        const user = userEvent.setup(); renderApp('/app/dashboard?year=2026&month=10');
+        await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
+        await user.click(screen.getByRole('button', { name: 'Login' }));
+        expect(await screen.findByRole('heading', { name: 'Dashboard V2' })).toBeInTheDocument();
+        await screen.findByText('Total active-account balance');
+        expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?year=2026&month=10');
+        expect(paths).toContain('/api/dashboard'); expect(paths).toContain('/api/analytics/categories'); expect(paths.some(path => path.startsWith('/api/v1/expenses'))).toBe(false);
+        expect(screen.getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('keeps /app redirected to the V1 dashboard', async () => {
+        loginSession(makeToken()); renderApp('/app');
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument(); expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
     });
 
     it('returns to a V2 detail deep link after login with exact money and Long IDs', async () => {
@@ -100,7 +120,7 @@ describe('foundation app navigation with real session and transport', () => {
     });
 
     it('keeps later /app screens unavailable and advertises delivered resource screens', async () => {
-        loginSession(makeToken()); renderApp('/app/dashboard');
+        loginSession(makeToken()); renderApp('/app/budgets');
         expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/app/accounts');
         expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('href', '/app/categories');
