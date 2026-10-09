@@ -88,7 +88,7 @@ Forms load active accounts and matching active EXPENSE/INCOME categories. Transa
 
 Detail/list screens retain the names returned by the backend when references are inactive; these are current related-resource names, not immutable name snapshots. Editing requires active replacements for unavailable references. DELETE permanently removes a transaction after explicit confirmation, then refetches the filtered list. The confirmation explains that processed recurring occurrences are not regenerated, without inventing an origin badge or metadata the response does not expose.
 
-V2 Dashboard, Budgets/Recurring, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, browser-runner additions and any future legacy retirement/default landing change retain their approval gates.
+Recurring management, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, browser-runner additions and any future legacy retirement/default landing change retain their approval gates.
 
 ## Clarity design foundation
 
@@ -110,6 +110,16 @@ Implementation and browser verification evidence, including unavailable device/a
 
 All money, Long identifiers and numeric counts remain exact decimal strings, including aggregate amounts beyond the individual 17-integer-digit transaction limit. Metric cards, lists and chart tooltips use string-only INR formatting. Chart geometry uses exact BigInt minor units normalized to bounded coordinates from 0 to 1,000,000; only those coordinates become JavaScript numbers. Geometry is approximate, not money or a percentage. Tiny values may have zero-length bars and still retain their complete exact text. Charts are decorative, without animation/keyboard focus, with always-visible exact-value equivalents. Category bars are indigo and tags neutral-grey; a set larger than 12 expense groups shows the complete list and an explicit chart-omission notice rather than a misleading partial chart.
 
-Labels preserve different backend scopes: active-account balance and recent actuals use all recorded dates; income/expense/net cash flow and budget totals use the selected month; pending recurring next-due cursors use returned asOfDate/throughDate/timezone. Read-only budget and recurring previews have no management links, forecasts or job-status claims. Category groups retain exact IDs/current names/inactive metadata and drill down into existing transaction filters. Recent records link to existing transaction details; browser Back returns to the dashboard period.
+Labels preserve different backend scopes: active-account balance and recent actuals use all recorded dates; income/expense/net cash flow and budget totals use the selected month; pending recurring next-due cursors use returned asOfDate/throughDate/timezone. Budget summaries link to the selected month's management page; recurring previews remain read-only without management links, forecasts or job-status claims. Category groups retain exact IDs/current names/inactive metadata and drill down into existing transaction filters. Recent records link to existing transaction details; browser Back returns to the dashboard period.
 
 Implementation/test/browser evidence and remaining manual QA are recorded in [Plan 008](../.agents/plans/008-v2-dashboard.md). No new dependency, backend contract or authenticated default was introduced.
+
+## Budget management
+
+Protected `/app/budgets`, `/app/budgets/create`, `/app/budgets/:id` and `/app/budgets/:id/edit` use the existing `/api/budgets` contracts. List selection is explicit `year`/`month` URL state with browser history; invalid, partial or repeated period parameters need correction. Valid years are 1–9999 and months 1–12. Dashboard's View budgets link preserves its reporting month.
+
+Create selects active system/custom EXPENSE categories and an exact positive decimal limit (minimum 0.01, maximum 17 integer/2 fractional digits). Duplicate category/month definitions return409 and preserve inputs. Existing definitions, including inactive historical categories, support amount-only edits; category and period are immutable. Requests preserve numeric JSON monetary values and Long IDs through scoped financialConfig. Only validated bounded calendar integers use Number; money and IDs never do.
+
+Limit, spent, signed remaining and strict overBudget are returned by the server, without frontend spending/remaining calculations, percentages or progress charts. Spending includes V2 expense actuals for the budget month, never legacy expenses. Deleting a definition requires explicit inline confirmation and retains all transactions. Read retry/refresh, stale-request cancellation, preserved failed-write inputs and existing session protection follow other V2 pages. No write automatically retries after a network failure/timeout.
+
+Budget implementation and verification evidence is recorded in [Plan 009](../.agents/plans/009-v2-budgets-recurring.md); Recurring implementation remains separate.

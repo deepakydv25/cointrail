@@ -24,6 +24,9 @@ import CategoryDetailsPage from './pages/categories/CategoryDetailsPage';
 import TransactionsPage from './pages/transactions/TransactionsPage';
 import TransactionFormPage from './pages/transactions/TransactionFormPage';
 import TransactionDetailsPage from './pages/transactions/TransactionDetailsPage';
+import BudgetsPage from './pages/budgets/BudgetsPage';
+import BudgetFormPage from './pages/budgets/BudgetFormPage';
+import BudgetDetailsPage from './pages/budgets/BudgetDetailsPage';
 
 function SiteLayout({ application = false }: { application?: boolean }) {
     const location = useLocation();
@@ -69,6 +72,10 @@ export default function App() {
                     <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                     <Route path="/app" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/app/dashboard" element={<DashboardV2Page />} />
+                    <Route path="/app/budgets" element={<BudgetsPage />} />
+                    <Route path="/app/budgets/create" element={<BudgetFormPage key={pathname} />} />
+                    <Route path="/app/budgets/:id" element={<BudgetDetailsPage key={pathname} />} />
+                    <Route path="/app/budgets/:id/edit" element={<BudgetFormPage key={pathname} />} />
                     <Route path="/app/accounts" element={<AccountsPage />} />
                     <Route path="/app/accounts/create" element={<AccountFormPage key={pathname} />} />
                     <Route path="/app/accounts/:id" element={<AccountDetailsPage key={pathname} />} />

@@ -38,7 +38,7 @@ describe('Dashboard V2 financial overview and previews', () => {
         expect(screen.getByRole('link', { name: 'View monthly expenses' })).toHaveAttribute('href', '/app/transactions?type=EXPENSE&from=2026-10-01&to=2026-10-31&page=0');
         const budgets = screen.getByRole('region', { name: 'Budget summary' });
         expect(within(budgets).getByText('₹10.00')).toBeInTheDocument(); expect(within(budgets).getByText('1')).toBeInTheDocument();
-        expect(within(budgets).queryByRole('link')).toBeNull();
+        expect(within(budgets).getByRole('link', { name: 'View budgets' })).toHaveAttribute('href', '/app/budgets?year=2026&month=10');
         const pending = screen.getByRole('region', { name: 'Pending recurring transactions' });
         expect(within(pending).getByText(/Pacific\/Kiritimati/)).toHaveTextContent('As of 2026-10-10 through 2026-11-09');
         expect(within(pending).getByText('BLOCKED · Overdue')).toBeInTheDocument();
