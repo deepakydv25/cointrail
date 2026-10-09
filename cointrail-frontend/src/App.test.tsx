@@ -23,6 +23,7 @@ beforeEach(() => {
     api.defaults.adapter = async config => {
         if (config.url === '/api/v1/auth/login') return response(config, { accessToken: makeToken(), tokenType: 'Bearer' });
         if (config.url === '/api/accounts') return response(config, `[${accountJson}]`);
+        if (config.url === '/api/budgets') return response(config, '[]');
         if (config.url === '/api/dashboard') return response(config, '{"year":2026,"month":10,"totalActiveAccountBalance":0,"monthlySummary":{"income":0,"expense":0,"netCashFlow":0},"budgetSummary":{"budgetCount":0,"totalBudgetAmount":0,"spentOnBudgetedCategories":0,"remainingBudgetAmount":0,"overBudgetCount":0},"recentTransactions":[],"pendingRecurringTransactions":{"asOfDate":"2026-10-09","throughDate":"2026-11-08","timezone":"UTC","items":[]}}');
         if (config.url === '/api/analytics/categories') return response(config, '{"range":{"from":"2026-10-01","to":"2026-10-31","dayCount":31},"totals":{"income":0,"expense":0,"netCashFlow":0,"transactionCount":0},"items":[]}');
         if (config.url?.startsWith('/api/accounts/')) return response(config, accountJson);
@@ -54,7 +55,8 @@ describe('foundation app navigation with real session and transport', () => {
     it.each(['/dashboard', '/expenses', '/expenses/create', '/expenses/7', '/expenses/7/edit',
         '/app/accounts', '/app/accounts/create', '/app/accounts/9007199254740993', '/app/accounts/9007199254740993/edit',
         '/app/categories', '/app/categories/create', '/app/categories/1', '/app/categories/1/edit',
-        '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit', '/app/dashboard?year=2026&month=10'])('protects existing and V2 namespace route %s', async path => {
+        '/app/transactions', '/app/transactions/create', '/app/transactions/9007199254740993', '/app/transactions/9007199254740993/edit', '/app/dashboard?year=2026&month=10',
+        '/app/budgets?year=2024&month=2', '/app/budgets/create', '/app/budgets/9223372036854775807', '/app/budgets/9223372036854775807/edit'])('protects existing and V2 namespace route %s', async path => {
             renderApp(path);
             expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
             expect(screen.getByTestId('location')).toHaveTextContent('/login');
@@ -96,6 +98,14 @@ describe('foundation app navigation with real session and transport', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument(); expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
     });
 
+    it('returns to a budget month deep link after login', async () => {
+        const user = userEvent.setup(); renderApp('/app/budgets?year=2024&month=2');
+        await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
+        await user.click(screen.getByRole('button', { name: 'Login' })); await screen.findByText('No budgets for this month');
+        expect(screen.getByTestId('location')).toHaveTextContent('/app/budgets?year=2024&month=2');
+        expect(screen.getByRole('link', { name: 'Budgets' })).toHaveAttribute('aria-current', 'page');
+    });
+
     it('returns to a V2 detail deep link after login with exact money and Long IDs', async () => {
         const user = userEvent.setup(); renderApp('/app/accounts/9007199254740993');
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com');
@@ -120,7 +130,7 @@ describe('foundation app navigation with real session and transport', () => {
     });
 
     it('keeps later /app screens unavailable and advertises delivered resource screens', async () => {
-        loginSession(makeToken()); renderApp('/app/budgets');
+        loginSession(makeToken()); renderApp('/app/recurring');
         expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/app/accounts');
         expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('href', '/app/categories');

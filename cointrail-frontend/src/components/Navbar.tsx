@@ -47,7 +47,7 @@ function ApplicationNavigation() {
         </div>
         <div id="application-navigation" className={`ct-nav-panel ${open ? 'ct-nav-panel--open' : ''}`}>
             <p className="ct-nav-label">V2</p>
-            <div className="ct-nav-group">{destination('/app/dashboard', 'Dashboard V2', 'overview')}{destination('/app/transactions', 'Transactions', 'transactions')}{destination('/app/accounts', 'Accounts', 'account')}{destination('/app/categories', 'Categories', 'tag')}</div>
+            <div className="ct-nav-group">{destination('/app/dashboard', 'Dashboard V2', 'overview')}{destination('/app/transactions', 'Transactions', 'transactions')}{destination('/app/budgets', 'Budgets', 'overview')}{destination('/app/accounts', 'Accounts', 'account')}{destination('/app/categories', 'Categories', 'tag')}</div>
             <p className="ct-nav-label">Legacy</p><div className="ct-nav-group">{destination('/dashboard', 'Legacy Overview', 'overview')}{destination('/expenses', 'Legacy Expenses', 'receipt')}</div>
             <Button variant="ghost" className="ct-nav-logout" onClick={() => {
                 // Resolve the guard's session-change update before issuing the

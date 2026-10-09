@@ -90,6 +90,7 @@ function DashboardReport({ period }: { period: DashboardPeriod }) {
                             <div><dt>Over-budget definitions</dt><dd>{data.budgetSummary.overBudgetCount}</dd></div>
                         </dl>}
                     <p className="ct-description">Aggregate remaining does not indicate whether every individual budget is within its limit.</p>
+                    <ButtonLink variant="ghost" to={`/app/budgets?${periodSearch(period)}`}>View budgets</ButtonLink>
                 </section></SurfaceCard>
                 <SurfaceCard><section aria-labelledby="pending-recurring-heading">
                     <h2 id="pending-recurring-heading">Pending recurring transactions</h2>

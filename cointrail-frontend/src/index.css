@@ -204,3 +204,10 @@ form .ct-button--primary { min-height: 3rem; }
     .ct-nav-link[aria-current="page"] { outline: 1px solid Highlight; outline-offset: -1px; }
     :is(.ct-navigation, .clarity-content) :focus-visible { outline-color: Highlight; }
 }
+
+/* Exact budget values, without percentage or progress calculations. */
+.clarity-content .ct-budget-list { list-style: none; padding: 0; }
+.clarity-content .ct-budget-values { display: grid; gap: 1rem; }
+.clarity-content .ct-budget-values dt { color: var(--ct-text-muted); }
+.clarity-content .ct-budget-values dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+@media (min-width: 640px) { .clarity-content .ct-budget-values { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
