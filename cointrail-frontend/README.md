@@ -1,6 +1,6 @@
 # CoinTrail frontend
 
-The React + TypeScript application is migrating in phases. Phase 0 establishes the shared foundation; Phase 1 adds Accounts and Categories with exact monetary and identifier transport.
+The React + TypeScript application is migrating in phases. Phase 0 establishes the shared foundation; Phase 1 adds Accounts and Categories; Phase 2 adds Expense and Income Transactions with exact monetary and identifier transport.
 
 ## Run and verify
 
@@ -25,7 +25,7 @@ For compatibility, a terminal `/api/v1` (with optional trailing slash) is remove
 Services specify complete paths:
 - Authentication: `/api/v1/auth/register`, `/api/v1/auth/login`.
 - Legacy expenses: `/api/v1/expenses`, `/summary`, `/{id}` and POST `/api/v1/expenses/create`.
-- V2 resource services: `/api/accounts`, `/api/categories`, using the same Axios client with scoped precision transforms. Later phases add transactions and reports.
+- V2 services: `/api/accounts`, `/api/categories`, `/api/transactions`, using the same Axios client with scoped precision transforms. Later phases add reports.
 
 The client only accepts local `/api/*` paths and its configured base; it never sends bearer tokens to arbitrary absolute URLs. It has a 15-second timeout, supports Axios AbortSignal cancellation, and never automatically retries/replays a mutation. Authentication requests do not send stored bearer tokens.
 
@@ -54,10 +54,10 @@ Keep the current React Router, Axios, Tailwind, Recharts and local component sta
 - `api/`: configuration, Axios, normalized errors, session boundary and scoped V2 precision transforms.
 - `context/`: AuthProvider, context type and useAuth.
 - `routes/`: guards, protected Outlet layout and safe login return navigation.
-- `services/`: auth/expense services and typed V2 account/category services.
+- `services/`: auth/expense services and typed V2 account/category/transaction services.
 - `types/`: shared raw `PageResponse<T>`, backend error/auth DTOs and existing V1 expense types.
 - `components/ui/`: small loading/empty/error and form feedback components.
-- `pages/`: retained legacy pages and V2 account/category subdirectories; resource journey tests exercise the app with real route/session wiring.
+- `pages/`: retained legacy pages and V2 account/category/transaction subdirectories; journey tests exercise the app with real route/session wiring.
 - `utils/`: existing INR/en-IN and date-only formatting.
 
 No global financial store, generic CRUD/form engine or new component framework is introduced. The single added runtime dependency is `lossless-json` for V2 precision.
@@ -78,4 +78,14 @@ Transport tests use controlled Axios adapters to assert full paths, payloads, he
 
 Opening balance accepts plain signed decimals with up to 17 integer digits and 2 fractional digits, including ±99999999999999999.99, 0.01 and zero. Excess precision is rejected, never rounded or truncated. INR display groups and pads decimal strings without Number conversion. The complete backend monetary range is preserved. Future report totals can exceed write limits and must remain exact strings; these screens do not compute financial totals. Apply the transforms and explicit numeric-field serialization to each later V2 service; do not globally change Axios defaults or send string-valued money/IDs in place of numeric JSON contracts. V1 expense numbers and formatting remain unchanged. Authentication/status-based error normalization, cancellation and ownership remain at the existing boundaries. Non-JSON HTTP failures still reach shared error handling.
 
-Transactions, V2 Dashboard, Budgets/Recurring, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, browser-runner additions and any future legacy retirement/default landing change retain their approval gates.
+## V2 transactions
+
+Protected routes are `/app/transactions`, `/app/transactions/create`, `/app/transactions/:id` and `/app/transactions/:id/edit`. Navigation includes Transactions alongside Accounts, Categories and the legacy screens. The authenticated default remains `/dashboard`.
+
+List filters are URL query parameters: `type`, `accountId`, `categoryId`, inclusive `from`/`to`, `page` (zero based), `size` (1–100) and `sort`. Allowed sort fields are `transactionDate`, `amount`, `createdAt` and `updatedAt`, each with `asc`/`desc`. Filters survive detail/edit/create navigation; changing filters resets page zero. Unknown or inactive reference IDs can still filter history. Raw Spring Page counts are exact decimal strings, separate from V1 numeric page contracts.
+
+Forms load active accounts and matching active EXPENSE/INCOME categories. Transaction amounts are positive plain decimal strings, minimum 0.01, with at most 17 integer digits and 2 fractional digits; excess precision is rejected without rounding. Full POST/PUT payloads explicitly serialize account/category IDs and amounts as lossless JSON numbers. Description is nullable and limited to 500 characters. Calendar dates remain strings; the backend validates “today or earlier” using its own clock. Validation, conflict and network errors retain inputs.
+
+Detail/list screens retain the names returned by the backend when references are inactive; these are current related-resource names, not immutable name snapshots. Editing requires active replacements for unavailable references. DELETE permanently removes a transaction after explicit confirmation, then refetches the filtered list. The confirmation explains that processed recurring occurrences are not regenerated, without inventing an origin badge or metadata the response does not expose.
+
+V2 Dashboard, Budgets/Recurring, Analytics, browser E2E and deployment remain later phases. Scheduler timezone/enablement, browser-runner additions and any future legacy retirement/default landing change retain their approval gates.
