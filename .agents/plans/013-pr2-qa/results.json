@@ -1,0 +1,1009 @@
+{
+    "browser":  {
+                    "protocolVersion":  "1.3",
+                    "product":  "Chrome/155.0.8059.39",
+                    "revision":  "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+                    "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+                    "jsVersion":  "15.5.35.20"
+                },
+    "checks":  [
+                   {
+                       "name":  "mobile trap/Escape/backdrop 320x900",
+                       "data":  {
+                                    "width":  288,
+                                    "horizontal":  false,
+                                    "logout":  900,
+                                    "entries":  1
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 320x900",
+                       "data":  {
+                                    "month":  410,
+                                    "year":  510,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "mobile trap/Escape/backdrop 320x360",
+                       "data":  {
+                                    "width":  288,
+                                    "horizontal":  false,
+                                    "logout":  360,
+                                    "entries":  1
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 320x360",
+                       "data":  {
+                                    "month":  410,
+                                    "year":  510,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "mobile trap/Escape/backdrop 390x900",
+                       "data":  {
+                                    "width":  320,
+                                    "horizontal":  false,
+                                    "logout":  900,
+                                    "entries":  1
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 390x900",
+                       "data":  {
+                                    "month":  386,
+                                    "year":  486,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "mobile trap/Escape/backdrop 390x360",
+                       "data":  {
+                                    "width":  320,
+                                    "horizontal":  false,
+                                    "logout":  360,
+                                    "entries":  1
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 390x360",
+                       "data":  {
+                                    "month":  386,
+                                    "year":  486,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x900 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x900 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 768x900",
+                       "data":  {
+                                    "month":  229,
+                                    "year":  229,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x360 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x360 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 768x360",
+                       "data":  {
+                                    "month":  229,
+                                    "year":  229,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x900 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x900 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 1024x900",
+                       "data":  {
+                                    "month":  205,
+                                    "year":  205,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x360 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x360 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 1024x360",
+                       "data":  {
+                                    "month":  205,
+                                    "year":  205,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x900 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x900 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 1440x900",
+                       "data":  {
+                                    "month":  181,
+                                    "year":  181,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x360 false",
+                       "data":  {
+                                    "rail":  72,
+                                    "left":  72,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x360 true",
+                       "data":  {
+                                    "rail":  240,
+                                    "left":  240,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "authenticated control geometry 1440x360",
+                       "data":  {
+                                    "month":  181,
+                                    "year":  181,
+                                    "controls":  [
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "SELECT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "INPUT",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "BUTTON",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     },
+                                                     {
+                                                         "tag":  "A",
+                                                         "radius":  "12px",
+                                                         "height":  48
+                                                     }
+                                                 ],
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "account controls",
+                       "data":  [
+                                    {
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "radius":  "12px",
+                                        "height":  48
+                                    }
+                                ]
+                   },
+                   {
+                       "name":  "opaque native textarea"
+                   },
+                   {
+                       "name":  "drawer route dismissal and heading focus"
+                   },
+                   {
+                       "name":  "breakpoint dismissal and visible focus"
+                   },
+                   {
+                       "name":  "drawer logout cleanup"
+                   },
+                   {
+                       "name":  "shared variant and disabled CSS fixture",
+                       "data":  {
+                                    "variants":  [
+                                                     {
+                                                         "variant":  "primary",
+                                                         "radius":  "12px",
+                                                         "height":  48,
+                                                         "background":  "rgba(224, 231, 255, 0.94)",
+                                                         "color":  "rgb(55, 48, 163)"
+                                                     },
+                                                     {
+                                                         "variant":  "secondary",
+                                                         "radius":  "12px",
+                                                         "height":  48,
+                                                         "background":  "rgba(255, 255, 255, 0.86)",
+                                                         "color":  "rgb(32, 36, 44)"
+                                                     },
+                                                     {
+                                                         "variant":  "ghost",
+                                                         "radius":  "12px",
+                                                         "height":  48,
+                                                         "background":  "rgba(255, 255, 255, 0.86)",
+                                                         "color":  "rgb(75, 85, 99)"
+                                                     },
+                                                     {
+                                                         "variant":  "danger",
+                                                         "radius":  "12px",
+                                                         "height":  48,
+                                                         "background":  "rgb(185, 28, 28)",
+                                                         "color":  "rgb(255, 255, 255)"
+                                                     }
+                                                 ],
+                                    "disabled":  [
+                                                     {
+                                                         "background":  "rgb(241, 243, 245)",
+                                                         "blur":  "none",
+                                                         "radius":  "12px"
+                                                     },
+                                                     {
+                                                         "background":  "rgb(241, 243, 245)",
+                                                         "blur":  "none",
+                                                         "radius":  "12px"
+                                                     }
+                                                 ]
+                                }
+                   },
+                   {
+                       "name":  "public/login/register pills unchanged",
+                       "data":  {
+                                    "authRadius":  "9999px"
+                                }
+                   }
+               ],
+    "requests":  [
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/accounts",
+                     "/api/categories",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/categories",
+                     "/api/analytics/categories",
+                     "/api/dashboard"
+                 ],
+    "notes":  "33 asserted checks of native drawer focus wrapping/inertness, Escape/backdrop, route and breakpoint dismissal, logout cleanup, desktop widths, authenticated geometry and public pill isolation. Variant fixture injects shared CSS classes into a synthetic section; real Button semantics verified in component tests. Measurements allow existing color/chart transitions to settle. Synthetic intercepted API responses only."
+}

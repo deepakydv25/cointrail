@@ -1,0 +1,132 @@
+{
+    "browser":  {
+                    "protocolVersion":  "1.3",
+                    "product":  "Chrome/155.0.8059.39",
+                    "revision":  "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+                    "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+                    "jsVersion":  "15.5.35.20"
+                },
+    "checks":  [
+                   {
+                       "name":  "200% mobile reflow 768x1000",
+                       "data":  {
+                                    "width":  373,
+                                    "height":  451,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% mobile reflow 768x600",
+                       "data":  {
+                                    "width":  373,
+                                    "height":  251,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% mobile reflow 1024x1000",
+                       "data":  {
+                                    "width":  501,
+                                    "height":  451,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% mobile reflow 1024x600",
+                       "data":  {
+                                    "width":  501,
+                                    "height":  251,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% mobile reflow 1440x1000",
+                       "data":  {
+                                    "width":  709,
+                                    "height":  451,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% mobile reflow 1440x600",
+                       "data":  {
+                                    "width":  709,
+                                    "height":  251,
+                                    "ratio":  2,
+                                    "overflow":  false
+                                }
+                   },
+                   {
+                       "name":  "200% desktop 1600x1000 false",
+                       "data":  {
+                                    "width":  72,
+                                    "height":  451,
+                                    "ratio":  2,
+                                    "overflow":  false,
+                                    "left":  72,
+                                    "horizontal":  false,
+                                    "logout":  451
+                                }
+                   },
+                   {
+                       "name":  "200% desktop 1600x1000 true",
+                       "data":  {
+                                    "width":  240,
+                                    "height":  451,
+                                    "ratio":  2,
+                                    "overflow":  false,
+                                    "left":  240,
+                                    "horizontal":  false,
+                                    "logout":  451
+                                }
+                   },
+                   {
+                       "name":  "200% desktop 1600x600 false",
+                       "data":  {
+                                    "width":  72,
+                                    "height":  251,
+                                    "ratio":  2,
+                                    "overflow":  false,
+                                    "left":  72,
+                                    "horizontal":  false,
+                                    "logout":  251
+                                }
+                   },
+                   {
+                       "name":  "200% desktop 1600x600 true",
+                       "data":  {
+                                    "width":  240,
+                                    "height":  251,
+                                    "ratio":  2,
+                                    "overflow":  false,
+                                    "left":  240,
+                                    "horizontal":  false,
+                                    "logout":  251
+                                }
+                   }
+               ],
+    "requests":  [
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard"
+                 ],
+    "notes":  "10 actual 200% Chrome zoom checks using an isolated profile default zoom preference, devicePixelRatio 2 without emulation scaling. Mobile drawer bounds and scrolling and desktop allocated widths verified at normal/short window heights. Synthetic API responses only."
+}

@@ -52,6 +52,21 @@ describe('Clarity primitives', () => {
         expect(screen.getByLabelText('Amount')).not.toHaveAttribute('aria-describedby');
         expect(screen.getByLabelText('Amount')).not.toHaveAttribute('aria-invalid');
     });
+    it('keeps native select and textarea labels, feedback and keyboard editing accessible', async () => {
+        render(<div className="ct-shell"><FormField id="kind" label="Account type" hint="Choose a recorded account type">
+            {props => <select {...props} className="ct-control"><option value="BANK">Bank</option><option value="CASH">Cash</option></select>}
+        </FormField><FormField id="notes" label="Notes" hint="Optional details" error="Shorten these notes">
+            {props => <textarea {...props} className="ct-control" />}
+        </FormField><Button pending>Saving</Button></div>);
+        const select = screen.getByRole('combobox', { name: 'Account type' });
+        expect(select).toHaveAccessibleDescription('Choose a recorded account type');
+        await userEvent.selectOptions(select, 'CASH'); expect(select).toHaveValue('CASH');
+        const notes = screen.getByRole('textbox', { name: 'Notes' });
+        expect(notes).toHaveAccessibleDescription('Optional details Shorten these notes');
+        expect(notes).toHaveAttribute('aria-invalid', 'true');
+        await userEvent.type(notes, 'Recorded'); expect(notes).toHaveValue('Recorded');
+        expect(screen.getByRole('button', { name: 'Saving' })).toBeDisabled();
+    });
     it('keeps one h1 and does not turn a static surface into an action', () => {
         render(<><PageHeader title="Accounts" description="Starting balances" /><SurfaceCard aria-labelledby="section"><h2 id="section">Savings</h2></SurfaceCard></>);
         expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
