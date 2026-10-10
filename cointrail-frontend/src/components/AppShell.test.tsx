@@ -60,6 +60,10 @@ describe('Clarity application shell', () => {
         expect(within(nav).getByRole('link', { name: 'Budgets' })).toHaveAttribute('href', '/app/budgets');
         expect(within(nav).getByRole('link', { name: 'Analytics' })).toHaveAttribute('href', '/app/analytics');
         expect(within(nav).getByRole('link', { name: 'Recurring transactions' })).toHaveAttribute('href', '/app/recurring');
+        const destinations = ['Dashboard', 'Transactions', 'Budgets', 'Analytics', 'Recurring transactions', 'Accounts', 'Categories'];
+        const glyphs = destinations.map(name => [...within(nav).getByRole('link', { name }).querySelectorAll('svg path')].map(path => path.getAttribute('d')).join(' '));
+        expect(new Set(glyphs).size).toBe(destinations.length);
+        expect(destinations.every(name => within(nav).getByRole('link', { name }).querySelector('svg')?.getAttribute('aria-hidden') === 'true')).toBe(true);
     });
     it('closes with Escape and returns focus, then closes on route/history changes', async () => {
         setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
