@@ -49,7 +49,7 @@ export default function TransactionFormPage() {
     const eligibleAccount = resources?.accounts.some(account => account.id === accountId);
     const eligibleCategory = resources?.categories.some(category => category.id === categoryId && category.type === type);
     return <main className="ct-page ct-page--narrow">
-        <PageHeader title={id ? 'Edit transaction' : 'Create transaction'} back={<Link to={id ? `/app/transactions/${id}${search}` : `/app/transactions${search}`}>Cancel</Link>} />
+        <PageHeader title={id ? 'Edit transaction' : 'Add transaction'} back={<Link to={id ? `/app/transactions/${id}${search}` : `/app/transactions${search}`}>Cancel</Link>} />
         {loadError && <ErrorState appearance="clarity" message={loadError} onRetry={() => { setLoadError(''); setAttempt(attempt + 1); }} />}
         {!resources || (id && !original) ? !loadError && <LoadingState appearance="clarity" message="Loading transaction resources…" /> : <>
             {resources.accounts.length === 0 && <p>No active accounts. <Link className="ct-link" to="/app/accounts/create">Create an account</Link> before saving a transaction.</p>}

@@ -491,7 +491,7 @@ form .ct-button--primary { min-height: 3rem; }
 .ct-transactions-filter-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
 .ct-active-filters { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; list-style: none; }
 .ct-active-filters li { display: inline-flex; align-items: center; gap: .375rem; padding: .125rem .25rem .125rem .625rem; border-radius: .5rem; background: var(--ct-surface-selected); color: var(--ct-text-secondary); font-size: .875rem; overflow-wrap: anywhere; }
-.ct-transactions #transaction-filters { width: 100%; max-width: 44rem; justify-self: end; }
+.ct-transactions #transaction-filters { width: 100%; }
 .ct-transaction-groups { display: grid; gap: 1rem; }
 .ct-transaction-groups h3 { font-size: .875rem; font-weight: 600; color: var(--ct-text-secondary); margin-bottom: .5rem; }
 .ct-transaction-month-heading { font: var(--ct-type-section); }

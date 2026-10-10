@@ -44,6 +44,7 @@ afterEach(() => { cleanup(); logoutSession(); vi.useRealTimers(); vi.restoreAllM
 describe('transaction forms and history', () => {
     it.each(['EXPENSE', 'INCOME'] as const)('creates %s with exact money, IDs and preserved filters', async type => {
         const user = userEvent.setup(); renderPage('/app/transactions/create?type=INCOME&sort=amount,asc&page=2'); await readyForm();
+        expect(screen.getByRole('heading', { name: 'Add transaction' })).toBeInTheDocument();
         await user.selectOptions(screen.getByLabelText('Type'), type);
         await user.selectOptions(screen.getByLabelText('Account'), accountId);
         expect(screen.queryByRole('option', { name: type === 'EXPENSE' ? 'Salary (System)' : 'Food (System)' })).not.toBeInTheDocument();
@@ -147,8 +148,8 @@ describe('transaction list, detail and deletion', () => {
         vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [], totalElements: '0', totalPages: '0' });
         renderPage('/app/transactions');
         expect(await screen.findByRole('heading', { name: 'No transactions yet' })).toBeInTheDocument();
-        expect(screen.getAllByRole('link', { name: 'Create transaction' })).toHaveLength(1);
-        expect(screen.getByRole('link', { name: 'Create transaction' })).toHaveAttribute('href', '/app/transactions/create');
+        expect(screen.getAllByRole('link', { name: 'Add your first transaction' })).toHaveLength(1);
+        expect(screen.getByRole('link', { name: 'Add your first transaction' })).toHaveAttribute('href', '/app/transactions/create');
         expect(screen.queryByRole('button', { name: 'Filter' })).toBeNull();
         expect(screen.queryByRole('navigation', { name: 'Transaction pagination' })).toBeNull();
     });
@@ -190,7 +191,7 @@ describe('transaction list, detail and deletion', () => {
         expect(await screen.findByRole('link', { name: 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}?type=EXPENSE&accountId=1&page=1&sort=amount,desc`);
         expect(screen.getByText(/₹99,99,99,99,99,99,99,999.99/)).toBeInTheDocument(); expect(screen.getByText('Bank', { selector: '.ct-row-metadata span' })).toBeInTheDocument();
         expect(screen.getByText('Bank', { selector: '.ct-row-metadata span' }).parentElement).toHaveTextContent('Food');
-        expect(service.getTransactions).toHaveBeenCalledWith(expect.objectContaining({ type: 'EXPENSE', accountId: '1', page: '1', sort: 'amount,desc' }), expect.any(AbortSignal));
+        expect(service.getTransactions).toHaveBeenCalledWith(expect.objectContaining({ type: 'EXPENSE', accountId: '1', page: '0', size: '20', sort: 'amount,desc' }), expect.any(AbortSignal));
         expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
         expect(screen.getByRole('list', { name: 'Active filters' })).toHaveTextContent('Account: ID 1');
         fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
@@ -201,24 +202,22 @@ describe('transaction list, detail and deletion', () => {
         expect(screen.getByRole('button', { name: 'Filter' })).toHaveAttribute('aria-expanded', 'false');
         expect(screen.getByRole('button', { name: 'Filter' })).toHaveAttribute('title', 'Filter');
         expect(screen.getByRole('button', { name: 'Filter' })).toHaveTextContent('Filter');
-        await user.selectOptions(screen.getByLabelText('Page size'), '100');
-        await screen.findByRole('link', { name: 'Dinner' });
+        expect(screen.queryByLabelText('Page size')).toBeNull();
         await user.click(screen.getByRole('button', { name: 'Filter' }));
         await user.selectOptions(screen.getByLabelText('Type'), 'INCOME'); await user.selectOptions(screen.getByLabelText('Account'), accountId);
         await user.selectOptions(screen.getByLabelText('Category'), '9007199254740996');
         await user.selectOptions(screen.getByLabelText('Sort'), 'updatedAt,asc');
-        expect(document.getElementById('transaction-filters')?.contains(screen.getByLabelText('Page size'))).toBe(false);
         fireEvent.change(screen.getByLabelText('From date (inclusive)'), { target: { value: '2026-01-01' } });
         fireEvent.change(screen.getByLabelText('To date (inclusive)'), { target: { value: '2026-10-01' } });
         await user.click(screen.getByRole('button', { name: 'Apply filters' }));
-        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'INCOME', accountId, categoryId: '9007199254740996', from: '2026-01-01', to: '2026-10-01', page: '0', size: '100', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
+        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'INCOME', accountId, categoryId: '9007199254740996', from: '2026-01-01', to: '2026-10-01', page: '0', size: '20', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
         expect(screen.getByTestId('location')).toHaveTextContent('source=review');
         expect(screen.getByRole('button', { name: 'Filter' })).toHaveAttribute('aria-expanded', 'false');
         expect(screen.getByRole('button', { name: 'Filter' })).toHaveFocus();
-        await screen.findByRole('link', { name: 'Dinner' }); await user.click(screen.getByRole('button', { name: 'Next page' }));
+        await screen.findByRole('link', { name: 'Dinner' }); await user.click(screen.getByRole('button', { name: 'Load more' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '1', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
         await user.click(screen.getByRole('button', { name: 'Remove Type: INCOME' }));
-        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: undefined, page: '0', accountId, categoryId: '9007199254740996', size: '100', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
+        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: undefined, page: '0', accountId, categoryId: '9007199254740996', size: '20', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
         await screen.findByRole('link', { name: 'Dinner' });
         await user.click(screen.getByRole('button', { name: 'Filter' }));
         await user.click(screen.getByRole('button', { name: 'Clear all' }));
@@ -233,18 +232,58 @@ describe('transaction list, detail and deletion', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '0', accountId: undefined }), expect.any(AbortSignal)));
     });
-    it('retains a valid custom page size when applying filters', async () => {
-        const user = userEvent.setup(); renderPage('/app/transactions?size=7'); await screen.findByRole('link', { name: 'Dinner' });
-        await user.click(screen.getByRole('button', { name: 'Filter' }));
-        expect(screen.getByLabelText('Page size')).toHaveValue('7');
-        await user.click(screen.getByRole('button', { name: 'Apply filters' }));
-        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ size: '7', page: '0' }), expect.any(AbortSignal)));
+    it('loads fixed batches once, deduplicates rows and merges date groups across batches', async () => {
+        const first = Array.from({ length: 20 }, (_, index) => ({ ...transaction, id: String(index + 1), description: `Purchase ${index + 1}` }));
+        let resolve!: (data: TransactionPage) => void;
+        vi.mocked(service.getTransactions).mockResolvedValueOnce({ ...page, content: first })
+            .mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+        renderPage('/app/transactions?size=7&page=3&source=review');
+        await screen.findByRole('link', { name: 'Purchase 1' });
+        expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ size: '20', page: '0' }), expect.any(AbortSignal));
+        expect(screen.getByRole('link', { name: '+ Add transaction' })).toHaveAttribute('href', '/app/transactions/create?size=7&page=3&source=review');
+        expect(screen.queryByLabelText('Page size')).toBeNull();
+        expect(screen.getByRole('status')).toHaveTextContent('Showing 20 of 21 transactions');
+        const button = screen.getByRole('button', { name: 'Load more' });
+        fireEvent.click(button); fireEvent.click(button);
+        expect(service.getTransactions).toHaveBeenCalledTimes(2);
+        expect(screen.getByRole('button', { name: 'Loading\u2026' })).toBeDisabled();
+        expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ size: '20', page: '1' }), expect.any(AbortSignal));
+        await act(async () => resolve({ ...page, number: '1', content: [first[19], { ...transaction, id: '21', description: 'Purchase 21' }] }));
+        expect(screen.getAllByRole('link', { name: /^Purchase / })).toHaveLength(21);
+        expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(1);
+        expect(screen.getByRole('status')).toHaveTextContent('Showing 21 of 21 transactions');
+        expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
+        expect(screen.queryByRole('navigation', { name: 'Transaction pagination' })).toBeNull();
     });
     it('handles list errors without losing filters and retries', async () => {
         vi.mocked(service.getTransactions).mockRejectedValueOnce(new ApiError('Offline', 'network')); renderPage('/app/transactions?type=INCOME');
         expect(await screen.findByRole('alert')).toHaveTextContent('Offline');
         fireEvent.click(screen.getByRole('button', { name: 'Filter' })); expect(screen.getByLabelText('Type')).toHaveValue('INCOME');
         fireEvent.click(screen.getByRole('button', { name: 'Try again' })); await screen.findByRole('link', { name: 'Dinner' });
+    });
+    it('keeps rows after an append failure and aborts a retried append when filters change', async () => {
+        let resolve!: (data: TransactionPage) => void;
+        vi.mocked(service.getTransactions).mockResolvedValueOnce(page)
+            .mockRejectedValueOnce(new ApiError('Unable to load more', 'network'))
+            .mockImplementationOnce(() => new Promise(done => { resolve = done; }))
+            .mockResolvedValue({ ...page, totalElements: '1', totalPages: '1', content: [{ ...transaction, type: 'INCOME', description: 'Salary record' }] });
+        renderPage('/app/transactions'); await screen.findByRole('link', { name: 'Dinner' });
+        fireEvent.click(screen.getByRole('button', { name: 'Load more' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load more');
+        expect(screen.getByRole('link', { name: 'Dinner' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Load more' }));
+        const appendSignal = vi.mocked(service.getTransactions).mock.calls[2][1];
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
+        fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'INCOME' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+        await screen.findByRole('link', { name: 'Salary record' });
+        expect(appendSignal?.aborted).toBe(true);
+        expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'INCOME', page: '0', size: '20' }), expect.any(AbortSignal));
+        await act(async () => resolve({ ...page, number: '1', content: [{ ...transaction, id: '99', description: 'Stale purchase' }] }));
+        expect(screen.queryByRole('link', { name: 'Dinner' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Stale purchase' })).toBeNull();
+        expect(screen.getByRole('status')).toHaveTextContent('Showing 1 of 1 transactions');
+        expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
     });
     it('rejects reversed dates without dispatch and lets users clear invalid filters', async () => {
         renderPage('/app/transactions?from=2026-10-02&to=2026-10-01'); expect(await screen.findByRole('alert')).toHaveTextContent('Check your transaction filters');
