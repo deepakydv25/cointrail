@@ -165,7 +165,7 @@ function ExpenseDetailsPage() {
 
                     <Link
                         to={`/expenses/${expense.id}/edit`}
-                        className="w-full rounded-lg bg-blue-600 px-5 py-3 text-center font-medium text-white transition hover:bg-blue-700 sm:w-auto"
+                        className="ct-button ct-button--primary w-full px-5 py-3 text-center font-medium transition sm:w-auto"
                     >
                         Edit Expense
                     </Link>

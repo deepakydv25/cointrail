@@ -15,6 +15,6 @@ export function EmptyState({ title, children, appearance = 'classic' }: { title:
 export function ErrorState({ message, onRetry, appearance = 'classic' }: { message: string; onRetry?: () => void; appearance?: 'classic' | 'clarity' }) {
     return <div role="alert" className={appearance === 'clarity' ? 'ct-feedback ct-feedback--error' : 'rounded-lg bg-red-50 p-4 text-red-700'}>
         <p>{message}</p>
-        {onRetry && (appearance === 'clarity' ? <Button variant="secondary" onClick={onRetry}>Try again</Button> : <button type="button" onClick={onRetry} className="mt-2 rounded border px-3 py-2 font-medium">Try again</button>)}
+        {onRetry && <Button variant="secondary" onClick={onRetry} className={appearance === 'clarity' ? undefined : 'mt-2'}>Try again</Button>}
     </div>;
 }

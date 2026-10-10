@@ -203,7 +203,7 @@ function EditExpensePage() {
                         <button
                             type="button"
                             onClick={() => navigate(`/expenses/${id}`)}
-                            className="w-full rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+                            className="ct-button ct-button--secondary w-full sm:w-auto"
                         >
                             Cancel
                         </button>
@@ -211,7 +211,7 @@ function EditExpensePage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="w-full rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                            className="ct-button ct-button--primary w-full px-5 py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                         >
                             {isSaving ? 'Saving...' : 'Save Changes'}
                         </button>

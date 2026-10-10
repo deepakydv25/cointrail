@@ -17,6 +17,19 @@ import CategoryIcon from '../CategoryIcon';
 
 afterEach(cleanup);
 describe('Clarity primitives', () => {
+    it.each(['primary', 'secondary', 'ghost', 'danger'] as const)('preserves %s semantics, focusability and disabled/loading behavior', async variant => {
+        const action = vi.fn();
+        const view = render(<MemoryRouter><Button variant={variant} onClick={action}>Action</Button><ButtonLink variant={variant} to="/app/accounts">Destination</ButtonLink></MemoryRouter>);
+        const button = screen.getByRole('button', { name: 'Action' });
+        expect(button).toHaveClass('ct-button', `ct-button--${variant}`);
+        expect(screen.getByRole('link', { name: 'Destination' })).toHaveClass(`ct-button--${variant}`);
+        expect(screen.getByRole('link', { name: 'Destination' })).toHaveAttribute('href', '/app/accounts');
+        await userEvent.tab(); expect(button).toHaveFocus();
+        await userEvent.keyboard('{Enter}'); expect(action).toHaveBeenCalledOnce();
+        view.rerender(<MemoryRouter><Button variant={variant} pending onClick={action}>Action</Button></MemoryRouter>);
+        expect(button).toBeDisabled(); expect(button).toHaveAttribute('aria-busy', 'true');
+        await userEvent.click(button); expect(action).toHaveBeenCalledOnce();
+    });
     it('does not submit by default and blocks pending actions', async () => {
         const submit = vi.fn(event => event.preventDefault()); const action = vi.fn();
         const view = render(<form onSubmit={submit}><Button onClick={action}>Refresh</Button></form>);

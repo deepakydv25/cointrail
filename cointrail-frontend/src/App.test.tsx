@@ -42,6 +42,21 @@ beforeEach(() => {
 afterEach(() => { cleanup(); api.defaults.adapter = originalAdapter; logoutSession(); vi.restoreAllMocks(); });
 
 describe('foundation app navigation with real session and transport', () => {
+    it.each(['/', '/login', '/register', '/unknown-public-page'])('shares public header geometry and brand on %s without requesting financial data', async path => {
+        const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => response(config, {}));
+        api.defaults.adapter = adapter;
+        renderApp(path);
+        await screen.findByRole('heading', { level: 1 });
+        expect(screen.getByRole('banner')).toHaveClass('ct-public-header', 'ct-glass-header');
+        const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
+        expect(navigation).toHaveClass('ct-public-header-container');
+        expect(within(navigation).getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(within(navigation).queryByRole('button', { name: /toggle navigation/i })).not.toBeInTheDocument();
+        if (path === '/login' || path === '/register') {
+            expect(within(screen.getByRole('main')).getByRole('button', { name: path === '/login' ? 'Login' : 'Register' })).toHaveClass('ct-button', 'ct-button--primary');
+        }
+        expect(adapter).not.toHaveBeenCalled();
+    });
     it.each([false, true])('keeps landing public with no API calls when authenticated=%s', async authenticated => {
         if (authenticated) loginSession(makeToken());
         const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => response(config, {}));

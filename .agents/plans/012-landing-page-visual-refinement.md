@@ -225,3 +225,65 @@ Evidence directory `%TEMP%/cointrail-refinement-qa/`: `results.json`, `anon-320-
 Comprehensive manual checklist remains open for **actual 200% browser zoom, landscape-specific runs, Firefox/Safari, physical devices, screen-reader audit, exhaustive keyboard traversal and real-backend authenticated CRUD smoke**. Completed Chrome checks cover requested width/session/scroll combinations and scoped accessibility behavior. Unsupported-backdrop-filter opaque fallback was source-reviewed; a second browser was unavailable to independently exercise it. Existing bundle warning remains.
 
 User-authorized delivery: one commit/push and one PR targeting develop, without merge. PR URL and current CI state reported after creation. This evidence supersedes the original planning-only status while preserving prior plans.
+
+## PR #28 visual review follow-up — 2026-10-10
+
+This follow-up updates the existing `feature/landing-visual-refinement` branch and PR #28 targeting develop. Entry working tree was clean; fetched origin/develop and the feature branch and confirmed PR #27 remains merged (`850c17d`). No new branch/PR or merge. AGENTS.md, feature-delivery skill, applicable testing scope and Plans 011–012 were reviewed.
+
+### Additional approved design decisions
+
+The user explicitly approved shared public header geometry/glass controls, then requested **round buttons across every page**, **lighter matching liquid-glass primary actions including login/register**, and **visible content passing behind the translucent sticky header**. These decisions supersede the earlier root-only header treatment, unchanged shared-primitives constraint and solid-dark primary-button design. Scope remains presentation only; no auth handlers, routes, session logic, financial calculations, backend or dependencies changed.
+
+- `PublicHeader` owns public container geometry and the passive scroll listener. Landing, login, registration and public NotFound use it. Anonymous classic actions stay inline with their existing Login/Register names/destinations; the landing retains Sign In/Get Started and authenticated `/dashboard`. Existing authenticated classic disclosure/Escape/logout behavior and application sidebar architecture remain.
+- Header maximum **1280px**, gutters **12px below 360 / 16px below 768 / 24px below 1024 / 32px thereafter**, heights **64px mobile / 72px from 768** including border. Logo/wordmark use the existing shared Brand: 24px/16px below 360 and 32px/20px otherwise. Removed the obsolete classic/app image override. Public `scrollbar-gutter: stable` prevents short NotFound pages shifting the header edges.
+- Shared glass header: **86% white / 88% scrolled**, **8px blur**, inset highlight with no visible bottom divider or outside shadow (the final user review explicitly requested removing the partition). Scrolling changes paint, not geometry. The application's existing top brand strip gets these shared tokens; its sidebar/menu, forms, cards, charts and financial tables remain opaque.
+- Shared controls: **9999px pill radius**; square icon actions become circles. Pale indigo primary **#E0E7FF at .94**, hover **#C7D2FE at .98**, pressed **#A5B4FC at .98**, dark indigo text **#3730A3** and border **#818CF8**. Secondary/ghost use near-white glass with restrained highlight/borders; small controls blur **4px**. Danger remains recognizably red. Disabled/loading controls are opaque without blur/highlight; keyboard focus remains indigo. Login/register and legacy action buttons/links consume the same classes; existing event handlers and destinations are untouched.
+- Opaque default declarations outside `@supports`, reduced-transparency/print overrides, reduced-motion overrides and system-color boundaries/focus under forced colors. No large-region blur, image dependency or animation introduced.
+
+### Verification results
+
+| Check | Actual result |
+| --- | --- |
+| Focused Navbar/landing navigation/UI foundation/App tests | **6 suites / 178 passed**, 38.50s in the final focused run (including recurring and transaction flows). Earlier four-suite run also passed 77 tests. Shared header/brand classes, inline anonymous behavior, existing authenticated disclosure/Escape, variants, keyboard activation, pending state and route regressions covered. The final focused run includes the auth-button style assertions. The first default full run passed 681/683; recurring cancellation and transaction-create async navigation checks failed, then passed in the focused rerun without changing financial code, assertions, timeouts or test configuration. |
+| Final default `npm run test:run` | **43 suites / 683 passed**, exit 0, **109.51s** in the final default run; no worker override or test-configuration changes. |
+| `npm run lint` | Passed, exit 0. |
+| `npm run build` | Passed, exit 0: JS **866.21 kB / 249.23 gzip**, CSS **43.51 kB / 9.32 gzip**. Existing >500kB chunk warning remains. No dependency/config changes. |
+| `git diff --check` | Passed; complete production/test/new-component diff reviewed. |
+| Backend | Not run locally: frontend-only changes. |
+
+**Real Chrome 155.0.8059.39**, headless CDP against local Vite: final **42 checks passed**, plus **7 checks at actual 200% browser zoom**, both exit 0. Full browser matrix completed before tests. One final zoom screenshot refresh was interrupted by premature Vite shutdown; it was rerun after the full suite, and is not counted as a successful check until completed. QA sessions use synthetic local JWTs for navigation and an empty account-creation form; no submission or real financial data.
+
+All four public routes passed alignment, brand dimensions, vertically centered actions, 44px targets, one main, no horizontal overflow and top/scrolled stability at **320, 390, 768, 1024, 1280, 1440px**. Exact shared measurements (Chrome reserves 15px scrollbar):
+
+| Viewport | Logo left | Action right | Header height |
+| --- | --- | --- | --- |
+| 320 | 12 | 293 | 64 |
+| 390 | 16 | 359 | 64 |
+| 768 | 24 | 729 | 72 |
+| 1024 | 32 | 977 | 72 |
+| 1280 | 32 | 1233 | 72 |
+| 1440 | 104.5 | 1320.5 | 72 |
+
+- Application account form checked at 320/390/768/1440: sidebar/navigation preserved, mobile Escape restores disclosure state, white opaque form card and no overflow. Authenticated landing preserves Go to Dashboard `/dashboard`.
+- Real hover/pressed states, all shared variant colors/radii, pending opacity/no blur, reduced transparency, reduced motion and forced colors checked. Login/register native submit actions and public button links have the same pill radius and primary treatment. No API requests from the public route matrix.
+- Skip navigation focuses main; footer anchor focuses a section below the sticky header; WCAG text-spacing overrides at 320px reflow without overflow. Actual browser zoom uses Chrome's persisted zoom preference: `outerWidth=1440`, `innerWidth=709`, `devicePixelRatio=2`, `visualViewport.scale=1`, with public pages and application form reflowing. This is browser zoom, not CSS text enlargement or pinch zoom.
+- Conservative alpha-composited contrast over black: wordmark indigo on 86% white glass **4.55:1**; dark primary text on default/pressed pale glass **7.07 / 4.78:1**. Hover also exceeds 4.5:1. Financial values remain on opaque white.
+
+### Review screenshots
+
+Selected final and baseline images are committed beside this plan:
+
+- [Before landing desktop](012-visual-qa/before-landing-desktop.png), [before login desktop](012-visual-qa/before-login-desktop.png): previous inconsistent widths/actions.
+- [After desktop scrolling](012-visual-qa/after-landing-desktop-scrolled.png): blurred hero text visibly passes behind the glass header.
+- [After landing at 320px](012-visual-qa/after-landing-mobile.png): full brand and inline actions, lighter round CTAs.
+- [After registration desktop](012-visual-qa/after-register-desktop.png): aligned shared header and matching submit action.
+- [Application mobile](012-visual-qa/after-app-mobile.png): existing architecture and opaque form with shared controls.
+- [Login at 200% browser zoom](012-visual-qa/after-login-200percent.png).
+
+Full viewport/scrolled images, network capture and measurement JSON remain in `%TEMP%/cointrail-glass-qa/{before,after,after-zoom}`. Final logs: `%TEMP%/cointrail-glass-{targeted-final,full-final,lint,build,after,zoom}.log` (stderr is preserved separately for the final test runs). Representative before/after public desktop/mobile, auth, application/button variants and scrolled screenshots were visually inspected.
+
+### Limits and delivery
+
+Firefox/Safari, physical devices, screen-reader audit, landscape-specific checks, exhaustive keyboard traversal and real-backend CRUD were not completed. Unsupported-backdrop-filter opaque fallback was source-reviewed; a CSSOM attempt to simulate unsupported filters was inconclusive and is **not** counted as a passed browser check. Initial harness retries corrected profile persistence, JavaScript serialization/selector quoting and the Chrome zoom preference format; they did not require auth/routing changes. The actual 200% zoom requirement previously open in this plan is now completed.
+
+Delivery stays on existing PR #28, with one follow-up commit/push and updated description; do not merge.

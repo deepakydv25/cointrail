@@ -21,7 +21,7 @@ function NotFoundPage() {
 
                 <Link
                     to={isAuthenticated ? "/dashboard" : "/"}
-                    className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+                    className="ct-button ct-button--primary mt-6 inline-block px-5 py-3 font-medium transition"
                 >
                     {isAuthenticated ? "Go to Dashboard" : "Go Home"}
                 </Link>

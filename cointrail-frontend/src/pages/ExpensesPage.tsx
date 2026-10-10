@@ -67,7 +67,7 @@ function ExpensesPage() {
 
                 <Link
                     to="/expenses/create"
-                    className="w-full rounded-lg bg-blue-600 px-4 py-3 text-center font-medium text-white transition hover:bg-blue-700 sm:w-auto"
+                    className="ct-button ct-button--primary w-full px-4 py-3 text-center font-medium transition sm:w-auto"
                 >
                     + Add Expense
                 </Link>
@@ -213,7 +213,7 @@ function ExpensesPage() {
                             type="button"
                             onClick={() => setCurrentPage((page) => page - 1)}
                             disabled={currentPage === 0}
-                            className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                            className="ct-button ct-button--secondary flex-1 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                         >
                             ← Previous
                         </button>
@@ -222,7 +222,7 @@ function ExpensesPage() {
                             type="button"
                             onClick={() => setCurrentPage((page) => page + 1)}
                             disabled={currentPage >= totalPages - 1}
-                            className="flex-1 cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                            className="ct-button ct-button--secondary flex-1 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                         >
                             Next →
                         </button>

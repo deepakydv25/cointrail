@@ -39,12 +39,12 @@ it('initializes a restored scroll position, handles threshold crossings and clea
     const remove = vi.spyOn(window, 'removeEventListener');
     const view = render(<StrictMode><MemoryRouter><PublicLandingNavigation /></MemoryRouter></StrictMode>);
     const header = screen.getByRole('banner');
-    expect(header).toHaveClass('ct-landing-header--scrolled');
+    expect(header).toHaveClass('ct-glass-header--scrolled');
     vi.stubGlobal('scrollY', 8); fireEvent.scroll(window);
-    expect(header).not.toHaveClass('ct-landing-header--scrolled');
+    expect(header).not.toHaveClass('ct-glass-header--scrolled');
     vi.stubGlobal('scrollY', 9); fireEvent.scroll(window);
-    expect(header).toHaveClass('ct-landing-header--scrolled');
-    fireEvent.scroll(window); expect(header).toHaveClass('ct-landing-header--scrolled');
+    expect(header).toHaveClass('ct-glass-header--scrolled');
+    fireEvent.scroll(window); expect(header).toHaveClass('ct-glass-header--scrolled');
     view.unmount();
     const scrollCalls = add.mock.calls.filter(([name]) => name === 'scroll');
     expect(scrollCalls).toHaveLength(2);
