@@ -4,7 +4,7 @@
 
 Make the authenticated application consistent, accessible and ready for real users, with Dashboard as its default destination, reliable reporting URLs, collapsible navigation and refined reporting/forms.
 
-**Status: approved; PR 1 implemented and verified. PRs 2 and 3 remain deferred.** Approval authorizes a later frontend implementation, not changes in this planning task. No production code, existing plans, instructions, dependencies or backend files are changed. Implementation must begin from freshly fetched develop on a new feature branch. No branch, commit, push or PR is created during planning.
+**Status: approved; PRs 1 and 2 merged. PR 3 implemented and verified locally; awaiting delivery and human review.** Approved implementation is frontend only. Preparation, implementation, regression and browser evidence are recorded below. Backend contracts, financial precision, public visuals and human merge approval remain unchanged.
 
 This plan deliberately supersedes earlier decisions to retain `/dashboard` as the authenticated default, canonicalize the default dashboard to explicit period parameters, and omit desktop collapse/mobile overlay navigation. It does not supersede reporting contracts, financial precision or the public visual design.
 
@@ -373,3 +373,66 @@ Implemented on `feature/application-navigation-controls` from latest `origin/dev
 Reviewed [mobile short drawer](013-pr2-qa/320-360-drawer.png), [mobile drawer](013-pr2-qa/390-900-drawer.png), [expanded short desktop](013-pr2-qa/768-360-expanded.png), [expanded desktop](013-pr2-qa/1440-900-expanded.png), [collapsed desktop](013-pr2-qa/1440-900-collapsed.png), [account controls](013-pr2-qa/account-form-390.png), [button/disabled states](013-pr2-qa/primitives-and-disabled-390.png), [200% mobile](013-pr2-qa/zoom-1440-600-mobile.png), [200% expanded desktop](013-pr2-qa/zoom-1600-600-true.png) and [legacy controls](013-pr2-qa/legacy-form-320.png) against the prior explicit-sidebar screenshots. Measurements: [normal](013-pr2-qa/results.json), [zoom](013-pr2-qa/zoom-results.json), [supplementary keyboard/history](013-pr2-qa/legacy-results.json).
 
 Remaining checks: physical devices, Firefox/Safari, screen-reader testing, complete contrast/forced-color/reduced-transparency audits and real-backend E2E were not performed. Existing fallback CSS is retained, with Canvas/CanvasText modal styling added. Native dialog requires a modern supporting browser. Scope excludes backend/API/schema/dependencies, financial helpers, category icons and Analytics bucket/table presentation. Delivery is one new frontend PR targeting develop; do not merge.
+
+## PR 3 implementation evidence - reporting presentation, category icons and drawer cleanup
+
+Started with a clean tree; fetched origin/develop and verified PR #30 merged at 2026-10-10 13:01:45 UTC. Branch `feature/reporting-ux-refinement` starts from merge commit `2580e85fc4dfe84177b1dad6f828ef9406464cba`.
+
+- [x] Dashboard has a named Reporting period form, top-aligned month/year controls with associated help beneath them, a separate 12px-gap Apply/Current month row and a wrapping reporting toolbar grouping Refresh dashboard/View analytics. Controls retain PR 2's 48px height/12px radius.
+- [x] Dashboard sections use available-content container thresholds, not viewport-only columns, so expanded navigation reduces columns appropriately. Metrics use a 24rem minimum readable width (or full available width on mobile), keeping long exact amounts readable rather than crowding four small cards. Opaque cards, heading typography and empty-state spacing are retained/refined. Financial scopes, exact values, Dashboard URL logic and request lifecycles are unchanged.
+- [x] Analytics fields align by their label/control rows; ordinary Daily/Weekly/Monthly labels preserve DAILY/WEEKLY/MONTHLY values. Concise inclusive-date guidance remains visible; native keyboard-accessible Reporting limits details holds exact daily/calendar-anniversary limits and the leap-day rule. Comparison fields and action rows retain clear grouping; validation association/focus stays unchanged.
+- [x] Presentation-only UTC date labels use validated calendar parts and setUTCFullYear, avoiding local-midnight shifts and the year-0-99 shortcut. Exact tables/tooltips share time elements; equal bounds display once, weekly/monthly dates retain the actual inclusive/clipped boundaries. Date / period row headers stay left aligned; monetary/count columns are right aligned with tabular figures and no truncation. Only the named, keyboard-scrollable table region may overflow horizontally. Chart normalization, comparisons, zero-filled rows, financial formatting and query/cancellation behavior are unchanged.
+- [x] Inspected V7 seed migration, without modifying it. All 15 seeded names map to local neutral SVGs with expected type checks. Other/Other Income use tag. Unknown/missing metadata and system=false custom categories retain tag, including a custom Food. Own-property lookup guards JavaScript prototype-name inputs. Available name/type/system metadata is passed in category lists/details, Dashboard category/recent/recurring rows, Analytics categories, Transaction rows/details, Budget lists/details and Recurring rows/details. Reference DTOs without system metadata use the approved name/type presentation fallback; no status is inferred and no extra request is made. Native selectors remain textual.
+
+### CI failure investigation and fix
+
+Fetched [the failed PR #30 job logs](https://github.com/deepakydv25/cointrail/actions/runs/38054102502/job/114218914490): Frontend Tests and Build had 708 passed / 1 failed, AppShell.test.tsx line 103, overflow hidden instead of empty. Backend passed; frontend build was skipped.
+
+The original test passed locally in isolation (1 passed, 7 excluded by the name filter), then the original AppShell/Navbar group passed (12 tests). Inspection found a real route-cleanup timing gap: the location layout effect called dialog.close(), then deferred setOpen(false) to requestAnimationFrame. A closed but still mounted dialog disappears from accessible-role queries while its useLayoutEffect scroll lock remains. Hence waiting for queryByRole(dialog) to disappear did not guarantee restoration. Under differing frame scheduling, CI observed hidden. The issue was not proven to be cross-file state leakage, and layout-effect cleanup itself restored exact original styles correctly once unmounted.
+
+Added a deterministic held-animation-frame history/Logout regression: it failed against the original implementation with a closed dialog still mounted. Route-keyed menu state now resets during rendering, removing the modal and its scroll lock in the same route commit, without waiting for frames. This is a small Navbar state-lifecycle fix, not a navigation redesign; MobileNavigationDrawer's cleanup and test dialog stub remain unchanged. Existing route-heading focus, destinations, session/logout ordering and explicit desktop state remain intact.
+
+Added repeated StrictMode open/close coverage for exact overflow/padding restoration on Close, Escape, backdrop click, destination selection and unmount, plus held-frame history/Logout restoration. Test cleanup restores fixture body styles only after component cleanup; it does not replace any restoration assertion. Three repeated full AppShell runs passed (10 each), and the AppShell/Navbar/App two-worker group passed all 69 tests. A later two-worker five-suite group passed 39 tests, including icon/date presentation and navigation. This exercises scheduler variation with a small parallel group; local Windows/Node 26 is not identical to GitHub's Linux/Node 22 runner.
+
+### Exact targeted verification
+
+Final command used npm.cmd on Windows (same package script), with --maxWorkers=1 and only these 19 actual files:
+
+```text
+src/components/AppShell.test.tsx
+src/components/Navbar.test.tsx
+src/App.test.tsx
+src/components/CategoryIcon.test.tsx
+src/components/ui/foundation.test.tsx
+src/pages/dashboard/DashboardPage.test.tsx
+src/pages/dashboard/charts.test.tsx
+src/pages/dashboard/chartData.test.ts
+src/pages/dashboard/period.test.ts
+src/pages/dashboard/useCurrentCalendarPeriod.test.tsx
+src/pages/analytics/analytics.test.tsx
+src/pages/analytics/charts.test.tsx
+src/pages/analytics/chartData.test.ts
+src/pages/analytics/query.test.ts
+src/pages/analytics/dateLabels.test.tsx
+src/pages/resources.test.tsx
+src/pages/transactions/transactions.test.tsx
+src/pages/budgets/budgets.test.tsx
+src/pages/recurring/recurring.test.tsx
+```
+
+Final targeted run: **19 suites / 426 tests passed**, 171.60s. The date-label suite also passed both tests with TZ=Pacific/Honolulu (2.36s), verifying date-only labels in a negative UTC offset.
+
+An earlier 16-suite targeted batch had 355 passed / 1 unknown-category fallback failure; the own-property guard fixed that defect and its added constructor/prototype tests pass in the subsequent targeted run. Initial lint identified mixed component/helper exports; moved pure helpers into separate local modules. No assertions, timeouts, test configuration or failures were suppressed. Initial name-filter reproduction excluded seven unrelated AppShell cases; all are included in later complete AppShell/targeted runs.
+
+Final npm run lint, npm run build and git diff --check passed. Build: 754 modules; JS 873.88kB / 251.77kB gzip, CSS 49.12kB / 10.29kB gzip. The existing >500kB chunk warning remains.
+
+The full frontend suite was intentionally not run locally for PR 3, per the user's targeted-only instruction. Unaffected suites remain unexecuted locally; CI owns the full suite. Maven/backend tests were not run because no backend file changed.
+
+### Actual rendered browser QA
+
+- Chrome 155, isolated headless profiles, synthetic intercepted financial APIs only. **23 normal-layout assertions passed** at 320/390 mobile, 768 tablet and 1024/1440 desktop, including both 72px/240px desktop states. No document overflow; month/year and multi-column Analytics controls align, native controls retain 48px/12px, exact large amounts/counts and clipped boundaries remain present, neutral glyphs/custom fallback render, Reporting limits toggles with real Enter, and the focused exact-table region scrolls horizontally with real ArrowRight.
+- Exact overflow=auto and paddingRight=3px are restored and actual vertical scrolling works after Close, Escape, backdrop dismissal, destination selection and Logout. Component tests separately verify unmount and held-frame history. Early harness scroll measurements collided with public smooth scrolling and route-heading focus; changed the harness to instantaneous scroll after heading focus completed. The final browser matrix passed without weakening application tests or changing route focus.
+- **10 actual 200% zoom assertions passed** with devicePixelRatio=2 from an isolated Chrome profile zoom preference, no emulation scaling. Dashboard/Analytics at browser windows 768/1024/1440px reflow to mobile; 1600px window verifies both desktop states. Short 600px physical windows yield ~251px CSS viewport height. No horizontal document/navigation overflow.
+- Screenshot evidence: [Dashboard mobile](013-pr3-qa/dashboard-320-collapsed.png), [390px](013-pr3-qa/dashboard-390-collapsed.png), [768px expanded](013-pr3-qa/dashboard-768-expanded.png), [1440px collapsed](013-pr3-qa/dashboard-1440-collapsed.png), [1440px expanded](013-pr3-qa/dashboard-1440-expanded.png), [Analytics mobile](013-pr3-qa/analytics-320-collapsed.png), [1024px expanded](013-pr3-qa/analytics-1024-expanded.png), [Analytics desktop](013-pr3-qa/analytics-1440-expanded.png), [weekly exact table](013-pr3-qa/weekly-table-1440.png), [daily keyboard table](013-pr3-qa/daily-table-320.png), [category icons](013-pr3-qa/categories-320.png), [200% Dashboard](013-pr3-qa/zoom-dashboard-expanded.png) and [200% Analytics](013-pr3-qa/zoom-analytics-mobile.png) against prior Plan 013 sidebar/control evidence. [Normal measurements](013-pr3-qa/results.json), [zoom measurements](013-pr3-qa/zoom-results.json). Fixtures differ from prior screenshots; visual comparisons concern layout, not real financial data.
+
+Remaining limits: physical devices, Firefox/Safari, screen readers, exhaustive contrast/forced-color/reduced-transparency audits and real-backend E2E were not performed. Native select popup appearance remains OS/browser controlled. Full source/test diff reviewed; no backend/database/API/authentication/dependency/precision-helper/public visual changes. Delivery is one PR targeting develop and must not be merged automatically.

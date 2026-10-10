@@ -4,6 +4,7 @@ import { MemoryRouter, useNavigate, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../context/useAuth';
 import AppShell from './AppShell';
+import { StrictMode } from 'react';
 
 vi.mock('../context/useAuth', () => ({ useAuth: vi.fn() }));
 let resize: ((event: MediaQueryListEvent) => void) | undefined;
@@ -14,7 +15,7 @@ beforeEach(() => {
     vi.mocked(useAuth).mockReturnValue({ isAuthenticated: true, isInitialized: true, sessionExpired: false, sessionVersion: 0, login: vi.fn(), logout: vi.fn() });
     vi.stubGlobal('matchMedia', vi.fn(() => ({ get matches() { return matches; }, addEventListener: (_: string, listener: typeof resize) => { resize = listener; }, removeEventListener: remove })));
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); document.body.style.overflow = ''; document.body.style.paddingRight = ''; vi.unstubAllGlobals(); });
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><p>{location.pathname}</p><button onClick={() => navigate(-1)}>Browser back</button></>; }
 function setup() { return render(<MemoryRouter initialEntries={['/app/transactions', '/app/accounts/9223372036854775807/edit?from=2026-01-01']} initialIndex={1}><AppShell><main><h1>Edit account</h1><Location /></main></AppShell></MemoryRouter>); }
 describe('Clarity application shell', () => {
@@ -110,6 +111,32 @@ describe('Clarity application shell', () => {
         screen.getByRole('link', { name: 'Accounts' }).focus();
         act(() => { matches = false; resize?.({ matches: false } as MediaQueryListEvent); }); expect(trigger).toHaveFocus();
         view.unmount(); expect(remove).toHaveBeenCalledWith('change', expect.any(Function));
+    });
+    it('releases the scroll lock on history and Logout without waiting for an animation frame', async () => {
+        vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+        vi.stubGlobal('cancelAnimationFrame', vi.fn());
+        document.body.style.overflow = 'auto'; document.body.style.paddingRight = '7px';
+        setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
+        fireEvent.click(trigger); fireEvent.click(screen.getByRole('button', { name: 'Browser back' }));
+        expect(document.querySelector('dialog')).toBeNull();
+        expect(document.body.style.overflow).toBe('auto'); expect(document.body.style.paddingRight).toBe('7px');
+        fireEvent.click(trigger); fireEvent.click(screen.getByRole('button', { name: 'Logout' }));
+        expect(document.querySelector('dialog')).toBeNull();
+        expect(document.body.style.overflow).toBe('auto'); expect(document.body.style.paddingRight).toBe('7px');
+        document.body.style.overflow = ''; document.body.style.paddingRight = '';
+    });
+    it('restores overflow and padding on every dismissal across repeated StrictMode mounts', () => {
+        document.body.style.overflow = 'auto'; document.body.style.paddingRight = '5px';
+        const view = render(<StrictMode><MemoryRouter><AppShell><main>Content</main></AppShell></MemoryRouter></StrictMode>);
+        const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
+        const restored = () => { expect(document.body.style.overflow).toBe('auto'); expect(document.body.style.paddingRight).toBe('5px'); expect(document.querySelector('dialog')).toBeNull(); };
+        for (let round = 0; round < 2; round++) {
+            fireEvent.click(trigger); fireEvent.click(screen.getByRole('button', { name: 'Close navigation' })); restored();
+            fireEvent.click(trigger); fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' }); restored();
+            fireEvent.click(trigger); fireEvent.click(screen.getByRole('dialog'), { clientX: -1 }); restored();
+            fireEvent.click(trigger); fireEvent.click(screen.getByRole('link', { name: 'Categories' })); restored();
+        }
+        fireEvent.click(trigger); view.unmount(); restored();
     });
     it('logs out and returns to home', () => {
         setup(); fireEvent.click(screen.getByRole('button', { name: 'Logout' }));

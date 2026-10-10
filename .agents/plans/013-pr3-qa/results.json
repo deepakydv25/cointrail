@@ -1,0 +1,588 @@
+{
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.39",
+    "revision": "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.20"
+  },
+  "checks": [
+    {
+      "name": "dashboard 320 false",
+      "data": {
+        "overflow": false,
+        "rail": 305,
+        "content": 305,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 446,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 546,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "analytics 320 false",
+      "data": {
+        "overflow": false,
+        "rail": 305,
+        "content": 305,
+        "fields": [
+          {
+            "id": "from",
+            "top": 326,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 418,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 510,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 3070,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "dashboard 390 false",
+      "data": {
+        "overflow": false,
+        "rail": 375,
+        "content": 375,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 422,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 522,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "analytics 390 false",
+      "data": {
+        "overflow": false,
+        "rail": 375,
+        "content": 375,
+        "fields": [
+          {
+            "id": "from",
+            "top": 302,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 394,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 486,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 2916,
+            "left": 37,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "dashboard 768 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 681,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 265,
+            "left": 121,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 265,
+            "left": 424.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "dashboard 768 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 513,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 313,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 413,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "analytics 768 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 681,
+        "fields": [
+          {
+            "id": "from",
+            "top": 205,
+            "left": 121,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 205,
+            "left": 420.5,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 297,
+            "left": 121,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 2337,
+            "left": 121,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "analytics 768 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 513,
+        "fields": [
+          {
+            "id": "from",
+            "top": 229,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 321,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 413,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 2525,
+            "left": 289,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "dashboard 1024 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 937,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 241,
+            "left": 129,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 241,
+            "left": 552.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "dashboard 1024 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 769,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 241,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 241,
+            "left": 636.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "analytics 1024 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 937,
+        "fields": [
+          {
+            "id": "from",
+            "top": 205,
+            "left": 129,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 205,
+            "left": 408.65625,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 205,
+            "left": 688.328125,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 1977,
+            "left": 129,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "analytics 1024 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 769,
+        "fields": [
+          {
+            "id": "from",
+            "top": 205,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 205,
+            "left": 632.5,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 297,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 2337,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "dashboard 1440 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 1353,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 217,
+            "left": 205.5,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 217,
+            "left": 760.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "dashboard 1440 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 1185,
+        "fields": [
+          {
+            "id": "report-month",
+            "top": 217,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "report-year",
+            "top": 217,
+            "left": 844.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 11
+      }
+    },
+    {
+      "name": "analytics 1440 false",
+      "data": {
+        "overflow": false,
+        "rail": 72,
+        "content": 1353,
+        "fields": [
+          {
+            "id": "from",
+            "top": 205,
+            "left": 205.5,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 205,
+            "left": 572.828125,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 205,
+            "left": 940.15625,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 1810,
+            "left": 205.5,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "analytics 1440 true",
+      "data": {
+        "overflow": false,
+        "rail": 240,
+        "content": 1185,
+        "fields": [
+          {
+            "id": "from",
+            "top": 205,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "to",
+            "top": 205,
+            "left": 659.328125,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "grouping",
+            "top": 205,
+            "left": 1021.65625,
+            "height": 48,
+            "radius": "12px"
+          },
+          {
+            "id": "category-view",
+            "top": 1810,
+            "left": 297,
+            "height": 48,
+            "radius": "12px"
+          }
+        ],
+        "icons": 10
+      }
+    },
+    {
+      "name": "daily exact dates and keyboard table scrolling"
+    },
+    {
+      "name": "seeded and custom category rendering",
+      "data": {
+        "count": 16
+      }
+    },
+    {
+      "name": "usable scroll restoration Close"
+    },
+    {
+      "name": "usable scroll restoration Escape"
+    },
+    {
+      "name": "usable scroll restoration Backdrop"
+    },
+    {
+      "name": "usable scroll restoration Route"
+    },
+    {
+      "name": "usable scroll restoration Logout"
+    }
+  ],
+  "requests": [
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/categories",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/categories"
+  ],
+  "notes": "Synthetic intercepted financial fixtures only. Actual layout, keyboard, table scrolling, category glyphs and scroll restoration. Zoom measured separately."
+}

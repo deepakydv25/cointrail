@@ -35,7 +35,7 @@ function BudgetList({ period }: { period: BudgetPeriod }) {
         {!current ? <LoadingState appearance="clarity" message="Loading budgets…" /> : current.error ? <ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /> : !current.data?.length ?
             <EmptyState appearance="clarity" title="No budgets for this month">Create a budget for an active expense category. Expenses can exist without budget definitions.</EmptyState> :
             <ul className="ct-stack ct-budget-list">{current.data.map(budget => <li key={budget.id}><SurfaceCard className="ct-stack">
-                <div className="ct-category-heading"><CategoryIcon /><Link className="ct-row-title" to={`/app/budgets/${budget.id}${search}`}>{budget.categoryName}</Link></div>
+                <div className="ct-category-heading"><CategoryIcon name={budget.categoryName} type="EXPENSE" /><Link className="ct-row-title" to={`/app/budgets/${budget.id}${search}`}>{budget.categoryName}</Link></div>
                 <BudgetValues budget={budget} />
             </SurfaceCard></li>)}</ul>}
     </section>;

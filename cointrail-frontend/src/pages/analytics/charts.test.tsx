@@ -7,6 +7,7 @@ import CategoryBreakdown from './CategoryBreakdown';
 import { categories, trends } from './fixtures';
 import { formatMoney } from '../../api/financial';
 import type { ReactNode } from 'react';
+import { reportingDateLabel } from './reportingDateLabel';
 const observed = vi.hoisted(() => ({ data: [] as Array<{ incomeCoordinate?: number; expenseCoordinate?: number }> }));
 vi.mock('recharts', () => ({
     ResponsiveContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -16,14 +17,30 @@ vi.mock('recharts', () => ({
 }));
 afterEach(cleanup);
 describe('Analytics exact accessible chart presentation', () => {
+    it('renders a daily bucket once while retaining exact values and its machine-readable date', () => {
+        render(<AnalyticsTrendChart report={{ ...trends, grouping: 'DAILY', items: [{ ...trends.items[1], from: '2024-02-29', to: '2024-02-29' }] }} />);
+        const table = screen.getByRole('table', { name: 'Exact daily bucket values' });
+        expect(table.querySelectorAll('time')).toHaveLength(1);
+        expect(table.querySelector('time')).toHaveAttribute('datetime', '2024-02-29');
+        expect(within(table).getByRole('columnheader', { name: 'Date / period' })).toBeInTheDocument();
+        expect(within(table).getByRole('rowheader')).toHaveTextContent(reportingDateLabel('2024-02-29'));
+    });
+    it('keeps exact monthly edges instead of substituting whole calendar months', () => {
+        render(<AnalyticsTrendChart report={{ ...trends, grouping: 'MONTHLY', range: { from: '2024-01-29', to: '2024-02-03', dayCount: '6' }, items: [
+            { ...trends.items[0], from: '2024-01-29', to: '2024-01-31' }, { ...trends.items[1], from: '2024-02-01', to: '2024-02-03' },
+        ] }} />);
+        const table = screen.getByRole('table', { name: 'Exact monthly bucket values' });
+        expect([...table.querySelectorAll('time')].map(t => t.dateTime)).toEqual(['2024-01-29', '2024-01-31', '2024-02-01', '2024-02-03']);
+        expect(within(table).getAllByRole('row')).toHaveLength(3);
+    });
     it('exposes every zero-filled clipped bucket in a semantic table independent of hovering', () => {
         render(<AnalyticsTrendChart report={trends} />);
         const table = screen.getByRole('table', { name: 'Exact weekly bucket values' });
         expect(within(table).getAllByRole('row')).toHaveLength(6); expect(within(table).getAllByRole('columnheader')).toHaveLength(5);
-        expect(within(table).getByRole('rowheader', { name: /2024-02-01.*through 2024-02-04/ })).toBeInTheDocument(); expect(within(table).getByRole('rowheader', { name: /2024-02-26.*through 2024-02-29/ })).toBeInTheDocument();
+        expect(within(table).getByRole('rowheader', { name: `${reportingDateLabel('2024-02-01')} – ${reportingDateLabel('2024-02-04')}` })).toBeInTheDocument(); expect(within(table).getByRole('rowheader', { name: `${reportingDateLabel('2024-02-26')} – ${reportingDateLabel('2024-02-29')}` })).toBeInTheDocument();
         expect(within(table).getByText(formatMoney(trends.totals.expense))).toBeInTheDocument(); expect(within(table).getByText('9007199254740993')).toBeInTheDocument();
         expect(screen.getByRole('region', { name: 'Exact trend data' })).toHaveAttribute('tabindex', '0');
-        expect(screen.getByText(/Tiny amounts may be invisible/)).toBeInTheDocument();
+        expect(screen.getByText('Bars show relative scale; exact amounts are listed below.')).toBeInTheDocument();
         expect(document.querySelector('.ct-dashboard-chart')).toHaveAttribute('aria-hidden', 'true');
         expect(observed.data[0]).toMatchObject({ incomeCoordinate: 500000, expenseCoordinate: 1000000 });
         expect(screen.getAllByTestId('series').map(series => series.getAttribute('data-key'))).toEqual(['incomeCoordinate', 'expenseCoordinate']);
@@ -31,7 +48,8 @@ describe('Analytics exact accessible chart presentation', () => {
     });
     it('tooltip uses original exact strings and returned dates', () => {
         render(<TrendTooltip bucket={trends.items[0]} />); expect(screen.getByText(`Expense: ${formatMoney(trends.totals.expense)}`)).toBeInTheDocument();
-        expect(screen.getByText('2024-02-01 through 2024-02-04')).toBeInTheDocument();
+        expect(document.querySelectorAll('time')).toHaveLength(2);
+        expect([...document.querySelectorAll('time')].map(t => t.dateTime)).toEqual(['2024-02-01', '2024-02-04']);
     });
     it('shows all same-name ID groups with neutral tags and eligible historical drill-downs', async () => {
         render(<MemoryRouter><CategoryBreakdown report={categories} /></MemoryRouter>);

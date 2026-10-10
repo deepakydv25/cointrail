@@ -36,7 +36,7 @@ function RuleDetails({ id, context }: { id: string; context: string }) {
         {(notice || typeof state?.notice === 'string') && <p role="status">{notice || state.notice}</p>}
         {!current ? <LoadingState appearance="clarity" message="Loading recurring rule…" /> : current.error ? <ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /> : rule && <SurfaceCard className="ct-stack">
             <h2>{rule.type} · <span className={`ct-amount ct-amount--${rule.type.toLowerCase()}`}>{formatMoney(rule.amount)}</span></h2>
-            <p className="whitespace-pre-wrap">Description: {rule.description ?? 'No description'}</p><p>Account: {rule.accountName}</p><div className="ct-category-heading"><CategoryIcon size="small" /><p>Category: {rule.categoryName}</p></div>
+            <p className="whitespace-pre-wrap">Description: {rule.description ?? 'No description'}</p><p>Account: {rule.accountName}</p><div className="ct-category-heading"><CategoryIcon size="small" name={rule.categoryName} type={rule.type} /><p>Category: {rule.categoryName}</p></div>
             <p>Frequency: {rule.frequency}</p><p>Start: {rule.startDate} · End: {rule.endDate ?? 'No end date'}</p><p>Next due: {rule.nextDueDate ?? 'No next due date'}</p><p>Status: {rule.status}</p>
             {rule.blockedReason && <p>Blocked reason: {rule.blockedReason}</p>}
             <p className="ct-description">Schedule and type are immutable. Historical reference names remain readable. Active status does not confirm scheduler operation.</p>

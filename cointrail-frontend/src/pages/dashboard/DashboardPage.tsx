@@ -30,7 +30,7 @@ function PeriodForm({ initial, urlError, rolling, onApply, onCurrent }: {
     const { year, month } = draft ?? initial;
     const feedback = error ?? urlError;
     const change = (next: DashboardPeriod) => setDraft({ ...next, baseline: draft?.baseline ?? initialKey });
-    return <SurfaceCard><form ref={form} noValidate className="ct-dashboard-period" onSubmit={event => {
+    return <SurfaceCard><h2 id="reporting-period-heading">Reporting period</h2><form ref={form} aria-labelledby="reporting-period-heading" noValidate className="ct-dashboard-period" onSubmit={event => {
         event.preventDefault();
         try { const period = validatePeriod({ year, month }); setError(null); setDraft(null); onApply(period); }
         catch (error) {
@@ -67,9 +67,9 @@ function DashboardReport({ period, onRefresh }: { period: DashboardPeriod; onRef
     const data = current?.data; const label = periodLabel(period); const range = monthRange(period);
     const transactions = (type: 'INCOME' | 'EXPENSE') => `/app/transactions?${new URLSearchParams({ type, ...range, page: '0' })}`;
     return <>
-        <div className="ct-actions"><p className="ct-description">Reporting month: {label}</p><Button variant="secondary" onClick={() => {
+        <div className="ct-reporting-toolbar"><p className="ct-description">Reporting month: {label}</p><div className="ct-actions"><Button variant="secondary" onClick={() => {
             if (!onRefresh()) { setAttempt(attempt + 1); setCategoryAttempt(categoryAttempt + 1); }
-        }}>Refresh dashboard</Button><ButtonLink variant="ghost" to={`/app/analytics?${new URLSearchParams({ ...range, grouping: 'DAILY' })}`}>View analytics</ButtonLink></div>
+        }}>Refresh dashboard</Button><ButtonLink variant="ghost" to={`/app/analytics?${new URLSearchParams({ ...range, grouping: 'DAILY' })}`}>View analytics</ButtonLink></div></div>
         <div className="ct-dashboard-grid">
             {current?.error ? <div className="ct-dashboard-wide"><ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /></div>
                 : !data ? <div className="ct-dashboard-wide"><LoadingState appearance="clarity" message="Loading dashboard…" /></div> : <>
@@ -91,7 +91,7 @@ function DashboardReport({ period, onRefresh }: { period: DashboardPeriod; onRef
                     {data.recentTransactions.length === 0 ? <EmptyState appearance="clarity" title="No recent transactions">Create a transaction to record income or expenses.</EmptyState>
                         : <ul className="ct-financial-list">{data.recentTransactions.map(transaction => <li key={transaction.id}>
                             <FinancialRow title={transaction.description || `${transaction.type} transaction`} to={`/app/transactions/${transaction.id}`} type={transaction.type} amount={formatMoney(transaction.amount)}
-                                metadata={<><p>{transaction.transactionDate}</p><p>Account: {transaction.accountName}</p></>} category={`Category: ${transaction.categoryName}`} />
+                                metadata={<><p>{transaction.transactionDate}</p><p>Account: {transaction.accountName}</p></>} categoryName={transaction.categoryName} category={`Category: ${transaction.categoryName}`} />
                         </li>)}</ul>}
                     <ButtonLink variant="ghost" to="/app/transactions">View all transactions</ButtonLink>
                 </section></SurfaceCard>
@@ -114,7 +114,7 @@ function DashboardReport({ period, onRefresh }: { period: DashboardPeriod; onRef
                     <p className="ct-description">Up to five active or blocked next-due cursors, including overdue backlog. These are not forecasts or posting guarantees.</p>
                     {data.pendingRecurringTransactions.items.length === 0 ? <EmptyState appearance="clarity" title="No pending recurring transactions">No pending cursors in the returned window.</EmptyState>
                         : <ul className="ct-financial-list">{data.pendingRecurringTransactions.items.map(item => <li key={item.id}>
-                            <div className="ct-financial-row"><CategoryIcon /><div className="ct-row-content">
+                            <div className="ct-financial-row"><CategoryIcon name={item.categoryName} type={item.type} /><div className="ct-row-content">
                                 <p className="ct-label"><Link className="ct-row-title" to={`/app/recurring/${item.id}`}>{item.description || `${item.type} recurring transaction`}</Link></p><p className="ct-row-metadata">Account: {item.accountName} · Category: {item.categoryName}</p>
                                 <p className="ct-row-metadata">Next due: {item.nextDueDate} · {item.frequency}</p>
                                 <p className="ct-row-metadata">{item.status}{item.overdue && ' · Overdue'}</p>{item.blockedReason && <p className="ct-row-metadata">Blocked reason: {item.blockedReason}</p>}

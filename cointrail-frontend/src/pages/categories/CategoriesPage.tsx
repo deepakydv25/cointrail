@@ -34,7 +34,7 @@ export default function CategoriesPage() {
             : !visible ? <LoadingState appearance="clarity" message="Loading categories…" />
             : visible.length === 0 ? <EmptyState appearance="clarity" title="No active categories">Create a custom category or choose another type.</EmptyState>
             : <ul className="ct-grid">{visible.map(category => <li key={category.id}><SurfaceCard className="ct-stack">
-                <div className="ct-category-heading"><CategoryIcon /><Link className="ct-row-title" to={`/app/categories/${category.id}`}>{category.name}</Link></div>
+                <div className="ct-category-heading"><CategoryIcon name={category.name} type={category.type} system={category.system} /><Link className="ct-row-title" to={`/app/categories/${category.id}`}>{category.name}</Link></div>
                 <p>{category.type} · <span className="ct-badge">{category.system ? 'System · Read-only' : 'Custom'}</span></p>
             </SurfaceCard>
             </li>)}</ul>}

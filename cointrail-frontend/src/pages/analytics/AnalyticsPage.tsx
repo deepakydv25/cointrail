@@ -115,13 +115,18 @@ function RangeForm({ search, query }: { search: string; query?: AnalyticsQuery }
     }
     const dateField = (key: 'from' | 'to' | 'compareFrom' | 'compareTo', label: string) => <FormField id={key} label={label} error={error?.fieldErrors[key]}>{props =>
         <input {...props} className="ct-control" type="date" min="0001-01-01" max="9999-12-31" value={draft[key]} onChange={event => setDraft({ ...draft, [key]: event.target.value })} />}</FormField>;
-    return <SurfaceCard><form ref={form} noValidate onSubmit={event => { event.preventDefault(); apply(); }}>
+    return <SurfaceCard><form ref={form} className="ct-reporting-form" noValidate onSubmit={event => { event.preventDefault(); apply(); }}>
         <div className="ct-analytics-controls">{dateField('from', 'From')}{dateField('to', 'To')}
-            <FormField id="grouping" label="Trend grouping" error={error?.fieldErrors.grouping} hint="DAILY: 366 days. WEEKLY: before 2-year anniversary. MONTHLY: before 5-year anniversary.">{props =>
-                <select {...props} className="ct-control" value={draft.grouping} onChange={event => setDraft({ ...draft, grouping: event.target.value })}>{analyticsGroupings.map(value => <option key={value}>{value}</option>)}{!analyticsGroupings.includes(draft.grouping as AnalyticsGrouping) && <option value={draft.grouping}>Invalid grouping</option>}</select>}</FormField>
+            <FormField id="grouping" label="Trend grouping" error={error?.fieldErrors.grouping}>{props =>
+                <select {...props} className="ct-control" value={draft.grouping} onChange={event => setDraft({ ...draft, grouping: event.target.value })}>{analyticsGroupings.map(value => <option key={value} value={value}>{value[0] + value.slice(1).toLowerCase()}</option>)}{!analyticsGroupings.includes(draft.grouping as AnalyticsGrouping) && <option value={draft.grouping}>Invalid grouping</option>}</select>}</FormField>
         </div>
-        <p className="ct-description">Inclusive dates, years 0001–9999. All reports must end before the 5-year calendar anniversary. Future ranges show recorded actuals only.</p>
-        {comparison && <fieldset><legend>Explicit comparison period</legend><div className="ct-analytics-controls">{dateField('compareFrom', 'Comparison from')}{dateField('compareTo', 'Comparison to')}</div></fieldset>}
+        <p className="ct-description">Dates are inclusive. Grouping changes the trend chart.</p>
+        <details className="ct-reporting-limits"><summary>Reporting limits</summary><div>
+            <p>Use calendar dates in years 0001–9999. All reports, including comparisons, must end before the 5-year calendar anniversary of their start date.</p>
+            <p>Daily trends allow up to 366 inclusive days. Weekly trends must end before the 2-year calendar anniversary. Monthly trends must end before the 5-year calendar anniversary.</p>
+            <p>For a February 29 start, the anniversary is February 28 in a non-leap year. Future ranges show recorded actuals only.</p>
+        </div></details>
+        {comparison && <fieldset><legend>Comparison period</legend><div className="ct-analytics-controls">{dateField('compareFrom', 'Comparison from')}{dateField('compareTo', 'Comparison to')}</div></fieldset>}
         <FormError error={error} fields={['from', 'to', 'grouping', 'compareFrom', 'compareTo']} appearance="clarity" />
         <div className="ct-actions"><Button type="submit">Apply range</Button>{comparison ? <Button variant="secondary" onClick={() => {
             setComparison(false); setError(null);

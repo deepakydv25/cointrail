@@ -1,5 +1,5 @@
 import { AUTHENTICATED_HOME } from '../routes/destinations';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
@@ -16,25 +16,18 @@ export default function Navbar({ appearance = 'classic', expanded = false, onTog
 }
 
 function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onToggle?: () => void }) {
-    const [open, setOpen] = useState(false);
+    const location = useLocation();
+    const [menu, setMenu] = useState({ key: location.key, open: false });
+    // Reset during rendering so route commits unmount the modal and release its
+    // scroll lock together, even when animation frames are delayed or suspended.
+    if (menu.key !== location.key) setMenu({ key: location.key, open: false });
+    const open = menu.key === location.key && menu.open;
+    const setOpen = (value: boolean) => setMenu(previous => ({ ...previous, open: value }));
     const trigger = useRef<HTMLButtonElement>(null);
     const navigation = useRef<HTMLElement>(null);
     const drawer = useRef<HTMLDialogElement>(null);
-    const location = useLocation();
-    const previousLocation = useRef(location.key);
     const navigate = useNavigate();
     const { logout } = useAuth();
-    useLayoutEffect(() => {
-        // Browser history navigation must close the disclosure too.
-        if (previousLocation.current === location.key) return;
-        previousLocation.current = location.key;
-        // Remove modality before SiteLayout's next-frame route-heading focus.
-        drawer.current?.close();
-        const frame = requestAnimationFrame(() => {
-            setOpen(false);
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [location.key]);
     useEffect(() => {
         if (!window.matchMedia) return;
         const media = window.matchMedia('(min-width: 768px)');
