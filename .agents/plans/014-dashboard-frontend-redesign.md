@@ -12,9 +12,11 @@ DashboardPage owns period validation and rolling calendar behavior. CategorySpen
 - [x] Preserve recent transactions, budget and recurring behavior in the requested responsive order.
 - [x] Logo routes to landing; authenticated profile disclosure contains Dashboard and Logout.
 - [x] Verify directly affected existing tests, lint and build. No E2E or full suite.
-- [ ] Review scope, commit, push and open one PR targeting develop without merging.
+- [x] Review scope, commit, push and open one PR targeting develop without merging.
 
 ## Notes
 Reuse existing minorUnits for sorting and bounded presentation percentages from displayed category spending; preserve financial strings and formatMoney. Keep Apply/Current month actions to preserve reporting URL and rolling-calendar behavior.
 
 Verification: seven directly affected existing suites, 121 tests passed across targeted runs; lint, build and diff whitespace check passed. Existing bundle-size warning remains. Backend and E2E tests were not run.
+
+Delivery: feature branch feat/dashboard-redesign, implementation commit 08132a9, PR https://github.com/deepakydv25/cointrail/pull/32 targeting develop. PR remains open and unmerged.
