@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -39,7 +39,7 @@ beforeEach(() => {
     vi.mocked(service.updateTransaction).mockImplementation(async (_id, request) => save(request));
     vi.mocked(service.deleteTransaction).mockResolvedValue();
 });
-afterEach(() => { cleanup(); logoutSession(); });
+afterEach(() => { cleanup(); logoutSession(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('transaction forms and history', () => {
     it.each(['EXPENSE', 'INCOME'] as const)('creates %s with exact money, IDs and preserved filters', async type => {
@@ -143,6 +143,31 @@ describe('transaction forms and history', () => {
 });
 
 describe('transaction list, detail and deletion', () => {
+    it('shows a simple first-use empty state with one creation action and no filters or pagination', async () => {
+        vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [], totalElements: '0', totalPages: '0' });
+        renderPage('/app/transactions');
+        expect(await screen.findByRole('heading', { name: 'No transactions yet' })).toBeInTheDocument();
+        expect(screen.getAllByRole('link', { name: 'Create transaction' })).toHaveLength(1);
+        expect(screen.getByRole('link', { name: 'Create transaction' })).toHaveAttribute('href', '/app/transactions/create');
+        expect(screen.queryByRole('button', { name: 'Filters' })).toBeNull();
+        expect(screen.queryByRole('navigation', { name: 'Transaction pagination' })).toBeNull();
+    });
+    it('groups the returned page by local calendar dates with accessible details and hides one-page pagination', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 10, 0, 30)); loginSession(makeToken());
+        vi.mocked(service.getTransactions).mockResolvedValue({ ...page, totalPages: '1', totalElements: '4', content: [
+            { ...transaction, id: '4', description: 'Today purchase', transactionDate: '2026-10-10' },
+            { ...transaction, id: '3', description: 'Yesterday purchase', transactionDate: '2026-10-09' },
+            { ...transaction, id: '2', description: 'Older purchase', transactionDate: '2026-10-08' },
+            { ...transaction, id: '1', description: 'Another older purchase', transactionDate: '2026-10-08' },
+        ] });
+        renderPage('/app/transactions'); await screen.findByRole('link', { name: 'Today purchase' });
+        expect(screen.getAllByRole('heading', { level: 2 }).map(heading => heading.textContent)).toEqual(['Today', 'Yesterday', '8 October 2026']);
+        expect(within(screen.getByRole('region', { name: '8 October 2026' })).getAllByRole('listitem')).toHaveLength(2);
+        expect(screen.queryByRole('navigation', { name: 'Transaction pagination' })).toBeNull();
+        fireEvent.click(screen.getByRole('link', { name: 'Older purchase' }));
+        expect(await screen.findByRole('heading', { name: 'Transaction details' })).toBeInTheDocument();
+        expect(service.getTransaction).toHaveBeenCalledWith('2', expect.any(AbortSignal));
+    });
     it.each(['INCOME', 'EXPENSE'] as const)('keeps the full %s amount and tone on details', async type => {
         vi.mocked(service.getTransaction).mockResolvedValue({ ...transaction, type });
         renderPage(`/app/transactions/${id}`);
@@ -162,10 +187,15 @@ describe('transaction list, detail and deletion', () => {
         expect(await screen.findByRole('link', { name: 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}?type=EXPENSE&accountId=1&page=1&sort=amount,desc`);
         expect(screen.getByText(/₹99,99,99,99,99,99,99,999.99/)).toBeInTheDocument(); expect(screen.getByText('Account: Bank')).toBeInTheDocument();
         expect(service.getTransactions).toHaveBeenCalledWith(expect.objectContaining({ type: 'EXPENSE', accountId: '1', page: '1', sort: 'amount,desc' }), expect.any(AbortSignal));
+        expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
+        expect(screen.getByRole('list', { name: 'Active filters' })).toHaveTextContent('Account: ID 1');
+        fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
         expect(screen.getByRole('option', { name: /Historical or unavailable account/ })).toHaveValue('1');
     });
     it('applies filters/sort, resets page and requests server pagination', async () => {
-        const user = userEvent.setup(); renderPage('/app/transactions?page=3'); await screen.findByRole('link', { name: 'Dinner' });
+        const user = userEvent.setup(); renderPage('/app/transactions?page=3&source=review'); await screen.findByRole('link', { name: 'Dinner' });
+        expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute('aria-expanded', 'false');
+        await user.click(screen.getByRole('button', { name: 'Filters' }));
         await user.selectOptions(screen.getByLabelText('Type'), 'INCOME'); await user.selectOptions(screen.getByLabelText('Account'), accountId);
         await user.selectOptions(screen.getByLabelText('Category'), '9007199254740996');
         await user.selectOptions(screen.getByLabelText('Sort'), 'updatedAt,asc'); await user.selectOptions(screen.getByLabelText('Page size'), '100');
@@ -173,27 +203,31 @@ describe('transaction list, detail and deletion', () => {
         fireEvent.change(screen.getByLabelText('To date (inclusive)'), { target: { value: '2026-10-01' } });
         await user.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'INCOME', accountId, categoryId: '9007199254740996', from: '2026-01-01', to: '2026-10-01', page: '0', size: '100', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
+        expect(screen.getByTestId('location')).toHaveTextContent('source=review');
         await screen.findByRole('link', { name: 'Dinner' }); await user.click(screen.getByRole('button', { name: 'Next page' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '1', sort: 'updatedAt,asc' }), expect.any(AbortSignal)));
         await user.click(screen.getByRole('button', { name: 'Clear filters' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '0', size: '20', sort: 'transactionDate,desc' }), expect.any(AbortSignal)));
     });
-    it('shows empty results for unknown IDs, keeps previous-page recovery and disallows next page', async () => {
+    it('shows no matching transactions for unknown IDs and clears filters without empty pagination', async () => {
         vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [], number: '5', totalElements: '0', totalPages: '0' });
         renderPage('/app/transactions?accountId=9223372036854775807&page=5');
-        expect(await screen.findByRole('heading', { name: 'No transactions' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Previous page' })).toBeEnabled();
-        expect(screen.getByText(/No result pages/)).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No matching transactions' })).toBeInTheDocument();
+        expect(screen.queryByRole('navigation', { name: 'Transaction pagination' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '0', accountId: undefined }), expect.any(AbortSignal)));
     });
     it('retains a valid custom page size when applying filters', async () => {
         const user = userEvent.setup(); renderPage('/app/transactions?size=7'); await screen.findByRole('link', { name: 'Dinner' });
+        await user.click(screen.getByRole('button', { name: 'Filters' }));
         expect(screen.getByLabelText('Page size')).toHaveValue('7');
         await user.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(service.getTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ size: '7', page: '0' }), expect.any(AbortSignal)));
     });
     it('handles list errors without losing filters and retries', async () => {
         vi.mocked(service.getTransactions).mockRejectedValueOnce(new ApiError('Offline', 'network')); renderPage('/app/transactions?type=INCOME');
-        expect(await screen.findByRole('alert')).toHaveTextContent('Offline'); expect(screen.getByLabelText('Type')).toHaveValue('INCOME');
+        expect(await screen.findByRole('alert')).toHaveTextContent('Offline');
+        fireEvent.click(screen.getByRole('button', { name: 'Filters' })); expect(screen.getByLabelText('Type')).toHaveValue('INCOME');
         fireEvent.click(screen.getByRole('button', { name: 'Try again' })); await screen.findByRole('link', { name: 'Dinner' });
     });
     it('rejects reversed dates without dispatch and lets users clear invalid filters', async () => {
@@ -204,6 +238,7 @@ describe('transaction list, detail and deletion', () => {
         let resolve!: (data: TransactionPage) => void;
         vi.mocked(service.getTransactions).mockImplementationOnce(() => new Promise(done => { resolve = done; })).mockResolvedValue({ ...page, content: [{ ...transaction, type: 'INCOME', description: 'Salary record' }] });
         const user = userEvent.setup(); renderPage('/app/transactions'); expect(screen.getByText('Loading transactions…')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Filters' }));
         await user.selectOptions(screen.getByLabelText('Type'), 'INCOME'); await user.click(screen.getByRole('button', { name: 'Apply filters' }));
         await screen.findByRole('link', { name: 'Salary record' }); await act(async () => resolve(page));
         expect(screen.queryByRole('link', { name: 'Dinner' })).not.toBeInTheDocument();
@@ -223,7 +258,7 @@ describe('transaction list, detail and deletion', () => {
         await waitFor(() => expect(screen.getByRole('button', { name: 'Delete transaction' })).toHaveFocus());
         vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [], totalElements: '0', totalPages: '0', number: '1' });
         await user.click(screen.getByRole('button', { name: 'Delete transaction' })); await user.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
-        await screen.findByRole('heading', { name: 'No transactions' }); expect(service.deleteTransaction).toHaveBeenCalledWith(id);
+        await screen.findByRole('heading', { name: 'No matching transactions' }); expect(service.deleteTransaction).toHaveBeenCalledWith(id);
         expect(screen.queryByRole('link', { name: 'Dinner' })).not.toBeInTheDocument();
         expect(screen.getByTestId('location')).toHaveTextContent('/app/transactions?type=EXPENSE&page=1');
         expect(screen.getByText('Transaction permanently deleted.')).toBeInTheDocument();

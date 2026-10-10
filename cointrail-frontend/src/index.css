@@ -486,3 +486,17 @@ form .ct-button--primary { min-height: 3rem; }
 .ct-landing-header .ct-profile-options .ct-button { justify-content: flex-start; gap: .625rem; padding: .625rem .875rem; border: 0; border-radius: .5rem; background: transparent; backdrop-filter: none; }
 .ct-landing-header .ct-profile-options .ct-button:hover { background: var(--ct-surface-selected); }
 @container (min-width: 36rem) { .ct-dashboard .ct-dashboard-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Transactions list: disclosures, calendar groups and full-row detail links. */
+.ct-transactions-filter-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.ct-active-filters { display: flex; flex: 1 1 12rem; flex-wrap: wrap; gap: .5rem; list-style: none; }
+.ct-active-filters li { padding: .375rem .625rem; border-radius: .5rem; background: var(--ct-surface-selected); color: var(--ct-text-secondary); font-size: .875rem; overflow-wrap: anywhere; }
+.ct-transactions #transaction-filters .ct-card { margin-top: .75rem; }
+.ct-transaction-groups { display: grid; gap: 1.5rem; }
+.ct-transaction-groups h2 { font: var(--ct-type-section); margin-bottom: .75rem; }
+.ct-transactions .ct-financial-row { position: relative; }
+.ct-transactions .ct-row-title::after { content: ''; position: absolute; inset: 0; }
+.ct-transactions .ct-financial-row:hover { background: var(--ct-surface-selected); }
+.ct-transactions .ct-financial-row:focus-within { outline: 2px solid var(--ct-primary); outline-offset: -2px; }
+.ct-transactions .ct-pagination { justify-content: center; gap: .5rem; }
+.ct-transactions .ct-pagination p { min-width: 7rem; text-align: center; }
