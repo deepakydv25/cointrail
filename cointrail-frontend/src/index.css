@@ -526,3 +526,36 @@ form .ct-button--primary { min-height: 3rem; }
 .ct-transactions .ct-transactions-filter-toolbar .ct-transaction-filter-toggle { margin-inline-start: auto; width: auto; min-height: 2.25rem; padding: .375rem .625rem; font-size: .875rem; border: 0; border-radius: .5rem; background: transparent; backdrop-filter: none; box-shadow: none; }
 .ct-transactions .ct-transaction-filter-toggle:hover, .ct-transactions .ct-transaction-filter-toggle[aria-expanded="true"] { background: var(--ct-surface-selected); }
 .ct-transaction-filter-toggle .ct-icon { width: 1.125rem; height: 1.125rem; }
+
+/* Budgets: compact month controls, scoped totals and category limits. */
+.ct-budgets-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.ct-budget-month-navigation { display: flex; align-items: center; gap: .375rem; min-width: 0; }
+.ct-budget-month-navigation h2 { font: var(--ct-type-section); text-align: center; min-width: 9rem; }
+.ct-budgets .ct-budget-icon-action, .ct-budgets .ct-budget-month-navigation .ct-button { width: 2.25rem; min-height: 2.25rem; padding: .5rem; border: 0; border-radius: .5rem; background: transparent; backdrop-filter: none; box-shadow: none; }
+.ct-budgets .ct-budget-icon-action:hover, .ct-budgets .ct-budget-month-navigation .ct-button:hover, .ct-budgets .ct-budget-icon-action[aria-expanded="true"] { background: var(--ct-surface-selected); }
+.ct-budgets .ct-budget-icon-action .ct-icon, .ct-budgets .ct-budget-month-navigation .ct-icon { width: 1.125rem; height: 1.125rem; }
+.ct-budget-overview-values { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; margin-block: .75rem 1rem; }
+.ct-budget-overview-values dt { color: var(--ct-text-secondary); font-size: .8125rem; }
+.ct-budget-overview-values dd { margin-top: .25rem; font-size: clamp(1rem, 2vw, 1.375rem); }
+.ct-budget-card-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .875rem; list-style: none; }
+.ct-budget-card-grid li { min-width: 0; }
+.ct-budget-card { display: grid; gap: .625rem; }
+.ct-budget-card--over { border-color: var(--ct-expense); }
+.ct-budget-card-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.ct-budget-card-heading .ct-category-heading { min-width: 0; gap: .5rem; }
+.ct-budget-card-heading .ct-row-title { min-height: 0; padding: 0; font-size: .9375rem; }
+.ct-budget-card-amounts { font-size: .9375rem; }
+.ct-budget-progress-label { display: flex; justify-content: space-between; gap: .5rem; color: var(--ct-text-secondary); font-size: .8125rem; margin-bottom: .375rem; }
+.ct-budget-progress-track { height: .375rem; border-radius: 1rem; overflow: hidden; background: var(--ct-surface-selected); }
+.ct-budget-progress-track > span { display: block; height: 100%; border-radius: inherit; background: var(--ct-primary); }
+.ct-budget-progress--over .ct-budget-progress-track > span { background: var(--ct-expense); }
+.ct-budget-progress--over .ct-budget-progress-label, .ct-budget-status { font-size: .8125rem; }
+.ct-budget-progress--over .ct-budget-progress-label { color: var(--ct-expense); }
+.ct-budget-actions { position: relative; flex-shrink: 0; }
+.ct-budget-action-options { position: absolute; z-index: 5; right: 0; top: calc(100% + .25rem); display: grid; min-width: 10rem; padding: .375rem; border: 1px solid var(--ct-border); border-radius: var(--ct-radius-control); background: var(--ct-surface); box-shadow: var(--ct-shadow-card); }
+.ct-budgets .ct-budget-action-options .ct-button { justify-content: flex-start; min-height: 2.25rem; padding: .5rem .625rem; font-size: .875rem; border: 0; background: transparent; backdrop-filter: none; box-shadow: none; }
+.ct-budgets .ct-budget-action-options .ct-button:hover { background: var(--ct-surface-selected); }
+.ct-budget-empty .ct-feedback--empty { display: grid; justify-items: center; text-align: center; gap: .75rem; padding: 2rem 1rem; }
+.ct-budget-empty .ct-description { display: grid; justify-items: center; gap: 1rem; }
+@container (min-width: 36rem) { .ct-budget-overview-values { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ct-budget-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container (min-width: 60rem) { .ct-budget-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

@@ -52,7 +52,7 @@ function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onTo
     const navigationContent = <>
         <div id="application-navigation" className="ct-nav-panel">
             <p className="ct-nav-label">Workspace</p>
-            <div className="ct-nav-group">{destination(AUTHENTICATED_HOME, 'Dashboard', 'overview')}{destination('/app/transactions', 'Transactions', 'transactions')}{destination('/app/budgets', 'Budgets', 'overview')}{destination('/app/analytics', 'Analytics', 'overview')}{destination('/app/recurring', 'Recurring transactions', 'transactions')}{destination('/app/accounts', 'Accounts', 'account')}{destination('/app/categories', 'Categories', 'tag')}</div>
+            <div className="ct-nav-group">{destination(AUTHENTICATED_HOME, 'Dashboard', 'layout-dashboard')}{destination('/app/transactions', 'Transactions', 'arrow-left-right')}{destination('/app/budgets', 'Budgets', 'circle-gauge')}{destination('/app/analytics', 'Analytics', 'chart-no-axes-combined')}{destination('/app/recurring', 'Recurring transactions', 'repeat')}{destination('/app/accounts', 'Accounts', 'landmark')}{destination('/app/categories', 'Categories', 'tags')}</div>
             <p className="ct-nav-label">Legacy expenses</p><div className="ct-nav-group">{destination('/dashboard', 'Expense overview', 'overview')}{destination('/expenses', 'Expense records', 'receipt')}</div>
         </div>
         <div id="application-navigation-logout" className="ct-nav-bottom">
