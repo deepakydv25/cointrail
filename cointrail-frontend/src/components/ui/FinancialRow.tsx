@@ -7,8 +7,8 @@ export function FinancialRow({ title, to, metadata, amount, type, category, cate
 }) {
     return <div className={`ct-financial-row${compact ? ' ct-financial-row--compact' : ''}`}><CategoryIcon name={categoryName} type={type} size={compact ? 'small' : 'normal'} />
         <div className="ct-row-content"><Link to={to} className="ct-row-title">{title}</Link>
-            <div className="ct-row-metadata">{compact ? <>{category}<span aria-hidden="true">{' \u00b7 '}</span>{metadata}</> : metadata}</div>{!compact && <p className="ct-row-metadata">{category}</p>}</div>
-        <div className="ct-row-value"><span className={compact ? 'sr-only' : 'ct-badge'}>{type}</span>
-            <p className={`ct-amount ct-amount--${type.toLowerCase()}`}>{amount}</p></div>{trailing}
+            <div className="ct-row-metadata">{compact ? <>{title.trim().toLowerCase() !== category.trim().toLowerCase() && <>{category}<span aria-hidden="true">{' \u00b7 '}</span></>}{metadata}</> : metadata}</div>{!compact && <p className="ct-row-metadata">{category}</p>}</div>
+        <div className="ct-row-value">{!compact && <span className="ct-badge">{type}</span>}
+            <p className={`ct-amount ct-amount--${type.toLowerCase()}`} aria-label={compact ? `${type === 'EXPENSE' ? 'Expense' : 'Income'} ${amount}` : undefined}>{amount}</p></div>{trailing}
     </div>;
 }

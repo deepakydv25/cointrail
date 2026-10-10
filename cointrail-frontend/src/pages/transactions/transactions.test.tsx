@@ -176,12 +176,13 @@ describe('transaction list, detail and deletion', () => {
         expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toHaveClass(`ct-amount--${type.toLowerCase()}`);
     });
     it.each(['INCOME', 'EXPENSE'] as const)('shows complete %s amounts with a text label and neutral category icon', async type => {
-        vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [{ ...transaction, type }] });
+        vi.mocked(service.getTransactions).mockResolvedValue({ ...page, content: [{ ...transaction, type, description: type === 'INCOME' ? null : transaction.description }] });
         renderPage('/app/transactions');
-        expect(await screen.findByRole('link', { name: 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}`);
+        expect(await screen.findByRole('link', { name: type === 'INCOME' ? 'Food' : 'Dinner' })).toHaveAttribute('href', `/app/transactions/${id}`);
+        if (type === 'INCOME') expect(document.querySelector('.ct-row-metadata')).toHaveTextContent(/^Bank$/);
         expect(screen.getByText(`${type === 'EXPENSE' ? '\u2212' : '+'}\u20b999,99,99,99,99,99,99,999.99`)).toHaveClass(`ct-amount--${type.toLowerCase()}`);
         expect(screen.queryByText(type, { selector: '.ct-badge' })).toBeNull();
-        expect(screen.getByText(type, { selector: '.sr-only' })).toBeInTheDocument();
+        expect(screen.getByText(`${type === 'EXPENSE' ? '\u2212' : '+'}\u20b999,99,99,99,99,99,99,999.99`)).toHaveAttribute('aria-label', `${type === 'EXPENSE' ? 'Expense' : 'Income'} ${type === 'EXPENSE' ? '\u2212' : '+'}\u20b999,99,99,99,99,99,99,999.99`);
         expect(document.querySelector('.ct-category-icon')).toHaveAttribute('aria-hidden', 'true');
     });
     it('lists historical names, exact amounts and preserved query links', async () => {
