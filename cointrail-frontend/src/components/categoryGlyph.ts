@@ -1,6 +1,7 @@
 import type { IconName } from './ui/Icon';
 
 const seeded: Record<string, { type: 'EXPENSE' | 'INCOME'; icon: IconName }> = {
+    groceries: { type: 'EXPENSE', icon: 'cart' },
     food: { type: 'EXPENSE', icon: 'utensils' }, travel: { type: 'EXPENSE', icon: 'suitcase' },
     shopping: { type: 'EXPENSE', icon: 'shopping-bag' }, entertainment: { type: 'EXPENSE', icon: 'film' },
     bills: { type: 'EXPENSE', icon: 'receipt' }, health: { type: 'EXPENSE', icon: 'medical' },

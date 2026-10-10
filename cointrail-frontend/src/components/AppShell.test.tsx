@@ -50,7 +50,7 @@ describe('Clarity application shell', () => {
     it('has one navigation tree, selected descendant and separate legacy destinations', () => {
         setup(); const nav = screen.getByRole('navigation', { name: 'Primary navigation' });
         expect(screen.getAllByRole('navigation')).toHaveLength(1); expect(screen.getAllByRole('main')).toHaveLength(1);
-        expect(within(nav).getByRole('link', { name: 'CoinTrail dashboard' })).toHaveTextContent(/^CoinTrail$/);
+        expect(within(nav).getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
         expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
         expect(within(nav).getByRole('link', { name: 'Accounts' })).toHaveAttribute('aria-current', 'page');
         expect(within(nav).getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/app/transactions');

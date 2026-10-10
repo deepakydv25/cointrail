@@ -68,7 +68,7 @@ function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onTo
     return <nav ref={navigation} aria-label="Primary navigation" className="ct-navigation" onKeyDown={event => {
         if (event.key === 'Escape' && open) { event.preventDefault(); dismiss(); }
     }}>
-        <div className="ct-nav-top ct-glass-header"><Link to={AUTHENTICATED_HOME} className="ct-brand" aria-label="CoinTrail dashboard" onClick={closeMobileNavigation}>
+        <div className="ct-nav-top ct-glass-header"><Link to="/" className="ct-brand" aria-label="CoinTrail home" onClick={closeMobileNavigation}>
             <Brand /></Link>
             <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
                 aria-expanded={open} aria-controls="application-navigation application-navigation-logout" aria-haspopup="dialog" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
