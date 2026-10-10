@@ -18,7 +18,7 @@ function Location() { const location = useLocation(); const navigate = useNaviga
 const url = '/app/analytics?from=2024-02-01&to=2024-02-29&grouping=WEEKLY';
 function setup(path = url) { return render(<MemoryRouter initialEntries={[path]}><AuthProvider><App /><Location /></AuthProvider></MemoryRouter>); }
 const region = (name: string) => screen.getByRole('region', { name });
-async function loaded() { await screen.findByRole('link', { name: 'Historical bank' }); await screen.findByRole('table'); await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeEnabled()); }
+async function loaded() { await screen.findByRole('link', { name: 'Historical bank' }); await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeEnabled()); fireEvent.click(screen.getByRole('button', { name: 'Filters' })); await screen.findByText('View detailed breakdown'); fireEvent.click(screen.getByText('View detailed breakdown')); await screen.findByRole('table'); }
 beforeEach(() => {
     vi.resetAllMocks(); loginSession(makeToken());
     vi.mocked(getAnalyticsSummary).mockResolvedValue(summary); vi.mocked(getAnalyticsTrends).mockResolvedValue(trends);
@@ -28,13 +28,13 @@ afterEach(() => { cleanup(); logoutSession(); vi.restoreAllMocks(); });
 
 describe('Analytics reports and authoritative exact values', () => {
     it('keeps limits in a keyboard-accessible disclosure and ordinary grouping labels with API values', async () => {
-        setup(); await loaded();
-        expect(screen.getByText('Dates are inclusive. Grouping changes the trend chart.')).toBeInTheDocument();
+        setup(); fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
         const disclosure = screen.getByText('Reporting limits').closest('details')!;
         expect(disclosure).not.toHaveAttribute('open');
         await userEvent.click(screen.getByText('Reporting limits'));
         expect(disclosure).toHaveAttribute('open');
-        expect(within(disclosure).getByText(/366 inclusive days/)).toBeInTheDocument();
+        expect(within(disclosure).getByText(/Dates are inclusive/)).toBeInTheDocument();
+        expect(within(disclosure).getByText(/366 days/)).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'Daily' })).toHaveValue('DAILY');
         expect(screen.getByRole('option', { name: 'Weekly' })).toHaveValue('WEEKLY');
         expect(screen.getByRole('option', { name: 'Monthly' })).toHaveValue('MONTHLY');
@@ -46,8 +46,8 @@ describe('Analytics reports and authoritative exact values', () => {
         expect(within(overview).getByText(formatMoney(summary.totals.netCashFlow))).toBeInTheDocument();
         expect(within(overview).getByText('9007199254740993')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Historical bank' })).toHaveAttribute('href', '/app/transactions?from=2024-02-01&to=2024-02-29&accountId=9223372036854775807&page=0');
-        expect(within(region('Account activity')).getByText(/BANK · Inactive/)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'View income transactions' })).toHaveAttribute('href', '/app/transactions?from=2024-02-01&to=2024-02-29&type=INCOME&page=0');
+        expect(within(region('Account activity')).getByText('Inactive')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Income transactions' })).toHaveAttribute('href', '/app/transactions?from=2024-02-01&to=2024-02-29&type=INCOME&page=0');
         expect(screen.getAllByRole('main')).toHaveLength(1); expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
         expect(screen.getByRole('link', { name: 'Analytics' })).toHaveAttribute('aria-current', 'page');
         expect(getAnalyticsComparison).not.toHaveBeenCalled(); expect(screen.queryByText('Total balance')).toBeNull();
@@ -63,61 +63,65 @@ describe('Analytics reports and authoritative exact values', () => {
         vi.mocked(getAnalyticsSummary).mockResolvedValue({ ...summary, totals: zero }); vi.mocked(getAnalyticsTrends).mockResolvedValue({ ...trends, totals: zero, items: [trends.items[1]] });
         vi.mocked(getCategoryBreakdown).mockResolvedValue({ ...categories, items: [] }); vi.mocked(getAccountBreakdown).mockResolvedValue({ ...accounts, items: [] });
         setup(); expect(await screen.findByRole('heading', { name: 'No account activity' })).toBeInTheDocument(); expect(screen.getByRole('heading', { name: 'No expense category activity' })).toBeInTheDocument();
-        expect(within(region('Overview')).getAllByText('₹0.00')).toHaveLength(3); expect(screen.getAllByRole('row')).toHaveLength(2);
+        expect(within(region('Overview')).getAllByText('₹0.00')).toHaveLength(3); fireEvent.click(screen.getByRole('button', { name: 'Filters' })); fireEvent.click(screen.getByText('View detailed breakdown')); expect(screen.getAllByRole('row')).toHaveLength(1);
     });
     it('changes category presentation only without refetching or filtering overview/trends', async () => {
-        setup(); await loaded(); await userEvent.selectOptions(screen.getByLabelText('Category breakdown view'), 'INCOME');
+        setup(); await loaded(); await userEvent.selectOptions(screen.getByLabelText('Show category activity'), 'INCOME');
         expect(screen.getByRole('link', { name: 'Salary' })).toBeInTheDocument(); expect(getCategoryBreakdown).toHaveBeenCalledOnce(); expect(getAnalyticsSummary).toHaveBeenCalledOnce(); expect(getAnalyticsTrends).toHaveBeenCalledOnce();
     });
 });
 
 describe('Analytics range, comparison and browser history', () => {
-    it('defaults to an explicit current browser month and keeps invalid URLs request-free', async () => {
+    it('shows the current browser month without adding default query parameters', async () => {
         const year = new Date().getFullYear(); const month = String(new Date().getMonth() + 1).padStart(2, '0');
-        setup('/app/analytics'); await loaded(); expect(screen.getByTestId('location')).toHaveTextContent(`from=${year}-${month}-01`); expect(screen.getByTestId('location')).toHaveTextContent('grouping=DAILY');
+        setup('/app/analytics'); await loaded(); expect(screen.getByTestId('location')).toHaveTextContent('/app/analytics'); expect(screen.queryByText('from=')).toBeNull(); expect(screen.getByLabelText('Select month')).toHaveValue(`${year}-${month}`);
+        expect(getAnalyticsSummary).toHaveBeenCalledWith({ from: `${year}-${month}-01`, to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }, expect.any(AbortSignal));
+        fireEvent.change(screen.getByLabelText('Select month'), { target: { value: '2024-02' } });
+        await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(2));
+        expect(screen.getByTestId('location')).toHaveTextContent('from=2024-02-01'); expect(screen.getByTestId('location')).toHaveTextContent('to=2024-02-29');
     });
     it.each(['?from=2024-02-30&to=2024-03-01', '?from=2024-01-01', '?from=2024-01-01&to=2024-01-31&categoryId=1', '?from=2024-01-01&to=2024-01-31&grouping=YEARLY', '?from=2024-01-01&to=2025-01-01&grouping=DAILY', '?from=2024-01-01&to=2024-01-31&compareFrom=2023-01-01'])('rejects%s and does not fetch any report', search => {
         setup(`/app/analytics${search}`); expect(screen.getByRole('alert')).toBeInTheDocument();
         for (const service of [getAnalyticsSummary, getAnalyticsTrends, getAccountBreakdown, getCategoryBreakdown, getAnalyticsComparison]) expect(service).not.toHaveBeenCalled();
     });
     it('retains invalid form drafts, links field errors and focuses the invalid input', async () => {
-        setup(); await loaded(); fireEvent.change(screen.getByLabelText('From'), { target: { value: '2025-01-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
-        expect(screen.getByRole('alert')).toHaveTextContent('Check your reporting dates'); expect(screen.getByLabelText('From')).toHaveValue('2025-01-01');
-        await waitFor(() => expect(screen.getByLabelText('To')).toHaveFocus()); expect(screen.getByLabelText('To')).toHaveAttribute('aria-invalid', 'true'); expect(getAnalyticsSummary).toHaveBeenCalledOnce();
+        setup(); await loaded(); fireEvent.change(screen.getByLabelText('From date'), { target: { value: '2025-01-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+        expect(screen.getByRole('alert')).toHaveTextContent('Check your reporting dates'); expect(screen.getByLabelText('From date')).toHaveValue('2025-01-01');
+        await waitFor(() => expect(screen.getByLabelText('To date')).toHaveFocus()); expect(screen.getByLabelText('To date')).toHaveAttribute('aria-invalid', 'true'); expect(getAnalyticsSummary).toHaveBeenCalledOnce();
     });
     it('preserves drafts through report refresh and applies only committed range changes', async () => {
-        setup(); await loaded(); fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-02-28' } });
+        setup(); await loaded(); fireEvent.change(screen.getByLabelText('To date'), { target: { value: '2024-02-28' } });
         fireEvent.click(screen.getByRole('button', { name: 'Refresh all reports' })); await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(2));
-        expect(screen.getByLabelText('To')).toHaveValue('2024-02-28'); expect(vi.mocked(getAnalyticsSummary).mock.calls[1][0].to).toBe('2024-02-29');
-        fireEvent.click(screen.getByRole('button', { name: 'Apply range' })); await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(3)); expect(screen.getByTestId('location')).toHaveTextContent('to=2024-02-28');
+        expect(screen.getByLabelText('To date')).toHaveValue('2024-02-28'); expect(vi.mocked(getAnalyticsSummary).mock.calls[1][0].to).toBe('2024-02-29');
+        fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(3)); expect(screen.getByTestId('location')).toHaveTextContent('to=2024-02-28');
     });
     it('refetches only trends for grouping and restores applied URL state with Back/Forward', async () => {
-        setup(); await loaded(); fireEvent.change(screen.getByLabelText('Trend grouping'), { target: { value: 'MONTHLY' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        setup(); await loaded(); fireEvent.change(screen.getByLabelText('Grouping'), { target: { value: 'MONTHLY' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(getAnalyticsTrends).toHaveBeenCalledTimes(2)); expect(getAnalyticsSummary).toHaveBeenCalledOnce(); expect(getCategoryBreakdown).toHaveBeenCalledOnce(); expect(getAccountBreakdown).toHaveBeenCalledOnce();
-        fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await waitFor(() => expect(screen.getByLabelText('Trend grouping')).toHaveValue('WEEKLY'));
-        fireEvent.click(screen.getByRole('button', { name: 'Browser forward' })); await waitFor(() => expect(screen.getByLabelText('Trend grouping')).toHaveValue('MONTHLY'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await waitFor(() => expect(screen.getByLabelText('Grouping')).toHaveValue('WEEKLY'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser forward' })); await waitFor(() => expect(screen.getByLabelText('Grouping')).toHaveValue('MONTHLY'));
     });
     it('reconciles native restored controls after popstate without financially refetching unchanged state', async () => {
-        setup(); await loaded(); act(() => { window.dispatchEvent(new PopStateEvent('popstate')); fireEvent.change(screen.getByLabelText('Trend grouping'), { target: { value: 'DAILY' } }); });
-        await waitFor(() => expect(screen.getByLabelText('Trend grouping')).toHaveValue('WEEKLY')); expect(getAnalyticsTrends).toHaveBeenCalledOnce();
+        setup(); await loaded(); act(() => { window.dispatchEvent(new PopStateEvent('popstate')); fireEvent.change(screen.getByLabelText('Grouping'), { target: { value: 'DAILY' } }); });
+        await waitFor(() => expect(screen.getByLabelText('Grouping')).toHaveValue('WEEKLY')); expect(getAnalyticsTrends).toHaveBeenCalledOnce();
     });
     it('adds explicit comparison only on Apply, displays signed authoritative deltas and removes it', async () => {
-        setup(); await loaded(); fireEvent.click(screen.getByRole('button', { name: 'Add comparison' })); expect(getAnalyticsComparison).not.toHaveBeenCalled();
-        fireEvent.change(screen.getByLabelText('Comparison from'), { target: { value: '2024-02-01' } }); fireEvent.change(screen.getByLabelText('Comparison to'), { target: { value: '2024-02-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        setup(); await loaded(); fireEvent.click(screen.getByRole('button', { name: 'Compare' })); expect(getAnalyticsComparison).not.toHaveBeenCalled();
+        fireEvent.change(screen.getByLabelText('Comparison from'), { target: { value: '2024-02-01' } }); fireEvent.change(screen.getByLabelText('Comparison to'), { target: { value: '2024-02-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         await screen.findByRole('heading', { name: 'Delta' }); expect(getAnalyticsSummary).toHaveBeenCalledOnce();
         expect(getAnalyticsComparison).toHaveBeenCalledWith({ from: '2024-02-01', to: '2024-02-29' }, { from: '2024-02-01', to: '2024-02-01' }, expect.any(AbortSignal));
         const delta = screen.getByRole('heading', { name: 'Delta' }).parentElement!;
         expect(within(delta).getByText(`+${formatMoney(comparison.delta.expense)}`)).toBeInTheDocument(); expect(within(delta).getByText(formatMoney(comparison.delta.netCashFlow))).toBeInTheDocument();
-        expect(within(delta).getByText('+9007199254740993')).toBeInTheDocument(); expect(screen.getByText(/unequal durations/)).toBeInTheDocument(); expect(screen.getByText(/periods overlap/)).toBeInTheDocument();
+        expect(within(delta).getByText('+9007199254740993')).toBeInTheDocument(); expect(screen.getByRole('heading', { name: 'Delta' })).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Remove comparison' })); expect(screen.queryByRole('heading', { name: 'Delta' })).toBeNull(); expect(screen.getByTestId('location').textContent).not.toContain('compareFrom');
     });
     it('validates optional comparison dates without dispatch and preserves input', async () => {
-        setup(); await loaded(); fireEvent.click(screen.getByRole('button', { name: 'Add comparison' })); fireEvent.change(screen.getByLabelText('Comparison from'), { target: { value: '2024-02-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        setup(); await loaded(); fireEvent.click(screen.getByRole('button', { name: 'Compare' })); fireEvent.change(screen.getByLabelText('Comparison from'), { target: { value: '2024-02-01' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         expect(screen.getByRole('alert')).toHaveTextContent('Check your comparison dates'); expect(screen.getByLabelText('Comparison from')).toHaveValue('2024-02-01'); expect(getAnalyticsComparison).not.toHaveBeenCalled();
     });
     it('refetches comparison alone when only baseline changes', async () => {
         setup(url + '&compareFrom=2024-02-01&compareTo=2024-02-01'); await loaded(); await screen.findByRole('heading', { name: 'Delta' });
-        fireEvent.change(screen.getByLabelText('Comparison to'), { target: { value: '2024-02-02' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        fireEvent.change(screen.getByLabelText('Comparison to'), { target: { value: '2024-02-02' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(getAnalyticsComparison).toHaveBeenCalledTimes(2)); expect(getAnalyticsSummary).toHaveBeenCalledOnce(); expect(getAnalyticsTrends).toHaveBeenCalledOnce();
     });
 });
@@ -134,15 +138,15 @@ describe('Analytics independent errors, cancellation and sessions', () => {
     });
     it.each([400, 404, 500])('preserves drafts after server%s and requires explicit retry', async status => {
         vi.mocked(getAnalyticsSummary).mockRejectedValueOnce(new ApiError('Server declined this range', status === 400 ? 'validation' : status === 404 ? 'not-found' : 'server', status));
-        setup(); expect(await screen.findByRole('alert')).toHaveTextContent('Server declined this range');
-        fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-02-02' } }); expect(screen.getByLabelText('From')).toHaveValue('2024-02-02'); expect(getAnalyticsSummary).toHaveBeenCalledOnce();
+        setup(); fireEvent.click(screen.getByRole('button', { name: 'Filters' })); expect(await screen.findByRole('alert')).toHaveTextContent('Server declined this range');
+        fireEvent.change(screen.getByLabelText('From date'), { target: { value: '2024-02-02' } }); expect(screen.getByLabelText('From date')).toHaveValue('2024-02-02'); expect(getAnalyticsSummary).toHaveBeenCalledOnce();
     });
     it('aborts a prior period and ignores its late success even when the mock ignores AbortSignal', async () => {
         let finish!: (report: SummaryResponse) => void;
         vi.mocked(getAnalyticsSummary).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
-        setup(); await screen.findByRole('link', { name: 'Historical bank' }); const signal = vi.mocked(getAnalyticsSummary).mock.calls[0][1]!;
-        expect(screen.getByRole('button', { name: 'Refresh overview' })).toBeDisabled();
-        fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-02-02' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        setup(); fireEvent.click(screen.getByRole('button', { name: 'Filters' })); await screen.findByRole('link', { name: 'Historical bank' }); const signal = vi.mocked(getAnalyticsSummary).mock.calls[0][1]!;
+        expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeDisabled();
+        fireEvent.change(screen.getByLabelText('From date'), { target: { value: '2024-02-02' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(2)); expect(signal.aborted).toBe(true);
         await act(async () => finish({ ...summary, totals: { ...summary.totals, income: '777' } }));
         expect(screen.queryByText('₹777.00')).toBeNull();
@@ -150,8 +154,8 @@ describe('Analytics independent errors, cancellation and sessions', () => {
     it('does not show previous money as current during refresh and blocks duplicate pending refresh', async () => {
         setup(); await loaded(); let finish!: (value: SummaryResponse) => void;
         vi.mocked(getAnalyticsSummary).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
-        fireEvent.click(screen.getByRole('button', { name: 'Refresh overview' })); expect(within(region('Overview')).queryByText(formatMoney(summary.totals.income))).toBeNull();
-        expect(screen.getByRole('button', { name: 'Refresh overview' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeDisabled();
+        fireEvent.click(screen.getByRole('button', { name: 'Refresh all reports' })); expect(within(region('Overview')).queryByText(formatMoney(summary.totals.income))).toBeNull();
+        expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Refresh all reports' })).toBeDisabled();
         await act(async () => finish(summary)); expect(within(region('Overview')).getByText(formatMoney(summary.totals.income))).toBeInTheDocument();
     });
     it('aborts all report reads on unmount', async () => {
@@ -164,8 +168,8 @@ describe('Analytics independent errors, cancellation and sessions', () => {
     it('ignores a stale failed request after a newer reporting range succeeds', async () => {
         let fail!: (error: Error) => void;
         vi.mocked(getAnalyticsSummary).mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject; }));
-        setup(); await screen.findByRole('link', { name: 'Historical bank' });
-        fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-02-28' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply range' }));
+        setup(); fireEvent.click(screen.getByRole('button', { name: 'Filters' })); await screen.findByRole('link', { name: 'Historical bank' });
+        fireEvent.change(screen.getByLabelText('To date'), { target: { value: '2024-02-28' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
         await waitFor(() => expect(getAnalyticsSummary).toHaveBeenCalledTimes(2));
         await act(async () => fail(new ApiError('Obsolete network failure', 'network'))); expect(screen.queryByText('Obsolete network failure')).toBeNull();
         expect(within(region('Overview')).getByText(formatMoney(summary.totals.income))).toBeInTheDocument();
