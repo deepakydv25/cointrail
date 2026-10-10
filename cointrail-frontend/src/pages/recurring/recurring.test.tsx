@@ -47,7 +47,7 @@ describe('Recurring list and URL navigation', () => {
         const link = await screen.findByRole('link', { name: 'Scheduled rent' }); expect(link).toHaveAttribute('href', `/app/recurring/${id}?status=BLOCKED&type=EXPENSE&accountId=9223372036854775806&categoryId=9223372036854775805&page=0&size=5&sort=nextDueDate%2Casc`);
         expect(screen.getByLabelText('Account')).toHaveValue('9223372036854775806'); expect(screen.getByLabelText('Category')).toHaveValue('9223372036854775805');
         expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toBeInTheDocument(); expect(document.querySelector('.ct-category-icon')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Recurring Transactions' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', { name: 'Recurring transactions' })).toHaveAttribute('aria-current', 'page');
         fireEvent.click(screen.getByRole('button', { name: 'Next page' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '1', accountId: '9223372036854775806', sort: 'nextDueDate,asc' }), expect.any(AbortSignal)));
         expect(await screen.findByRole('link', { name: 'Scheduled rent' })).toHaveAttribute('href', `/app/recurring/${id}?status=BLOCKED&type=EXPENSE&accountId=9223372036854775806&categoryId=9223372036854775805&page=1&size=5&sort=nextDueDate%2Casc`);
         fireEvent.click(screen.getByRole('link', { name: 'Scheduled rent' })); await screen.findByRole('button', { name: 'Pause rule' }); expect(screen.getByTestId('location')).toHaveTextContent(`/app/recurring/${id}?status=BLOCKED`);

@@ -6,7 +6,7 @@ export default function AppLayout() {
     return <div className={legacy ? 'legacy-content' : 'clarity-content'}>
         {(pathname === '/dashboard' || pathname.startsWith('/expenses')) &&
             <p className="mx-auto max-w-7xl px-4 pt-4 text-sm text-gray-600 sm:px-6 lg:px-8">
-                Legacy Expenses · These records remain available and do not contribute to V2 reports.
+                Legacy expense records remain available and are excluded from Dashboard and Analytics transaction reports.
             </p>}
         <Outlet />
     </div>;

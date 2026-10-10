@@ -1,0 +1,138 @@
+{
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.39",
+    "revision": "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.20"
+  },
+  "checks": [
+    {
+      "name": "default and reflow 320",
+      "data": {
+        "overflow": false,
+        "heading": "Dashboard",
+        "brand": "/app/dashboard",
+        "year": "2026",
+        "month": "10"
+      }
+    },
+    {
+      "name": "default and reflow 390",
+      "data": {
+        "overflow": false,
+        "heading": "Dashboard",
+        "brand": "/app/dashboard",
+        "year": "2026",
+        "month": "10"
+      }
+    },
+    {
+      "name": "default and reflow 768",
+      "data": {
+        "overflow": false,
+        "heading": "Dashboard",
+        "brand": "/app/dashboard",
+        "year": "2026",
+        "month": "10"
+      }
+    },
+    {
+      "name": "default and reflow 1024",
+      "data": {
+        "overflow": false,
+        "heading": "Dashboard",
+        "brand": "/app/dashboard",
+        "year": "2026",
+        "month": "10"
+      }
+    },
+    {
+      "name": "default and reflow 1440",
+      "data": {
+        "overflow": false,
+        "heading": "Dashboard",
+        "brand": "/app/dashboard",
+        "year": "2026",
+        "month": "10"
+      }
+    },
+    {
+      "name": "Apply/reset/history preserve metadata and hash"
+    },
+    {
+      "name": "invalid query has correction feedback and no report request"
+    },
+    {
+      "name": "Budgets remains explicit",
+      "data": {
+        "url": "/app/budgets?year=2026&month=10"
+      }
+    },
+    {
+      "name": "Analytics remains explicit",
+      "data": {
+        "url": "/app/analytics?from=2026-10-01&to=2026-10-31&grouping=DAILY"
+      }
+    },
+    {
+      "name": "/app default redirect"
+    },
+    {
+      "name": "authenticated NotFound home"
+    },
+    {
+      "name": "authenticated landing destinations and no financial requests"
+    },
+    {
+      "name": "legacy dashboard retained"
+    },
+    {
+      "name": "logout public destination"
+    },
+    {
+      "name": "fresh login default"
+    },
+    {
+      "name": "protected deep link return with hash"
+    }
+  ],
+  "requests": [
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/budgets",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/v1/expenses/summary",
+    "/api/v1/expenses",
+    "/api/v1/expenses/summary",
+    "/api/v1/expenses",
+    "/api/v1/auth/login",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/v1/auth/login"
+  ],
+  "notes": "Synthetic intercepted API responses only. No CSS redesign. Physical devices/Firefox/Safari/200% zoom not checked in this PR1 run."
+}

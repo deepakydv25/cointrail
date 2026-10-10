@@ -1,3 +1,4 @@
+import { AUTHENTICATED_HOME } from '../routes/destinations';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Brand from '../components/Brand';
@@ -28,7 +29,7 @@ export default function LandingPage() {
                 <p className="ct-landing-eyebrow">Personal finance, clearly organized</p>
                 <h1 id="landing-title">Understand where your money goes.</h1>
                 <p className="ct-landing-lead">Record income and expenses, organize your accounts, and manage monthly budgets in one clear workspace.</p>
-                <div className="ct-landing-actions">{isAuthenticated ? <ButtonLink variant="primary" to="/dashboard">Go to Dashboard</ButtonLink> : <><ButtonLink variant="primary" to="/register">Get Started</ButtonLink><ButtonLink to="/login">Sign In</ButtonLink></>}</div>
+                <div className="ct-landing-actions">{isAuthenticated ? <ButtonLink variant="primary" to={AUTHENTICATED_HOME}>Go to Dashboard</ButtonLink> : <><ButtonLink variant="primary" to="/register">Get Started</ButtonLink><ButtonLink to="/login">Sign In</ButtonLink></>}</div>
                 <p className="ct-description">A clearer view starts with the transactions you record.</p>
             </section>
             <section className="ct-landing-section ct-landing-product" aria-labelledby="preview-title">
@@ -48,7 +49,7 @@ export default function LandingPage() {
                 ].map(([title, description], index) => <li key={title}><span className="ct-landing-step-number" aria-hidden="true">{index + 1}</span><h3>{title}</h3><p>{description}</p></li>)}</ol>
             </section>
             <section className="ct-landing-section ct-landing-final" aria-labelledby="final-title">
-                <SurfaceCard><h2 id="final-title">Make your next money decision with a clearer view.</h2><p>{isAuthenticated ? 'Continue reviewing the financial activity you record.' : 'Start recording your financial activity with CoinTrail.'}</p><div className="ct-landing-actions">{isAuthenticated ? <ButtonLink variant="primary" to="/dashboard">Go to Dashboard</ButtonLink> : <><ButtonLink variant="primary" to="/register">Create your account</ButtonLink><ButtonLink to="/login">Sign In</ButtonLink></>}</div></SurfaceCard>
+                <SurfaceCard><h2 id="final-title">Make your next money decision with a clearer view.</h2><p>{isAuthenticated ? 'Continue reviewing the financial activity you record.' : 'Start recording your financial activity with CoinTrail.'}</p><div className="ct-landing-actions">{isAuthenticated ? <ButtonLink variant="primary" to={AUTHENTICATED_HOME}>Go to Dashboard</ButtonLink> : <><ButtonLink variant="primary" to="/register">Create your account</ButtonLink><ButtonLink to="/login">Sign In</ButtonLink></>}</div></SurfaceCard>
             </section>
         </main>
         <footer className="ct-landing-footer">
@@ -56,7 +57,7 @@ export default function LandingPage() {
                 <div><Link to="/" className="ct-landing-brand" aria-label="CoinTrail home"><Brand /></Link><p>Understand where your money goes.</p></div>
                 <nav aria-label="Footer navigation" className="ct-landing-footer-groups">
                     <div><h2>Explore</h2><a href="#features">Features</a><a href="#how-it-works">How It Works</a></div>
-                    <div><h2>Your account</h2><div className="ct-landing-footer-actions">{isAuthenticated ? <ButtonLink variant="primary" to="/dashboard">Go to Dashboard</ButtonLink> : <><ButtonLink variant="secondary" to="/login">Sign In</ButtonLink><ButtonLink variant="primary" to="/register">Get Started</ButtonLink></>}</div></div>
+                    <div><h2>Your account</h2><div className="ct-landing-footer-actions">{isAuthenticated ? <ButtonLink variant="primary" to={AUTHENTICATED_HOME}>Go to Dashboard</ButtonLink> : <><ButtonLink variant="secondary" to="/login">Sign In</ButtonLink><ButtonLink variant="primary" to="/register">Get Started</ButtonLink></>}</div></div>
                 </nav>
                 <p className="ct-landing-copyright">© {new Date().getFullYear()} CoinTrail.</p>
             </div>

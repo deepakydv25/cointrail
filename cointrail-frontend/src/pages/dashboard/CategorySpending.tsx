@@ -27,10 +27,10 @@ export default function CategorySpending({ from, to, label, attempt, onRetry }: 
     const current = result?.key === key ? result : null;
     const groups = current?.data?.items.filter(item => item.categoryType === 'EXPENSE') ?? [];
     return <SurfaceCard className="ct-dashboard-categories"><section aria-labelledby="category-spending-heading">
-        <h2 id="category-spending-heading">Spending by category</h2><p className="ct-description">{label} · V2 expenses, including inactive history.</p>
+        <h2 id="category-spending-heading">Spending by category</h2><p className="ct-description">{label} · Expense transactions for this month, including inactive categories.</p>
         {current?.error ? <ErrorState appearance="clarity" message={current.error} onRetry={onRetry} />
             : !current?.data ? <LoadingState appearance="clarity" message="Loading category spending…" />
-                : groups.length === 0 ? <EmptyState appearance="clarity" title="No category spending">No V2 expense-category spending in this month.</EmptyState> : <>
+                : groups.length === 0 ? <EmptyState appearance="clarity" title="No category spending">No expense-category spending in this month.</EmptyState> : <>
                     <p className="ct-description">Relative amounts. All categories and exact values are listed below.</p>
                     {groups.length <= 12 ? <AmountChart items={groups.map((group, index) => ({ id: group.categoryId, label: String(index + 1), tooltipLabel: group.categoryName, amount: group.totals.expense, tone: 'expense' }))} />
                         : <p className="ct-description">Chart omitted for this larger category set; the complete list follows.</p>}

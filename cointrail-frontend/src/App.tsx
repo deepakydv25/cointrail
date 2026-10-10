@@ -1,3 +1,4 @@
+import { AUTHENTICATED_HOME } from './routes/destinations';
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
@@ -75,7 +76,7 @@ export default function App() {
                     <Route path="/expenses/create" element={<CreateExpensePage />} />
                     <Route path="/expenses/:id" element={<ExpenseDetailsPage />} />
                     <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
-                    <Route path="/app" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/app" element={<Navigate to={AUTHENTICATED_HOME} replace />} />
                     <Route path="/app/dashboard" element={<DashboardV2Page />} />
                     <Route path="/app/analytics" element={<AnalyticsPage />} />
                     <Route path="/app/budgets" element={<BudgetsPage />} />

@@ -6,7 +6,7 @@ function ProtectedRoute() {
     const { isAuthenticated, isInitialized, sessionVersion } = useAuth();
     const location = useLocation();
     if (!isInitialized) return <LoadingState message="Checking session…" />;
-    if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+    if (!isAuthenticated) return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />;
     // Never reuse mounted user-owned page state across sessions.
     return <Outlet key={sessionVersion} />;
 }

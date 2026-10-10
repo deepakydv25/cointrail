@@ -16,17 +16,17 @@ import type { CategoriesResponse } from '../../types/analytics';
 vi.mock('../../services/dashboardService'); vi.mock('../../services/analyticsService');
 vi.mock('./IncomeExpenseChart', async importOriginal => ({ ...await importOriginal<typeof import('./IncomeExpenseChart')>(), AmountChart: () => <div aria-hidden="true" />,
     default: () => <h2>Income vs expense</h2> }));
-function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => navigate(-1)}>Browser back</button></>; }
+function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search + location.hash}</span><button onClick={() => navigate(-1)}>Browser back</button><button onClick={() => navigate(1)}>Browser forward</button></>; }
 function setup(path = '/app/dashboard?year=2026&month=10') { return render(<MemoryRouter initialEntries={[path]}><AuthProvider><App /><Location /></AuthProvider></MemoryRouter>); }
 beforeEach(() => {
     vi.resetAllMocks(); loginSession(makeToken());
     vi.mocked(getDashboard).mockResolvedValue(dashboard); vi.mocked(getCategoryBreakdown).mockResolvedValue(categories);
 });
-afterEach(() => { cleanup(); logoutSession(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); logoutSession(); vi.useRealTimers(); vi.restoreAllMocks(); });
 const overview = () => screen.getByRole('region', { name: 'Financial overview for October 2026' });
 async function loaded() { await screen.findByRole('region', { name: 'Financial overview for October 2026' }); }
 
-describe('Dashboard V2 financial overview and previews', () => {
+describe('Dashboard financial overview and previews', () => {
     it('renders exact scoped figures, historical names, Long links and read-only summaries', async () => {
         setup(); await loaded();
         expect(within(overview()).getByText('-₹1,99,99,99,99,99,99,99,999.98')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Dashboard V2 financial overview and previews', () => {
         dashboard.pendingRecurringTransactions.items.forEach(item => expect(within(pending).getByRole('link', { name: item.description || `${item.type} recurring transaction` })).toHaveAttribute('href', `/app/recurring/${item.id}`));
         expect(screen.queryByRole('link', { name: /Manage|Forecast/ })).toBeNull();
         expect(screen.getByRole('link', { name: 'View analytics' })).toHaveAttribute('href', '/app/analytics?from=2026-10-01&to=2026-10-31&grouping=DAILY');
-        expect(screen.getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
         expect(screen.getAllByRole('main')).toHaveLength(1); expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     });
     it('keeps distinct category IDs, inactive history and only expense groups', async () => {
@@ -63,7 +63,7 @@ describe('Dashboard V2 financial overview and previews', () => {
             budgetSummary: { budgetCount: '0', totalBudgetAmount: '0', spentOnBudgetedCategories: '0', remainingBudgetAmount: '0', overBudgetCount: '0' }, recentTransactions: [], pendingRecurringTransactions: { ...dashboard.pendingRecurringTransactions, items: [] } });
         vi.mocked(getCategoryBreakdown).mockResolvedValue({ ...categories, items: [] });
         setup(); await loaded(); expect(within(overview()).getAllByText('₹0.00')).toHaveLength(4);
-        for (const title of ['No recent V2 transactions', 'No budgets for this month', 'No pending recurring transactions', 'No category spending']) expect(await screen.findByText(title)).toBeInTheDocument();
+        for (const title of ['No recent transactions', 'No budgets for this month', 'No pending recurring transactions', 'No category spending']) expect(await screen.findByText(title)).toBeInTheDocument();
         expect(screen.queryByText(/No accounts/)).toBeNull(); expect(screen.getByText(/Pacific\/Kiritimati/)).toBeInTheDocument();
     });
     it.each(['income', 'expense'] as const)('accepts an %s-only month and budgets absent despite activity', async kind => {
@@ -85,10 +85,109 @@ describe('Dashboard V2 financial overview and previews', () => {
 });
 
 describe('dashboard URL and request lifecycle', () => {
-    it('makes the local default month explicit without leaving a duplicate history entry', async () => {
+    it('preserves metadata/hash through Apply, reset and Back/Forward without duplicate history', async () => {
+        setup('/app/dashboard?source=review&source=shared#budget-summary-heading');
+        await screen.findByText('Total active-account balance');
+        fireEvent.change(screen.getByLabelText('Reporting year'), { target: { value: '2024' } });
+        fireEvent.change(screen.getByLabelText('Reporting month'), { target: { value: '2' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply period' }));
+        const selected = '/app/dashboard?source=review&source=shared&year=2024&month=2#budget-summary-heading';
+        await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(selected));
+        fireEvent.click(screen.getByRole('button', { name: 'Apply period' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Current month' }));
+        await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?source=review&source=shared#budget-summary-heading'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser back' }));
+        await waitFor(() => expect(screen.getByLabelText('Reporting year')).toHaveValue(2024));
+        expect(screen.getByTestId('location')).toHaveTextContent(selected);
+        fireEvent.click(screen.getByRole('button', { name: 'Browser back' }));
+        await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?source=review&source=shared#budget-summary-heading'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser forward' }));
+        await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(selected));
+    });
+    it.each(['?year=2026', '?month=10', '?year=2026&year=2025&month=10', '?year=2026&month=10&month=11', '?year=&month=10', '?year=2026&month=0', '?year=2e3&month=10'])('keeps invalid %s visible with associated feedback and no reports', search => {
+        setup(`/app/dashboard${search}#report-month`);
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+        expect(screen.getByLabelText('Reporting month')).toHaveAttribute('aria-describedby', expect.stringContaining('report-period-error'));
+        expect(getDashboard).not.toHaveBeenCalled(); expect(getCategoryBreakdown).not.toHaveBeenCalled();
+        expect(screen.getByTestId('location')).toHaveTextContent(`/app/dashboard${search}#report-month`);
+    });
+    it('pins an explicitly applied current month and leaves supplied leading zeros intact on load', async () => {
+        setup('/app/dashboard?year=2026&month=01');
+        await screen.findByRole('region', { name: 'Financial overview for January 2026' });
+        expect(screen.getByTestId('location')).toHaveTextContent('month=01');
+        expect(screen.getByLabelText('Reporting month')).toHaveValue('1');
+        const calls = vi.mocked(getDashboard).mock.calls.length;
+        act(() => window.dispatchEvent(new Event('focus')));
+        expect(getDashboard).toHaveBeenCalledTimes(calls);
+        fireEvent.click(screen.getByRole('button', { name: 'Apply period' }));
+        await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard\?year=2026&month=1$/));
+    });
+    it('rolls default reports forward on focus without erasing dirty drafts or fetching unchanged months', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 11, 31, 23, 59, 59)); loginSession(makeToken());
         setup('/app/dashboard');
-        const now = new Date(); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(`/app/dashboard?year=${now.getFullYear()}&month=${now.getMonth() + 1}`));
+        await screen.findByRole('region', { name: 'Financial overview for December 2026' });
+        fireEvent.change(screen.getByLabelText('Reporting year'), { target: { value: '2024' } });
+        const oldSignal = vi.mocked(getDashboard).mock.calls.at(-1)![1]!;
+        act(() => { vi.setSystemTime(new Date(2027, 0, 1)); window.dispatchEvent(new Event('focus')); });
+        await screen.findByRole('region', { name: 'Financial overview for January 2027' });
+        expect(oldSignal.aborted).toBe(true);
+        expect(screen.getByLabelText('Reporting year')).toHaveValue(2024);
+        expect(screen.getByLabelText('Reporting month')).toHaveValue('12');
+        expect(screen.getByRole('status')).toHaveTextContent('Current reporting month has changed');
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
+        const calls = vi.mocked(getDashboard).mock.calls.length;
+        act(() => window.dispatchEvent(new Event('focus')));
+        expect(getDashboard).toHaveBeenCalledTimes(calls);
+        fireEvent.click(screen.getByRole('button', { name: 'Current month' }));
+        expect(screen.getByLabelText('Reporting year')).toHaveValue(2027);
+        expect(screen.getByLabelText('Reporting month')).toHaveValue('1');
+        expect(screen.queryByRole('status')).toBeNull();
+        expect(getDashboard).toHaveBeenCalledTimes(calls);
+    });
+    it('refresh rechecks the rolling calendar immediately and keeps unsaved edits', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 11, 31, 23, 59, 59)); loginSession(makeToken());
+        setup('/app/dashboard'); await screen.findByRole('region', { name: 'Financial overview for December 2026' });
+        fireEvent.change(screen.getByLabelText('Reporting year'), { target: { value: '2024' } });
+        vi.setSystemTime(new Date(2027, 0, 1));
+        fireEvent.click(screen.getByRole('button', { name: 'Refresh dashboard' }));
+        await screen.findByRole('region', { name: 'Financial overview for January 2027' });
+        expect(getDashboard).toHaveBeenCalledTimes(2);
+        expect(getCategoryBreakdown).toHaveBeenCalledTimes(2);
+        expect(screen.getByLabelText('Reporting year')).toHaveValue(2024);
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
+    });
+    it('updates pristine drafts on rollover but keeps explicit current-month reports pinned', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 11, 31, 23, 59, 59)); loginSession(makeToken());
+        const view = setup('/app/dashboard'); await screen.findByRole('region', { name: 'Financial overview for December 2026' });
+        act(() => { vi.setSystemTime(new Date(2027, 0, 1)); window.dispatchEvent(new Event('focus')); });
+        await screen.findByRole('region', { name: 'Financial overview for January 2027' });
+        expect(screen.getByLabelText('Reporting year')).toHaveValue(2027); expect(screen.getByLabelText('Reporting month')).toHaveValue('1');
+        view.unmount(); setup('/app/dashboard?year=2027&month=1');
+        await screen.findByRole('region', { name: 'Financial overview for January 2027' });
+        const calls = vi.mocked(getDashboard).mock.calls.length;
+        act(() => { vi.setSystemTime(new Date(2027, 0, 1, 0, 1)); window.dispatchEvent(new Event('focus')); });
+        expect(getDashboard).toHaveBeenCalledTimes(calls);
+        fireEvent.click(screen.getByRole('button', { name: 'Refresh dashboard' }));
+        await waitFor(() => expect(getDashboard).toHaveBeenCalledTimes(calls + 1));
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard\?year=2027&month=1$/);
+    });
+    it('keeps the local default month on the bare Dashboard URL', async () => {
+        setup('/app/dashboard');
+        const now = new Date(); await waitFor(() => expect(getDashboard).toHaveBeenCalled());
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
         expect(getDashboard).toHaveBeenCalledWith({ year: String(now.getFullYear()), month: String(now.getMonth() + 1) }, expect.any(AbortSignal));
+    });
+    it('returns from a pinned report to a fresh default month without requesting the old local month', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 11, 31, 23, 59, 59)); loginSession(makeToken());
+        setup('/app/dashboard?year=2026&month=11');
+        await screen.findByRole('region', { name: 'Financial overview for November 2026' });
+        vi.setSystemTime(new Date(2027, 0, 1));
+        fireEvent.click(screen.getByRole('link', { name: 'CoinTrail dashboard' }));
+        await screen.findByRole('region', { name: 'Financial overview for January 2027' });
+        expect(getDashboard).toHaveBeenCalledTimes(2);
+        expect(getDashboard).toHaveBeenLastCalledWith({ year: '2027', month: '1' }, expect.any(AbortSignal));
+        expect(getCategoryBreakdown).toHaveBeenCalledTimes(2);
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
     });
     it('changes calendar bounds via Apply and restores period/form on browser Back', async () => {
         setup(); await loaded(); fireEvent.change(screen.getByLabelText('Reporting year'), { target: { value: '2024' } });
@@ -109,7 +208,7 @@ describe('dashboard URL and request lifecycle', () => {
     });
     it('shows loading without financial zero placeholders', () => {
         vi.mocked(getDashboard).mockReturnValue(new Promise(() => {})); vi.mocked(getCategoryBreakdown).mockReturnValue(new Promise(() => {}));
-        setup(); expect(screen.getByText('Loading Dashboard V2…')).toBeInTheDocument(); expect(screen.getByText('Loading category spending…')).toBeInTheDocument(); expect(screen.queryByText('₹0.00')).toBeNull();
+        setup(); expect(screen.getByText('Loading dashboard…')).toBeInTheDocument(); expect(screen.getByText('Loading category spending…')).toBeInTheDocument(); expect(screen.queryByText('₹0.00')).toBeNull();
     });
     it.each(['dashboard', 'categories'])('retries %s independently while preserving the successful region', async failing => {
         if (failing === 'dashboard') vi.mocked(getDashboard).mockRejectedValueOnce(new ApiError('Overview unavailable', 'network'));
@@ -131,7 +230,7 @@ describe('dashboard URL and request lifecycle', () => {
         expect(screen.queryByText('₹123.00')).toBeNull(); expect(await screen.findByRole('list', { name: 'Expense categories for October 2026' })).toBeInTheDocument();
         vi.mocked(getDashboard).mockReturnValueOnce(new Promise(() => {})); vi.mocked(getCategoryBreakdown).mockReturnValueOnce(new Promise(() => {}));
         await userEvent.click(screen.getByRole('button', { name: 'Refresh dashboard' }));
-        expect(screen.queryByRole('region', { name: /Financial overview/ })).toBeNull(); expect(screen.getByText('Loading Dashboard V2…')).toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: /Financial overview/ })).toBeNull(); expect(screen.getByText('Loading dashboard…')).toBeInTheDocument();
     });
     it('discards out-of-order month responses and cancels both requests on unmount', async () => {
         let finish!: (data: DashboardResponse) => void;
@@ -146,7 +245,7 @@ describe('dashboard URL and request lifecycle', () => {
     it('clears previous owner figures when the real session changes', async () => {
         setup(); await loaded(); vi.mocked(getDashboard).mockReturnValue(new Promise(() => {})); vi.mocked(getCategoryBreakdown).mockReturnValue(new Promise(() => {}));
         act(() => loginSession(makeToken(undefined, 'other@example.com')));
-        expect(screen.queryByText('-₹1,99,99,99,99,99,99,99,999.98')).toBeNull(); expect(screen.getByText('Loading Dashboard V2…')).toBeInTheDocument();
+        expect(screen.queryByText('-₹1,99,99,99,99,99,99,99,999.98')).toBeNull(); expect(screen.getByText('Loading dashboard…')).toBeInTheDocument();
         act(() => logoutSession()); expect(await screen.findByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
     });
 });

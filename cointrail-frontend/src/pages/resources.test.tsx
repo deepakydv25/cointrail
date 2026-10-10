@@ -52,7 +52,7 @@ describe('Accounts', () => {
         renderPage('/app/accounts');
         expect(await screen.findByRole('link', { name: 'Savings' })).toHaveAttribute('href', `/app/accounts/${id}`);
         expect(screen.getByText(/Opening balance: -₹99,99/)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
+        expect(screen.getByRole('link', { name: 'Expense records' })).toHaveAttribute('href', '/expenses');
         expect(screen.getByRole('link', { name: 'Review categories' })).toHaveAttribute('href', '/app/categories');
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('aria-current', 'page');
     });

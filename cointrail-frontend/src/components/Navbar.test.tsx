@@ -45,7 +45,7 @@ describe("Navbar", () => {
         expect(screen.getByText("Register"))
             .toBeInTheDocument();
 
-        expect(screen.queryByText("Legacy Overview"))
+        expect(screen.queryByText("Expense overview"))
             .not.toBeInTheDocument();
 
         expect(screen.queryByText("Logout"))
@@ -67,10 +67,10 @@ describe("Navbar", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("Legacy Overview"))
+        expect(screen.getByText("Expense overview"))
             .toBeInTheDocument();
 
-        expect(screen.getByText("Legacy Expenses"))
+        expect(screen.getByText("Expense records"))
             .toBeInTheDocument();
 
         expect(screen.getByText("Logout"))
