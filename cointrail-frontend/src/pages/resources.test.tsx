@@ -49,17 +49,21 @@ describe('Accounts', () => {
         expect(screen.queryByRole('button', { name: 'Confirm deactivation' })).toBeNull();
     });
     it('lists active accounts, exact IDs and opening balances with account-first navigation', async () => {
+        vi.mocked(accounts.getAccounts).mockResolvedValue([account, { ...account, id: '2', name: 'Cash', type: 'CASH', openingBalance: '0.01' }]);
         renderPage('/app/accounts');
         expect(await screen.findByRole('link', { name: 'Savings' })).toHaveAttribute('href', `/app/accounts/${id}`);
-        expect(screen.getByText(/Opening balance: -₹99,99/)).toBeInTheDocument();
+        expect(screen.getByText('Total opening balances')).toBeInTheDocument();
+        expect(document.querySelector('.ct-account-total .ct-metric')).toHaveTextContent('-₹99,99,99,99,99,99,99,999.98');
+        expect(screen.getAllByText('Opening balance')).toHaveLength(2);
+        expect(screen.getByRole('link', { name: 'Cash' })).toHaveAttribute('href', '/app/accounts/2');
         expect(screen.getByRole('link', { name: 'Expense records' })).toHaveAttribute('href', '/expenses');
-        expect(screen.getByRole('link', { name: 'Review categories' })).toHaveAttribute('href', '/app/categories');
+        expect(screen.queryByRole('link', { name: 'Review categories' })).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('aria-current', 'page');
     });
     it('shows onboarding when there are no active accounts', async () => {
         vi.mocked(accounts.getAccounts).mockResolvedValue([]); renderPage('/app/accounts');
-        expect(await screen.findByRole('heading', { name: 'No active accounts' })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Create account' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No accounts yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: '+ Add account' })).toBeInTheDocument();
     });
     it('shows loading and retries a failed active list', async () => {
         vi.mocked(accounts.getAccounts).mockRejectedValueOnce(new ApiError('Network unavailable', 'network'));
@@ -171,9 +175,9 @@ describe('Categories', () => {
         vi.mocked(categories.getCategories).mockResolvedValue([{ ...category, id: '1', name: 'Food', system: true }, category, { ...category, id: '2', name: 'Salary', type: 'INCOME' }]);
         const user = userEvent.setup(); renderPage('/app/categories');
         await screen.findByRole('link', { name: 'Food' }); expect(screen.getByText('System · Read-only')).toBeInTheDocument();
-        expect(screen.getAllByText('Custom')).toHaveLength(2);
+        expect(screen.getAllByText('Custom')).toHaveLength(1);
         expect(screen.getByRole('link', { name: 'Lunch' })).toHaveAttribute('href', `/app/categories/${id}`);
-        await user.selectOptions(screen.getByLabelText('Category type'), 'INCOME');
+        await user.click(screen.getByRole('tab', { name: 'Income' }));
         expect(screen.queryByRole('link', { name: 'Lunch' })).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Salary' })).toBeInTheDocument();
     });
@@ -181,7 +185,7 @@ describe('Categories', () => {
         vi.mocked(categories.getCategories).mockRejectedValueOnce(new ApiError('Offline', 'network')).mockResolvedValue([]);
         renderPage('/app/categories'); expect(await screen.findByRole('alert')).toHaveTextContent('Offline');
         fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-        expect(await screen.findByRole('heading', { name: 'No active categories' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No expense categories' })).toBeInTheDocument();
     });
     it.each(['EXPENSE', 'INCOME'] as const)('creates a custom %s category', async type => {
         vi.mocked(categories.getCategory).mockResolvedValue({ ...category, type });
@@ -245,7 +249,7 @@ describe('Categories', () => {
         await user.click(screen.getByRole('button', { name: 'Deactivate category' }));
         vi.mocked(categories.getCategories).mockResolvedValue([]);
         await user.click(screen.getByRole('button', { name: 'Confirm deactivation' }));
-        expect(await screen.findByRole('heading', { name: 'No active categories' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No expense categories' })).toBeInTheDocument();
         expect(categories.deactivateCategory).toHaveBeenCalledWith(id);
         expect(screen.getByTestId('location')).toHaveTextContent('/app/categories');
         expect(screen.getByRole('status')).toHaveTextContent('Category deactivated. Financial history is preserved.');
@@ -268,7 +272,7 @@ describe('Categories', () => {
         let resolve!: (data: CategoryResponse[]) => void;
         vi.mocked(categories.getCategories).mockImplementation(() => new Promise(done => { resolve = done; }));
         renderPage('/app/categories'); expect(screen.getByRole('status')).toHaveTextContent('Loading categories');
-        fireEvent.click(screen.getByRole('link', { name: 'Set up accounts first' }));
+        fireEvent.click(screen.getByRole('link', { name: 'Accounts' }));
         await screen.findByRole('link', { name: 'Savings' });
         await act(async () => resolve([category]));
         expect(screen.queryByRole('link', { name: 'Lunch' })).not.toBeInTheDocument();

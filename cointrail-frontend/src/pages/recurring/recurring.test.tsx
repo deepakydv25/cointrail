@@ -37,18 +37,19 @@ async function fillCreate(amount = rule.amount) {
 }
 
 describe('Recurring list and URL navigation', () => {
-    it('renders exact money and backend metadata with contextual Long links and neutral icons', async () => {
+    it('renders compact exact-money rules with contextual Long links and category icons', async () => {
         setup(); const link = await screen.findByRole('link', { name: 'Scheduled rent' }); expect(link).toHaveAttribute('href', `/app/recurring/${id}?page=0&size=20&sort=createdAt%2Cdesc`);
-        expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toBeInTheDocument(); expect(screen.getByText('MONTHLY · ACTIVE')).toBeInTheDocument(); expect(screen.getByText('1 rules · Page 1 of 1')).toBeInTheDocument(); expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled(); expect(document.querySelector('.ct-category-icon')).toBeInTheDocument();
+        expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toBeInTheDocument(); expect(document.querySelector('.ct-recurring-list')?.textContent).toContain('Historical expense'); expect(document.querySelector('.ct-recurring-list')?.textContent).toContain('monthly'); expect(screen.getByText('active')).toBeInTheDocument(); expect(screen.getByText('Showing 1 of 1 rules')).toBeInTheDocument(); expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument(); expect(document.querySelector('.ct-category-icon')).toBeInTheDocument();
     });
     it('uses filters, sorts and pagination without losing historical IDs', async () => {
         vi.mocked(getRecurringTransactions).mockImplementation(async query => ({ ...page, number: query.page ?? '0', totalElements: '50', totalPages: '10' }));
         setup(`/app/recurring?status=BLOCKED&type=EXPENSE&accountId=9223372036854775806&categoryId=9223372036854775805&size=5&sort=nextDueDate,asc`);
         const link = await screen.findByRole('link', { name: 'Scheduled rent' }); expect(link).toHaveAttribute('href', `/app/recurring/${id}?status=BLOCKED&type=EXPENSE&accountId=9223372036854775806&categoryId=9223372036854775805&page=0&size=5&sort=nextDueDate%2Casc`);
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
         expect(screen.getByLabelText('Account')).toHaveValue('9223372036854775806'); expect(screen.getByLabelText('Category')).toHaveValue('9223372036854775805');
         expect(screen.getByText('₹99,99,99,99,99,99,99,999.99')).toBeInTheDocument(); expect(document.querySelector('.ct-category-icon')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Recurring transactions' })).toHaveAttribute('aria-current', 'page');
-        fireEvent.click(screen.getByRole('button', { name: 'Next page' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '1', accountId: '9223372036854775806', sort: 'nextDueDate,asc' }), expect.any(AbortSignal)));
+        fireEvent.click(screen.getByRole('button', { name: 'Load more' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '1', accountId: '9223372036854775806', sort: 'nextDueDate,asc' }), expect.any(AbortSignal)));
         expect(await screen.findByRole('link', { name: 'Scheduled rent' })).toHaveAttribute('href', `/app/recurring/${id}?status=BLOCKED&type=EXPENSE&accountId=9223372036854775806&categoryId=9223372036854775805&page=1&size=5&sort=nextDueDate%2Casc`);
         fireEvent.click(screen.getByRole('link', { name: 'Scheduled rent' })); await screen.findByRole('button', { name: 'Pause rule' }); expect(screen.getByTestId('location')).toHaveTextContent(`/app/recurring/${id}?status=BLOCKED`);
     });
@@ -59,47 +60,49 @@ describe('Recurring list and URL navigation', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await screen.findByRole('button', { name: 'Pause rule' }); expect(screen.getByRole('link', { name: 'Back to recurring rules' })).toHaveAttribute('href', `/app/recurring${context}`);
         fireEvent.click(screen.getByRole('link', { name: 'Back to recurring rules' })); await screen.findByRole('link', { name: 'Scheduled rent' }); expect(screen.getByTestId('location')).toHaveTextContent(`/app/recurring${context}`);
     });
-    it('restores pagination with browser back and forward', async () => {
-        vi.mocked(getRecurringTransactions).mockImplementation(async query => ({ ...page, number: query.page ?? '0', totalElements: '50', totalPages: '10' })); setup('/app/recurring?status=BLOCKED&page=1'); await screen.findByRole('link', { name: 'Scheduled rent' });
-        fireEvent.click(screen.getByRole('button', { name: 'Previous page' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('page=0'));
-        fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('page=1'));
-        fireEvent.click(screen.getByRole('button', { name: 'Browser forward' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('page=0')); expect(screen.getByLabelText('Status')).toHaveValue('BLOCKED');
+    it('loads more rules and preserves the loaded page in browser history', async () => {
+        vi.mocked(getRecurringTransactions).mockImplementation(async query => ({ ...page, number: query.page ?? '0', totalElements: '50', totalPages: '10' })); setup('/app/recurring?status=BLOCKED'); await screen.findByRole('link', { name: 'Scheduled rent' });
+        fireEvent.click(screen.getByRole('button', { name: 'Load more' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('page=1'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await waitFor(() => expect(screen.getByTestId('location')).not.toHaveTextContent('page=1'));
+        fireEvent.click(screen.getByRole('button', { name: 'Browser forward' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('page=1'));
     });
     it('applies status/type/reference/sort filters and resets page; history restores controls', async () => {
-        setup('/app/recurring?page=2'); await screen.findByRole('link', { name: 'Scheduled rent' }); await screen.findByRole('option', { name: 'Bank' });
-        for (const [label, value] of [['Status', 'PAUSED'], ['Type', 'INCOME'], ['Account', accountId], ['Category', '3'], ['Page size', '5'], ['Sort', 'updatedAt,asc']]) fireEvent.change(screen.getByLabelText(label), { target: { value } });
-        fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith({ status: 'PAUSED', type: 'INCOME', accountId, categoryId: '3', page: '0', size: '5', sort: 'updatedAt,asc' }, expect.any(AbortSignal)));
-        fireEvent.click(screen.getByRole('button', { name: 'Clear filters' })); await waitFor(() => expect(screen.getByLabelText('Status')).toHaveValue(''));
+        vi.mocked(getRecurringTransactions).mockImplementation(async query => ({ ...page, number: query.page ?? '0', totalElements: '50', totalPages: '10' })); setup('/app/recurring?page=2'); await screen.findByRole('link', { name: 'Scheduled rent' });
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' })); await screen.findByRole('option', { name: 'Bank' });
+        for (const [label, value] of [['Status', 'PAUSED'], ['Type', 'INCOME'], ['Account', accountId], ['Category', '3'], ['Sort', 'updatedAt,asc']]) fireEvent.change(screen.getByLabelText(label), { target: { value } });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith({ status: 'PAUSED', type: 'INCOME', accountId, categoryId: '3', page: '0', size: '20', sort: 'updatedAt,asc' }, expect.any(AbortSignal)));
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' })); fireEvent.click(screen.getByRole('button', { name: 'Clear all' })); await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/app/recurring'));
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' })); await waitFor(() => expect(screen.getByLabelText('Status')).toHaveValue(''));
         fireEvent.click(screen.getByRole('button', { name: 'Browser back' })); await waitFor(() => expect(screen.getByLabelText('Status')).toHaveValue('PAUSED')); fireEvent.click(screen.getByRole('button', { name: 'Browser forward' })); await waitFor(() => expect(screen.getByLabelText('Status')).toHaveValue(''));
     });
     it('keeps active selected IDs when asynchronous choices replace historical fallback options', async () => {
         let accounts!: (data: typeof account[]) => void; let categories!: (data: typeof category[]) => void;
-        vi.mocked(getAccounts).mockReturnValueOnce(new Promise(resolve => { accounts = resolve; })); vi.mocked(getCategories).mockReturnValueOnce(new Promise(resolve => { categories = resolve; })); setup(`/app/recurring?accountId=${accountId}&categoryId=${categoryId}`);
+        vi.mocked(getAccounts).mockReturnValueOnce(new Promise(resolve => { accounts = resolve; })); vi.mocked(getCategories).mockReturnValueOnce(new Promise(resolve => { categories = resolve; })); setup(`/app/recurring?accountId=${accountId}&categoryId=${categoryId}`); fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
         expect(screen.getByLabelText('Account')).toHaveValue(accountId); expect(screen.getByLabelText('Category')).toHaveValue(categoryId);
         await act(async () => { accounts([account]); categories([category]); }); expect(screen.getByLabelText('Account')).toHaveValue(accountId); expect(screen.getByLabelText('Category')).toHaveValue(categoryId);
         fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ accountId, categoryId }), expect.any(AbortSignal)));
     });
     it('reconciles native history restoration with URL values after browser restoration', async () => {
-        setup('/app/recurring?size=20&sort=createdAt,desc'); await screen.findByRole('link', { name: 'Scheduled rent' });
+        setup('/app/recurring?size=20&sort=createdAt,desc'); await screen.findByRole('link', { name: 'Scheduled rent' }); fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
         // Native persisted-control restoration may also dispatch change events.
-        fireEvent(window, new PopStateEvent('popstate')); fireEvent.change(screen.getByLabelText('Sort'), { target: { value: 'updatedAt,asc' } }); fireEvent.change(screen.getByLabelText('Page size'), { target: { value: '5' } });
-        await waitFor(() => expect(screen.getByLabelText('Sort')).toHaveValue('createdAt,desc')); expect(screen.getByLabelText('Page size')).toHaveValue('20');
+        fireEvent(window, new PopStateEvent('popstate')); fireEvent.change(screen.getByLabelText('Sort'), { target: { value: 'updatedAt,asc' } });
+        await waitFor(() => expect(screen.getByLabelText('Sort')).toHaveValue('createdAt,desc')); expect(screen.queryByLabelText('Page size')).not.toBeInTheDocument();
     });
     it.each(['status=INVALID', 'page=-1', 'size=101', 'sort=amount,desc', 'accountId=0', 'page=0&page=1', 'from=2026-01-01'])('does not read rules for malformed query %s', async search => {
-        setup(`/app/recurring?${search}`); expect(await screen.findByRole('alert')).toBeInTheDocument(); expect(getRecurringTransactions).not.toHaveBeenCalled(); fireEvent.click(screen.getByRole('button', { name: 'Clear filters' })); await screen.findByRole('link', { name: 'Scheduled rent' });
+        setup(`/app/recurring?${search}`); expect(await screen.findByRole('alert')).toBeInTheDocument(); expect(getRecurringTransactions).not.toHaveBeenCalled(); fireEvent.click(screen.getByRole('button', { name: 'Filter' })); fireEvent.click(screen.getByRole('button', { name: 'Clear all' })); await screen.findByRole('link', { name: 'Scheduled rent' });
     });
     it('handles loading, failure, retry, empty filtering and out-of-range pages separately', async () => {
         vi.mocked(getRecurringTransactions).mockRejectedValueOnce(new ApiError('Offline rules', 'network')).mockResolvedValueOnce({ ...page, content: [], totalElements: '0', totalPages: '0' }); setup('/app/recurring?status=PAUSED');
         expect(screen.getByText('Loading recurring rules…')).toBeInTheDocument(); await screen.findByText('Offline rules'); fireEvent.click(screen.getByRole('button', { name: 'Try again' })); await screen.findByText('No matching recurring rules');
-        vi.mocked(getRecurringTransactions).mockResolvedValue({ ...page, content: [], number: '3', totalPages: '1' }); fireEvent.click(screen.getByRole('button', { name: 'Refresh rules' })); await screen.findByText('No rules on this page'); fireEvent.click(screen.getByRole('button', { name: 'First page' })); await waitFor(() => expect(getRecurringTransactions).toHaveBeenLastCalledWith(expect.objectContaining({ page: '0' }), expect.any(AbortSignal)));
+        vi.mocked(getRecurringTransactions).mockResolvedValue({ ...page, content: [], number: '3', totalPages: '1' }); fireEvent.click(screen.getByRole('button', { name: 'Refresh rules' })); await screen.findByText('No matching recurring rules'); expect(screen.queryByRole('button', { name: 'Previous page' })).not.toBeInTheDocument();
     });
     it('filter-choice errors do not prevent historical rule reads; choices can be retried', async () => {
         vi.mocked(getAccounts).mockRejectedValueOnce(new ApiError('Choice offline', 'network')); setup(`/app/recurring?accountId=${id}`);
-        await screen.findByRole('link', { name: 'Scheduled rent' }); await screen.findByText(/Filter choices unavailable/); expect(screen.getByLabelText('Account')).toHaveValue(id); fireEvent.click(screen.getByRole('button', { name: 'Try again' })); await screen.findByRole('option', { name: 'Bank' });
+        await screen.findByRole('link', { name: 'Scheduled rent' }); fireEvent.click(screen.getByRole('button', { name: 'Filter' })); await screen.findByText(/Filter choices unavailable/); expect(screen.getByLabelText('Account')).toHaveValue(id); fireEvent.click(screen.getByRole('button', { name: 'Try again' })); await screen.findByRole('option', { name: 'Bank' });
     });
     it('aborts replaced reads and prevents stale owner/list responses', async () => {
         let finish!: (data: RecurringPage) => void; vi.mocked(getRecurringTransactions).mockReturnValueOnce(new Promise(resolve => { finish = resolve; })); setup(); const signal = vi.mocked(getRecurringTransactions).mock.calls[0][1]!;
-        fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'BLOCKED' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Scheduled rent' }); expect(signal.aborted).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'Filter' })); fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'BLOCKED' } }); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Scheduled rent' }); expect(signal.aborted).toBe(true);
         await act(async () => finish({ ...page, content: [{ ...rule, description: 'Stale owner' }] })); expect(screen.queryByText('Stale owner')).toBeNull();
         vi.mocked(getRecurringTransactions).mockResolvedValue({ ...page, content: [{ ...rule, description: 'New owner' }] }); act(() => loginSession(makeToken(undefined, 'replacement@example.com'))); expect(screen.queryByText('Scheduled rent')).toBeNull(); await screen.findByRole('link', { name: 'New owner' });
     });
