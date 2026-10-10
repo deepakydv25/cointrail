@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { Button } from './ui/Button';
 import { Icon, type IconName } from './ui/Icon';
+import Brand from './Brand';
 
 export default function Navbar({ appearance = 'classic' }: { appearance?: 'classic' | 'clarity' }) {
     return appearance === 'clarity' ? <ApplicationNavigation /> : <ClassicNavbar />;
@@ -41,7 +42,7 @@ function ApplicationNavigation() {
         if (event.key === 'Escape' && open) { setOpen(false); trigger.current?.focus(); }
     }}>
         <div className="ct-nav-top"><Link to="/" className="ct-brand" aria-label="CoinTrail home" onClick={() => setOpen(false)}>
-            <img src="/cointrail-mark.svg" alt="" /><span>CoinTrail</span></Link>
+            <Brand /></Link>
             <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
                 aria-expanded={open} aria-controls="application-navigation" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
         </div>
@@ -73,12 +74,8 @@ function ClassicNavbar() {
                 if (event.key === 'Escape' && isOpen) { close(); button.current?.focus(); }
             }}>
             <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <Link to="/" aria-label="CoinTrail home" onClick={close} className="group flex items-center gap-3 rounded">
-                    <img src="/cointrail-mark.svg" alt="" className="h-10 w-10 transition-transform duration-200 motion-safe:group-hover:scale-105" />
-                    <span className="flex flex-col leading-none">
-                        <span className="text-xl font-bold tracking-tight"><span className="text-blue-600">Coin</span><span className="text-slate-900">Trail</span></span>
-                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Spend with intention</span>
-                    </span>
+                <Link to="/" aria-label="CoinTrail home" onClick={close} className="ct-brand rounded">
+                    <Brand />
                 </Link>
                 <button ref={button} type="button" onClick={() => setIsOpen(!isOpen)}
                     className="rounded p-3 text-gray-700 hover:bg-gray-100 lg:hidden"

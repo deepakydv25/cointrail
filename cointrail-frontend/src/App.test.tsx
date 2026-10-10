@@ -51,6 +51,10 @@ describe('foundation app navigation with real session and transport', () => {
         expect(screen.getAllByRole('main')).toHaveLength(1);
         expect(document.querySelector('.ct-landing-header')).toBeInTheDocument();
         expect(document.querySelector('.ct-shell')).toBeNull();
+        const header = within(screen.getByRole('navigation', { name: 'Primary navigation' }));
+        expect(header.getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(header.queryByRole('button')).not.toBeInTheDocument();
+        expect(header.queryByRole('link', { name: /features|how it works/i })).not.toBeInTheDocument();
         expect(adapter).not.toHaveBeenCalled();
         const main = within(screen.getByRole('main'));
         expect(main.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' })[0]).toHaveAttribute('href', authenticated ? '/dashboard' : '/register');
@@ -62,6 +66,8 @@ describe('foundation app navigation with real session and transport', () => {
         expect(document.querySelector('.ct-landing-header')).toBeNull();
         expect(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/register');
         expect(document.title).toBe('CoinTrail');
+        expect(screen.getByText('Sign in to continue with CoinTrail.')).toBeInTheDocument();
+        expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
     });
 
     it('does not steal focus from a new-page control when heading focus is delayed', () => {

@@ -31,7 +31,7 @@ function LoginPage() {
                 </h1>
 
                 <p className="mb-6 text-center text-gray-500">
-                    Login to continue using CoinTrail
+                    Sign in to continue with CoinTrail.
                 </p>
 
                 {sessionExpired && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-amber-900">Your session expired. Please log in again.</p>}

@@ -33,6 +33,8 @@ describe("Navbar", () => {
 
         expect(screen.getByRole("link", { name: "CoinTrail home" }))
             .toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
 
         expect(screen.getByText("Login"))
             .toBeInTheDocument();

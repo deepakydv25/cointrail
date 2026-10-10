@@ -29,6 +29,7 @@ describe("RegisterPage", () => {
                 name: /create account/i,
             })
         ).toBeInTheDocument();
+        expect(screen.getByText('Create your account to organize your financial activity.')).toBeInTheDocument();
 
         expect(
             screen.getByLabelText("Name")

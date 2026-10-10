@@ -39,6 +39,7 @@ describe("LoginPage", () => {
                 name: /welcome back/i,
             })
         ).toBeInTheDocument();
+        expect(screen.getByText('Sign in to continue with CoinTrail.')).toBeInTheDocument();
 
         expect(
             screen.getByLabelText("Email")

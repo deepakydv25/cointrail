@@ -26,7 +26,7 @@ function RegisterPage() {
                 </h1>
 
                 <p className="mb-6 text-center text-gray-600">
-                    Start tracking your expenses with CoinTrail
+                    Create your account to organize your financial activity.
                 </p>
 
                 <form
