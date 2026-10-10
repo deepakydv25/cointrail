@@ -490,13 +490,39 @@ form .ct-button--primary { min-height: 3rem; }
 /* Transactions list: disclosures, calendar groups and full-row detail links. */
 .ct-transactions-filter-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
 .ct-active-filters { display: flex; flex: 1 1 12rem; flex-wrap: wrap; gap: .5rem; list-style: none; }
-.ct-active-filters li { padding: .375rem .625rem; border-radius: .5rem; background: var(--ct-surface-selected); color: var(--ct-text-secondary); font-size: .875rem; overflow-wrap: anywhere; }
+.ct-active-filters li { display: inline-flex; align-items: center; gap: .375rem; padding: .125rem .25rem .125rem .625rem; border-radius: .5rem; background: var(--ct-surface-selected); color: var(--ct-text-secondary); font-size: .875rem; overflow-wrap: anywhere; }
 .ct-transactions #transaction-filters .ct-card { margin-top: .75rem; }
-.ct-transaction-groups { display: grid; gap: 1.5rem; }
-.ct-transaction-groups h2 { font: var(--ct-type-section); margin-bottom: .75rem; }
+.ct-transaction-groups { display: grid; gap: 1rem; }
+.ct-transaction-groups h3 { font-size: .875rem; font-weight: 600; color: var(--ct-text-secondary); margin-bottom: .5rem; }
+.ct-transaction-month-heading { font: var(--ct-type-section); }
 .ct-transactions .ct-financial-row { position: relative; }
 .ct-transactions .ct-row-title::after { content: ''; position: absolute; inset: 0; }
 .ct-transactions .ct-financial-row:hover { background: var(--ct-surface-selected); }
 .ct-transactions .ct-financial-row:focus-within { outline: 2px solid var(--ct-primary); outline-offset: -2px; }
 .ct-transactions .ct-pagination { justify-content: center; gap: .5rem; }
 .ct-transactions .ct-pagination p { min-width: 7rem; text-align: center; }
+
+.ct-transactions .ct-financial-row--compact { display: grid; grid-template-columns: 2rem minmax(0, 1fr) fit-content(45%); align-items: center; gap: .625rem; padding: .625rem .875rem; }
+.ct-financial-row--compact .ct-row-title { min-height: 0; padding: 0; line-height: 1.4; overflow-wrap: anywhere; }
+.ct-financial-row--compact .ct-row-metadata { margin-top: .125rem; font-size: .8125rem; line-height: 1.4; overflow-wrap: anywhere; }
+.ct-financial-row--compact .ct-row-value { text-align: right; }
+.ct-financial-row--compact .ct-row-value .ct-amount { margin: 0; font-size: .9375rem; overflow-wrap: anywhere; }
+.ct-transaction-row-date { display: block; margin-top: .125rem; }
+.ct-transactions .ct-filter-chip-remove { width: 1.75rem; min-height: 1.75rem; padding: .375rem; border: 0; border-radius: .375rem; background: transparent; backdrop-filter: none; box-shadow: none; }
+.ct-filter-chip-remove .ct-icon { width: .875rem; height: .875rem; }
+.ct-transaction-filter-header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; }
+.ct-transaction-filter-header h2 { font: var(--ct-type-section); }
+.ct-transactions .ct-transaction-filter-header .ct-filter-clear { min-height: 2rem; padding: .25rem .625rem; font-size: .875rem; }
+.ct-transaction-filter-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+.ct-transaction-filter-grid .ct-field { gap: .25rem; font-size: .8125rem; }
+.ct-transactions :is(.ct-transaction-filter-grid, .ct-transaction-list-footer) .ct-control { min-height: 2.25rem; padding: .375rem .625rem; font-size: .875rem; }
+.ct-transaction-filter-actions { grid-column: 1 / -1; justify-content: flex-end; margin-top: .25rem; }
+.ct-transactions .ct-transaction-filter-actions .ct-button { min-height: 2.25rem; padding: .375rem .875rem; font-size: .875rem; }
+.ct-transaction-list-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+.ct-transaction-list-footer .ct-field { display: flex; align-items: center; gap: .5rem; font-size: .875rem; }
+.ct-transaction-list-footer .ct-control { width: auto; min-width: 4rem; }
+@container (min-width: 40rem) { .ct-transaction-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.ct-transactions .ct-transactions-filter-toolbar .ct-transaction-filter-toggle { width: auto; min-height: 2.25rem; padding: .375rem .625rem; font-size: .875rem; border: 0; border-radius: .5rem; background: transparent; backdrop-filter: none; box-shadow: none; }
+.ct-transactions .ct-transaction-filter-toggle:hover, .ct-transactions .ct-transaction-filter-toggle[aria-expanded="true"] { background: var(--ct-surface-selected); }
+.ct-transaction-filter-toggle .ct-icon { width: 1.125rem; height: 1.125rem; }

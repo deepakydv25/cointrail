@@ -28,3 +28,16 @@ Transactions UI and existing transport/query suites: 2 suites / 69 tests passed.
 
 ## Delivery
 Implementation commit bc7492b pushed on feature/transactions-page-redesign. PR https://github.com/deepakydv25/cointrail/pull/33 targets develop and remains open/unmerged.
+
+## Approved compact-layout revision
+The user requested an update on the existing branch and PR 33. Keep financial calculations, APIs, query behavior and unrelated pages unchanged.
+- [x] Compact FinancialRow option used only by Transactions: small category icon, description title, inline category/account metadata, no visible type badge and right-aligned colored exact amount.
+- [x] Compact filter panel in Type/Account/Category then From/To/Sort order; Clear all header action, bottom-right Apply, auto-collapse and trigger focus.
+- [x] Removable active-filter chips resetting page to zero while preserving remaining query parameters.
+- [x] Page size outside the panel beside pagination; preserve custom sizes and existing active query values.
+- [x] Directly affected existing tests, lint/build and diff review; no E2E/full suite.
+- [ ] Commit/push updates and revise existing PR 33 without creating or merging a PR.
+
+Latest user refinements: show the three-horizontal-line sliders glyph beside the visible Filter label. Group headings show the month/year and Today/Yesterday with day/month (for example October 2026 then Today - 10 October). Expenses use a visual minus prefix and income a plus prefix, retaining the exact currency formatter and decimals. No financial data or calculations change.
+
+Compact revision verification: 3 directly affected suites / 89 tests passed across targeted runs (Transactions 38, transport/query 31, UI foundation 20). The initial parallel run had one 5-second filter journey timeout; it passed unchanged in isolation and in serial Transactions runs. Final Transactions suite: 38 passed with one worker after final layout/icon changes. No new test cases or increased timeouts. Existing assertions updated for signed amounts, date/month headings, labels, removable chips, page-size placement and auto-collapse/focus. Final lint, production build and diff whitespace check passed; existing bundle-size warning remains.
