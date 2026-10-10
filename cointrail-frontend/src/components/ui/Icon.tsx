@@ -1,6 +1,7 @@
-export type IconName = 'eye' | 'eye-off' | 'refresh' | 'analytics' | 'cart' | 'profile' | 'menu' | 'close' | 'chevron-left' | 'chevron-right' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout' | 'utensils' | 'suitcase' | 'shopping-bag' | 'film' | 'medical' | 'graduation' | 'house' | 'repeat' | 'briefcase' | 'gift' | 'laptop' | 'percent';
+export type IconName = 'filter' | 'eye' | 'eye-off' | 'refresh' | 'analytics' | 'cart' | 'profile' | 'menu' | 'close' | 'chevron-left' | 'chevron-right' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout' | 'utensils' | 'suitcase' | 'shopping-bag' | 'film' | 'medical' | 'graduation' | 'house' | 'repeat' | 'briefcase' | 'gift' | 'laptop' | 'percent';
 
 const paths: Record<IconName, string[]> = {
+    filter: ['M3 6h4M11 6h10M3 12h10M17 12h4M3 18h2M9 18h12', 'M11 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0M17 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0M9 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0'],
     eye: ['M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12', 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0'],
     'eye-off': ['m3 3 18 18M10 5c5-1 9 4 12 7-1 2-2 3-3 4M6 6c-2 2-3 4-4 6 3 5 9 9 15 5M10 10a3 3 0 0 0 4 4'],
     refresh: ['M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8', 'M21 3v5h-5', 'M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16', 'M8 16H3v5'],

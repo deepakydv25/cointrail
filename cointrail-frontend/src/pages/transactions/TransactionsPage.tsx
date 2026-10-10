@@ -1,9 +1,10 @@
+import { Icon } from '../../components/ui/Icon';
 import { FormField } from '../../components/ui/FormField';
 import { FinancialRow } from '../../components/ui/FinancialRow';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { SurfaceCard } from '../../components/ui/SurfaceCard';
 import { Button, ButtonLink } from '../../components/ui/Button';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { getTransactions } from '../../services/transactionService';
@@ -12,11 +13,28 @@ import { getCategories } from '../../services/categoryService';
 import type { AccountResponse } from '../../types/account';
 import type { CategoryResponse } from '../../types/category';
 import { transactionSorts, transactionTypes } from '../../types/transaction';
-import type { TransactionPage } from '../../types/transaction';
+import type { TransactionPage, TransactionResponse } from '../../types/transaction';
 import { normalizeApiError } from '../../api/errors';
 import { formatMoney } from '../../api/financial';
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States';
 import { transactionQuery } from './query';
+
+const panelFilterKeys = ['type', 'accountId', 'categoryId', 'from', 'to', 'sort'] as const;
+const filterKeys = panelFilterKeys;
+const sortNames = { transactionDate: 'Transaction date', amount: 'Amount', createdAt: 'Created date', updatedAt: 'Updated date' };
+
+function dateHeading(date: string) {
+    const now = new Date(); const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    const localDate = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+    const label = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+    if (date === localDate(now)) return `Today \u00b7 ${label}`;
+    if (date === localDate(yesterday)) return `Yesterday \u00b7 ${label}`;
+    return label;
+}
+
+function monthHeading(date: string) {
+    return new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+}
 
 export default function TransactionsPage() {
     const { search, state } = useLocation();
@@ -24,6 +42,11 @@ export default function TransactionsPage() {
     const [page, setPage] = useState<{ search: string; data: TransactionPage } | null>(null);
     const [error, setError] = useState<{ search: string; message: string } | null>(null);
     const [attempt, setAttempt] = useState(0);
+    const loadMoreRequest = useRef<AbortController | null>(null);
+    const [moreState, setMoreState] = useState<{ search: string; loading: boolean; error: string } | null>(null);
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const filtersTrigger = useRef<HTMLButtonElement>(null);
+    const filtersForm = useRef<HTMLFormElement>(null);
     const [accounts, setAccounts] = useState<AccountResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [resourceError, setResourceError] = useState('');
@@ -38,26 +61,91 @@ export default function TransactionsPage() {
         const controller = new AbortController();
         (async () => {
             try {
-                const data = await getTransactions(transactionQuery(search), controller.signal);
-                if (!controller.signal.aborted) { setPage({ search, data }); setError(null); }
+                const queryParams = new URLSearchParams(search);
+                queryParams.set('page', '0'); queryParams.set('size', '20');
+                const data = await getTransactions(transactionQuery(queryParams.toString()), controller.signal);
+                if (!controller.signal.aborted) { setPage({ search, data }); setError(null); setMoreState(null); }
             } catch (error) { if (!controller.signal.aborted && !axios.isCancel(error)) setError({ search, message: normalizeApiError(error).message }); }
         })();
-        return () => controller.abort();
+        return () => { controller.abort(); loadMoreRequest.current?.abort(); loadMoreRequest.current = null; };
     }, [search, attempt]);
     const data = page?.search === search ? page.data : null;
     const currentError = error?.search === search ? error.message : '';
+    const loadingMore = moreState?.search === search && moreState.loading;
+    const moreError = moreState?.search === search ? moreState.error : '';
+    const hasMore = data && BigInt(data.number) + 1n < BigInt(data.totalPages) && BigInt(data.content.length) < BigInt(data.totalElements);
+    async function loadMore() {
+        if (!data || !hasMore || loadMoreRequest.current) return;
+        const controller = new AbortController(); loadMoreRequest.current = controller;
+        setMoreState({ search, loading: true, error: '' });
+        try {
+            const queryParams = new URLSearchParams(search);
+            queryParams.set('page', String(BigInt(data.number) + 1n)); queryParams.set('size', '20');
+            const next = await getTransactions(transactionQuery(queryParams.toString()), controller.signal);
+            if (!controller.signal.aborted) setPage(previous => {
+                if (!previous || previous.search !== search) return previous;
+                const items = new Map(previous.data.content.map(item => [item.id, item]));
+                for (const item of next.content) if (!items.has(item.id)) items.set(item.id, item);
+                return { search, data: { ...next, content: [...items.values()] } };
+            });
+        } catch (error) {
+            if (!controller.signal.aborted && !axios.isCancel(error)) setMoreState({ search, loading: false, error: normalizeApiError(error).message });
+        } finally {
+            if (loadMoreRequest.current === controller) {
+                loadMoreRequest.current = null;
+                setMoreState(previous => previous?.search === search ? { ...previous, loading: false } : previous);
+            }
+        }
+    }
     const inputClass = 'ct-control';
-    const sortNames = { transactionDate: 'Transaction date', amount: 'Amount', createdAt: 'Created date', updatedAt: 'Updated date' };
-    function changePage(value: string) { const next = new URLSearchParams(params); next.set('page', value); setParams(next); }
-    return <main className="ct-page">
-        <PageHeader title="Transactions" description="Record income and expenses. Legacy expense records remain separate." actions={<ButtonLink variant="primary" to={`/app/transactions/create${search}`}>Create transaction</ButtonLink>} />
+    const sort = params.get('sort') || 'transactionDate,desc';
+    const hasConstraints = ['type', 'accountId', 'categoryId', 'from', 'to'].some(key => params.get(key));
+    const firstUse = data?.totalElements === '0' && !hasConstraints && !currentError;
+    const activeFilters = filterKeys.flatMap(key => {
+        const value = params.get(key);
+        if (!value || (key === 'sort' && value === 'transactionDate,desc')) return [];
+        const labels = { type: 'Type', accountId: 'Account', categoryId: 'Category', from: 'From', to: 'To', sort: 'Sort' };
+        const name = key === 'accountId' ? accounts.find(account => account.id === value)?.name ?? `ID ${value}`
+            : key === 'categoryId' ? categories.find(category => category.id === value)?.name ?? `ID ${value}`
+                : key === 'sort' ? `${sortNames[value.split(',')[0] as keyof typeof sortNames] ?? value} ${value.endsWith('asc') ? 'ascending' : 'descending'}` : value;
+        return [{ key, label: `${labels[key]}: ${name}` }];
+    });
+    const clearFilters = () => {
+        const next = new URLSearchParams(params);
+        for (const key of [...filterKeys, 'page', 'size']) next.delete(key);
+        setParams(next);
+    };
+    const removeFilter = (key: typeof filterKeys[number]) => {
+        const next = new URLSearchParams(params); next.delete(key); next.delete('page'); next.delete('size'); setParams(next); filtersTrigger.current?.focus();
+    };
+    const rows = (items: TransactionResponse[]) => <SurfaceCard padding="none"><ul className="ct-financial-list">{items.map(transaction => <li key={transaction.id}>
+        <FinancialRow compact title={transaction.description?.trim() || transaction.categoryName} to={`/app/transactions/${transaction.id}${search}`}
+            type={transaction.type} amount={`${transaction.type === 'EXPENSE' ? '\u2212' : '+'}${formatMoney(transaction.amount)}`} metadata={<><span>{transaction.accountName}</span>{!sort.startsWith('transactionDate,') && <time className="ct-transaction-row-date" dateTime={transaction.transactionDate}>{transaction.transactionDate}</time>}</>} categoryName={transaction.categoryName} category={transaction.categoryName} />
+    </li>)}</ul></SurfaceCard>;
+    const dateGroups = new Map<string, TransactionResponse[]>();
+    if (sort.startsWith('transactionDate,')) for (const transaction of data?.content ?? []) {
+        const group = dateGroups.get(transaction.transactionDate) ?? [];
+        group.push(transaction); dateGroups.set(transaction.transactionDate, group);
+    }
+    const orderedDateGroups = [...dateGroups].sort(([a], [b]) => sort.endsWith('asc') ? a.localeCompare(b) : b.localeCompare(a));
+    return <main className="ct-page ct-transactions">
+        <PageHeader title="Transactions" actions={firstUse ? undefined : <ButtonLink variant="primary" to={`/app/transactions/create${search}`}>+ Add transaction</ButtonLink>} />
         {typeof state?.notice === 'string' && <p role="status">{state.notice}</p>}
-        <SurfaceCard><form key={search} className="ct-filter-grid" noValidate onSubmit={event => {
-            event.preventDefault(); const fields = new FormData(event.currentTarget); const next = new URLSearchParams();
-            for (const key of ['type', 'accountId', 'categoryId', 'from', 'to', 'size', 'sort']) {
+        {!firstUse && <>
+            <div className="ct-transactions-filter-toolbar">
+                {orderedDateGroups.length > 0 && <h2 className="ct-transaction-month-heading">{monthHeading(orderedDateGroups[0][0])}</h2>}
+                <Button ref={filtersTrigger} variant="ghost" className="ct-transaction-filter-toggle" aria-label="Filter" title="Filter" aria-expanded={filtersOpen} aria-controls="transaction-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Icon name="filter" /><span>Filter</span></Button>
+            </div>
+
+            <div id="transaction-filters" hidden={!filtersOpen}><SurfaceCard padding="compact">
+                <div className="ct-transaction-filter-header"><h2>Filters</h2><Button variant="ghost" className="ct-filter-clear" onClick={() => { filtersForm.current?.reset(); clearFilters(); }}>Clear all</Button></div>
+                <form ref={filtersForm} key={search} className="ct-transaction-filter-grid" noValidate onSubmit={event => {
+            event.preventDefault(); const fields = new FormData(event.currentTarget); const next = new URLSearchParams(params);
+            for (const key of panelFilterKeys) next.delete(key);
+            for (const key of panelFilterKeys) {
                 const value = fields.get(key)?.toString(); if (value) next.set(key, value);
             }
-            next.set('page', '0'); setParams(next);
+            next.delete('page'); next.delete('size'); setParams(next); setFiltersOpen(false); filtersTrigger.current?.focus();
         }}>
             <FormField id="filter-type" label="Type">{props => <select {...props} name="type" defaultValue={params.get('type') || ''} className={inputClass}>
                 <option value="">All types</option>{transactionTypes.map(type => <option key={type}>{type}</option>)}</select>}</FormField>
@@ -69,29 +157,28 @@ export default function TransactionsPage() {
                 <option value="">All categories</option>{params.get('categoryId') && !categories.some(category => category.id === params.get('categoryId')) &&
                     <option value={params.get('categoryId')!}>Historical or unavailable category (ID {params.get('categoryId')})</option>}
                 {categories.map(category => <option key={category.id} value={category.id}>{category.name} ({category.type})</option>)}</select>}</FormField>
-            <FormField id="filter-sort" label="Sort">{props => <select {...props} name="sort" defaultValue={params.get('sort') || 'transactionDate,desc'} className={inputClass}>
-                {transactionSorts.map(sort => <option key={sort} value={sort}>{sortNames[sort.split(',')[0] as keyof typeof sortNames]} {sort.endsWith('asc') ? 'ascending' : 'descending'}</option>)}</select>}</FormField>
             <FormField id="filter-from" label="From date (inclusive)">{props => <input {...props} name="from" type="date" defaultValue={params.get('from') || ''} className={inputClass} />}</FormField>
             <FormField id="filter-to" label="To date (inclusive)">{props => <input {...props} name="to" type="date" defaultValue={params.get('to') || ''} className={inputClass} />}</FormField>
-            <FormField id="filter-size" label="Page size">{props => <select {...props} name="size" defaultValue={params.get('size') || '20'} className={inputClass}>
-                {params.get('size') && !['5', '10', '20', '50', '100'].includes(params.get('size')!) && <option>{params.get('size')}</option>}
-                {['5', '10', '20', '50', '100'].map(size => <option key={size}>{size}</option>)}</select>}</FormField>
-            <div className="ct-actions"><Button type="submit">Apply filters</Button>
-                <Button variant="secondary" onClick={() => setParams({})}>Clear filters</Button></div>
-        </form></SurfaceCard>
-        {resourceError && <ErrorState appearance="clarity" message={`Filter choices unavailable: ${resourceError}. Existing ID filters still work.`} />}
+            <FormField id="filter-sort" label="Sort">{props => <select {...props} name="sort" defaultValue={params.get('sort') || 'transactionDate,desc'} className={inputClass}>
+                {transactionSorts.map(sort => <option key={sort} value={sort}>{sortNames[sort.split(',')[0] as keyof typeof sortNames]} {sort.endsWith('asc') ? 'ascending' : 'descending'}</option>)}</select>}</FormField>
+            <div className="ct-actions ct-transaction-filter-actions"><Button type="submit">Apply filters</Button></div>
+        </form></SurfaceCard></div>
+            {activeFilters.length > 0 && <ul className="ct-active-filters" aria-label="Active filters">{activeFilters.map(({ key, label }) => <li key={key}><span>{label}</span><Button variant="ghost" size="icon" className="ct-filter-chip-remove" aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={() => removeFilter(key)}><Icon name="close" /></Button></li>)}</ul>}
+        </>}
+        {!firstUse && filtersOpen && resourceError && <ErrorState appearance="clarity" message={`Filter choices unavailable: ${resourceError}. Existing ID filters still work.`} />}
         {currentError ? <ErrorState appearance="clarity" message={currentError} onRetry={() => { setError(null); setPage(null); setAttempt(attempt + 1); }} />
             : !data ? <LoadingState appearance="clarity" message="Loading transactions…" /> : <>
-                {data.content.length === 0 ? <EmptyState appearance="clarity" title="No transactions">No transactions match these filters. Clear filters or create a transaction.</EmptyState>
-                    : <SurfaceCard padding="none"><ul className="ct-financial-list">{data.content.map(transaction => <li key={transaction.id}>
-                        <FinancialRow title={transaction.description || `${transaction.type} transaction`} to={`/app/transactions/${transaction.id}${search}`}
-                            type={transaction.type} amount={formatMoney(transaction.amount)} metadata={<><p>{transaction.transactionDate}</p><p>Account: {transaction.accountName}</p></>} categoryName={transaction.categoryName} category={`Category: ${transaction.categoryName}`} />
-                    </li>)}</ul></SurfaceCard>}
-                <div className="ct-pagination" aria-label="Transaction pagination">
-                    <p>{data.totalElements} transactions · {data.totalPages === '0' ? 'No result pages' : `Page ${BigInt(data.number) + 1n} of ${data.totalPages}`}</p>
-                    <Button variant="secondary" disabled={BigInt(data.number) === 0n} onClick={() => changePage(String(BigInt(data.number) - 1n))}>Previous page</Button>
-                    <Button variant="secondary" disabled={BigInt(data.number) + 1n >= BigInt(data.totalPages)} onClick={() => changePage(String(BigInt(data.number) + 1n))}>Next page</Button>
-                </div>
+                {data.content.length === 0 ? <EmptyState appearance="clarity" title={firstUse ? 'No transactions yet' : 'No matching transactions'}>
+                    {firstUse ? <ButtonLink variant="primary" to={`/app/transactions/create${search}`}>Add your first transaction</ButtonLink> : <Button variant="secondary" onClick={clearFilters}>Clear filters</Button>}
+                </EmptyState> : dateGroups.size > 0 ? <div className="ct-transaction-groups">{orderedDateGroups.map(([date, items], index) => <Fragment key={date}>
+                    {index > 0 && date.slice(0, 7) !== orderedDateGroups[index - 1][0].slice(0, 7) && <h2 className="ct-transaction-month-heading">{monthHeading(date)}</h2>}
+                    <section aria-labelledby={`transactions-${date}`}><h3 id={`transactions-${date}`}><time dateTime={date}>{dateHeading(date)}</time></h3>{rows(items)}</section>
+                </Fragment>)}</div> : rows(data.content)}
+                {data.content.length > 0 && <div className="ct-transaction-list-footer">
+                    <p role="status">Showing {data.content.length} of {data.totalElements} transactions</p>
+                    {hasMore && <Button onClick={loadMore} pending={!!loadingMore}>{loadingMore ? 'Loading…' : 'Load more'}</Button>}
+                    {moreError && <p role="alert">{moreError}</p>}
+                </div>}
             </>}
     </main>;
 }
