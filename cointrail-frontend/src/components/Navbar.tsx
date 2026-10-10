@@ -8,11 +8,13 @@ import { Icon, type IconName } from './ui/Icon';
 import Brand from './Brand';
 import PublicHeader from './PublicHeader';
 
-export default function Navbar({ appearance = 'classic' }: { appearance?: 'classic' | 'clarity' }) {
-    return appearance === 'clarity' ? <ApplicationNavigation /> : <ClassicNavbar />;
+export default function Navbar({ appearance = 'classic', pinned = false, onPin }: {
+    appearance?: 'classic' | 'clarity'; pinned?: boolean; onPin?: () => void;
+}) {
+    return appearance === 'clarity' ? <ApplicationNavigation pinned={pinned} onPin={onPin} /> : <ClassicNavbar />;
 }
 
-function ApplicationNavigation() {
+function ApplicationNavigation({ pinned, onPin }: { pinned: boolean; onPin?: () => void }) {
     const [open, setOpen] = useState(false);
     const trigger = useRef<HTMLButtonElement>(null);
     const navigation = useRef<HTMLElement>(null);
@@ -39,7 +41,7 @@ function ApplicationNavigation() {
         media.addEventListener('change', reset);
         return () => media.removeEventListener('change', reset);
     }, []);
-    const destination = (to: string, label: string, icon: IconName) => <NavLink to={to} className="ct-nav-link" onClick={() => setOpen(false)}><Icon name={icon} />{label}</NavLink>;
+    const destination = (to: string, label: string, icon: IconName) => <NavLink to={to} aria-label={label} className="ct-nav-link" onClick={() => setOpen(false)}><Icon name={icon} /><span className="ct-nav-text">{label}</span></NavLink>;
     return <nav ref={navigation} aria-label="Primary navigation" className="ct-navigation" onKeyDown={event => {
         if (event.key === 'Escape' && open) { setOpen(false); trigger.current?.focus(); }
     }}>
@@ -47,17 +49,19 @@ function ApplicationNavigation() {
             <Brand /></Link>
             <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
                 aria-expanded={open} aria-controls="application-navigation" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
+            <Button variant="ghost" size="icon" className="ct-nav-pin" aria-label={pinned ? 'Unpin navigation' : 'Pin navigation open'}
+                aria-pressed={pinned} aria-controls="application-navigation" onClick={onPin}><Icon name={pinned ? 'close' : 'menu'} /></Button>
         </div>
         <div id="application-navigation" className={`ct-nav-panel ${open ? 'ct-nav-panel--open' : ''}`}>
             <p className="ct-nav-label">Workspace</p>
             <div className="ct-nav-group">{destination(AUTHENTICATED_HOME, 'Dashboard', 'overview')}{destination('/app/transactions', 'Transactions', 'transactions')}{destination('/app/budgets', 'Budgets', 'overview')}{destination('/app/analytics', 'Analytics', 'overview')}{destination('/app/recurring', 'Recurring transactions', 'transactions')}{destination('/app/accounts', 'Accounts', 'account')}{destination('/app/categories', 'Categories', 'tag')}</div>
             <p className="ct-nav-label">Legacy expenses</p><div className="ct-nav-group">{destination('/dashboard', 'Expense overview', 'overview')}{destination('/expenses', 'Expense records', 'receipt')}</div>
-            <Button variant="ghost" className="ct-nav-logout" onClick={() => {
+            <Button variant="ghost" className="ct-nav-logout" aria-label="Logout" onClick={() => {
                 // Resolve the guard's session-change update before issuing the
                 // explicit public destination, so it cannot overwrite that route.
                 flushSync(logout);
                 navigate('/');
-            }}><Icon name="logout" />Logout</Button>
+            }}><Icon name="logout" /><span className="ct-nav-text">Logout</span></Button>
         </div>
     </nav>;
 }

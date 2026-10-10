@@ -18,6 +18,22 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><p>{location.pathname}</p><button onClick={() => navigate(-1)}>Browser back</button></>; }
 function setup() { return render(<MemoryRouter initialEntries={['/app/transactions', '/app/accounts/9223372036854775807/edit?from=2026-01-01']} initialIndex={1}><AppShell><main><h1>Edit account</h1><Location /></main></AppShell></MemoryRouter>); }
 describe('Clarity application shell', () => {
+    it('starts unpinned and preserves an explicit pin across navigation, resetting on remount', async () => {
+        const view = setup();
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-pinned');
+        const pin = screen.getByRole('button', { name: 'Pin navigation open' });
+        expect(pin).toHaveAttribute('aria-pressed', 'false');
+        await userEvent.click(pin);
+        expect(document.querySelector('.ct-shell')).toHaveClass('ct-shell--navigation-pinned');
+        expect(screen.getByRole('button', { name: 'Unpin navigation' })).toHaveAttribute('aria-pressed', 'true');
+        await userEvent.click(screen.getByRole('link', { name: 'Categories' }));
+        expect(document.querySelector('.ct-shell')).toHaveClass('ct-shell--navigation-pinned');
+        await userEvent.click(screen.getByRole('button', { name: 'Unpin navigation' }));
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-pinned');
+        await userEvent.click(screen.getByRole('button', { name: 'Pin navigation open' }));
+        view.unmount(); setup();
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-pinned');
+    });
     it('has one navigation tree, selected descendant and separate legacy destinations', () => {
         setup(); const nav = screen.getByRole('navigation', { name: 'Primary navigation' });
         expect(screen.getAllByRole('navigation')).toHaveLength(1); expect(screen.getAllByRole('main')).toHaveLength(1);

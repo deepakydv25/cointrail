@@ -304,3 +304,23 @@ Reviewed screenshots at 320 and 1440px. Existing desktop reporting-field baselin
 Not completed in PR 1: physical devices, Firefox/Safari, 200% browser zoom, screen-reader/contrast/forced-color audits and real-backend E2E. Calendar rollover is covered by controlled-clock automated tests rather than waiting for a real month boundary. The initial QA interceptor incorrectly matched frontend source modules; it was narrowed to actual API paths and the complete browser run then passed. No application fix was needed for that harness issue.
 
 Full diff reviewed for frontend/PR 1 scope. Delivery is one feature PR targeting develop, with no automatic merge. Remaining product UX work is the approved PR 2/PR 3 sequence, not an expansion of this PR.
+
+## Sidebar follow-up requested during PR #29 review
+
+The user explicitly requested that full sidebar labels stop remaining visible on Dashboard and appear on hover. This authorizes the following narrow addition to PR 1; the original PR 1 evidence above describes its earlier scope.
+
+- [x] Desktop (768px+) starts with a 72px icon rail. Hover on fine pointers or keyboard focus expands a 240px overlay without moving content. Accessible link names remain available while labels are hidden.
+- [x] A visible pin toggle reserves a 240px column when pinned. Pin state survives navigation in the mounted application shell and resets on reload/remount; no persisted preference or dependency is introduced.
+- [x] Mobile retains the existing closed-by-default menu and full brand. The desktop pin control is hidden. Existing active routes, links, session behavior and logout ordering are unchanged.
+- [x] Labels and icons retain their vertical positions during expansion; no width animation is introduced. No financial logic or unrelated control redesign is included.
+
+### Follow-up verification
+
+- Targeted AppShell/Navbar/App run: 3 suites, 63 tests passed before adding the pin-state regression. The final full run includes that additional regression.
+- Final full suite: `npm run test:run -- --maxWorkers=1`: **44 suites, 705 tests passed**, 221.01s. No tests, assertions or timeouts were weakened. Earlier two-worker run alongside browser QA had 701 passed / 4 failed from asynchronous timing failures; resource-sensitive parallel execution remains a workstation limitation.
+- `npm run lint`, `npm run build`, and `git diff --check`: passed. Build retains the existing >500kB chunk warning (868.19kB JS, 249.82kB gzip).
+- Real headless Chrome 155: **10 sidebar-specific checks passed at 320, 390, 768, 1024 and 1440px**, with synthetic intercepted API responses. No horizontal overflow; mobile open/close, desktop hover/out, focus expansion, pin/unpin and unchanged content position during hover verified.
+- Reviewed [collapsed desktop](013-sidebar-qa/dashboard-1440.png), [expanded desktop](013-sidebar-qa/hover-1440.png) and [mobile](013-sidebar-qa/dashboard-320.png) screenshots. [Measurements and request log](013-sidebar-qa/results.json).
+- The extended browser script did not complete its reporting-history check; it is not reported as passed. Reporting regressions passed in the final automated suite. Physical devices, Firefox/Safari, zoom and screen-reader/forced-color audits were not completed for this follow-up.
+
+This supersedes the earlier statement that sidebar styling is entirely deferred. Mobile overlay/focus trapping, shared control redesign, Analytics presentation and category icons remain separate planned work. Full follow-up diff reviewed; delivery updates existing PR #29 without merging.

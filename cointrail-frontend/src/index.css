@@ -251,6 +251,7 @@ body:has(.ct-public-header) :is(#main-content, #main-content :focus, #main-conte
 .ct-brand { display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; text-decoration: none; font-weight: 600; font-size: 1.25rem; }
 .ct-nav-panel { display: none; padding: 1rem; border-top: 1px solid var(--ct-border); max-height: calc(100dvh - 4rem); overflow-y: auto; }
 .ct-nav-panel--open { display: block; }
+.ct-navigation .ct-nav-pin { display: none; }
 .ct-nav-group { display: grid; gap: .25rem; }
 .ct-nav-label { font: var(--ct-type-caption); color: var(--ct-text-muted); margin: 1.5rem .75rem .5rem; }
 .ct-nav-link { min-height: 2.75rem; display: flex; align-items: center; gap: .75rem; padding: .625rem .75rem; border-radius: var(--ct-radius-control); color: var(--ct-text-secondary); text-decoration: none; font-weight: 500; }
@@ -356,10 +357,20 @@ form .ct-button--primary { min-height: 3rem; }
 }
 @media (min-width: 768px) {
     :root { --ct-type-title: 600 2rem/2.5rem var(--ct-font-sans); --ct-type-metric: 600 2rem/2.5rem var(--ct-font-sans); }
-    .ct-shell { display: grid; grid-template-columns: 12rem minmax(0, 1fr); align-items: start; }
-    .ct-navigation { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; border-bottom: 0; border-right: 1px solid var(--ct-border); }
-    .ct-nav-top { padding: 1.5rem .75rem; }
+    .ct-shell { --ct-navigation-expanded-width: 15rem; display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: start; }
+    .ct-shell--navigation-pinned { grid-template-columns: var(--ct-navigation-expanded-width) minmax(0, 1fr); }
+    .ct-navigation { position: sticky; top: 0; width: 4.5rem; z-index: 5; height: 100vh; height: 100dvh; overflow-y: auto; border-bottom: 0; border-right: 1px solid var(--ct-border); }
+    .ct-nav-top { padding: 1rem .75rem; flex-direction: column; align-items: flex-start; gap: .5rem; }
     .ct-nav-toggle { display: none; }
+    .ct-navigation .ct-nav-pin { display: inline-flex; }
+    .ct-navigation .ct-wordmark, .ct-navigation .ct-nav-text { display: none; }
+    .ct-navigation .ct-nav-label { visibility: hidden; white-space: nowrap; overflow: hidden; }
+    .ct-navigation .ct-nav-text { white-space: nowrap; }
+    .ct-navigation .ct-nav-link, .ct-navigation .ct-nav-logout { width: 2.75rem; padding-inline: .75rem; gap: .75rem; }
+    .ct-shell--navigation-pinned .ct-navigation, .ct-navigation:focus-within { width: var(--ct-navigation-expanded-width); }
+    .ct-shell--navigation-pinned .ct-navigation :is(.ct-wordmark, .ct-nav-text, .ct-nav-label), .ct-navigation:focus-within :is(.ct-wordmark, .ct-nav-text, .ct-nav-label) { display: block; }
+    .ct-shell--navigation-pinned .ct-navigation .ct-nav-label, .ct-navigation:focus-within .ct-nav-label { visibility: visible; }
+    .ct-shell--navigation-pinned .ct-navigation :is(.ct-nav-link, .ct-nav-logout), .ct-navigation:focus-within :is(.ct-nav-link, .ct-nav-logout) { width: 100%; }
     .ct-nav-panel { display: block; border: 0; max-height: none; overflow: visible; padding: .5rem .75rem 1.5rem; }
     .ct-page { padding: 2rem 1.5rem; }
     .ct-grid, .ct-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -367,10 +378,16 @@ form .ct-button--primary { min-height: 3rem; }
     .ct-financial-row { padding: 1.25rem; }
 }
 @media (min-width: 1024px) {
-    .ct-shell { grid-template-columns: 15rem minmax(0, 1fr); }
+    .ct-shell { --ct-navigation-expanded-width: 15rem; }
     .ct-page { padding: 2rem; }
     .ct-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .ct-row-value { flex: 0 1 auto; max-width: 50%; text-align: right; }
+}
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+    .ct-navigation:hover { width: var(--ct-navigation-expanded-width); }
+    .ct-navigation:hover :is(.ct-wordmark, .ct-nav-text, .ct-nav-label) { display: block; }
+    .ct-navigation:hover .ct-nav-label { visibility: visible; }
+    .ct-navigation:hover :is(.ct-nav-link, .ct-nav-logout) { width: 100%; }
 }
 @media (max-width: 479px) { .clarity-content .ct-actions > .ct-button { width: 100%; } }
 @media (prefers-reduced-motion: reduce) {
