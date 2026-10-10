@@ -1,0 +1,199 @@
+{
+    "browser":  {
+                    "protocolVersion":  "1.3",
+                    "product":  "Chrome/155.0.8059.39",
+                    "revision":  "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+                    "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+                    "jsVersion":  "15.5.35.20"
+                },
+    "checks":  [
+                   {
+                       "name":  "mobile 320x900"
+                   },
+                   {
+                       "name":  "mobile 320x360"
+                   },
+                   {
+                       "name":  "mobile 390x900"
+                   },
+                   {
+                       "name":  "mobile 390x360"
+                   },
+                   {
+                       "name":  "desktop 768x900 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x900 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x360 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "desktop 768x360 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x900 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x900 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x360 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "desktop 1024x360 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x900 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x900 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  900,
+                                    "scroll":  false
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x360 false",
+                       "data":  {
+                                    "width":  72,
+                                    "left":  72,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "desktop 1440x360 true",
+                       "data":  {
+                                    "width":  240,
+                                    "left":  240,
+                                    "overflow":  false,
+                                    "horizontal":  false,
+                                    "header":  0,
+                                    "logout":  360,
+                                    "scroll":  true
+                                }
+                   },
+                   {
+                       "name":  "zoom attempt",
+                       "data":  {
+                                    "width":  1418,
+                                    "ratio":  1
+                                }
+                   }
+               ],
+    "requests":  [
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard"
+                 ],
+    "notes":  "16 asserted mobile/desktop state checks passed. The extra zoom-attempt entry is informational: the keyboard shortcut did not zoom (ratio 1), so actual 200% verification is recorded separately in zoom-results.json. Expansion measurements wait 250ms for responsive chart layout. Synthetic intercepted API responses only."
+}
