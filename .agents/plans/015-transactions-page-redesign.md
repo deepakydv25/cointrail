@@ -13,7 +13,7 @@ TransactionsPage requests a backend TransactionPage using transactionQuery and i
 - [x] Whole-row detail navigation with existing FinancialRow and CategoryIcon; exact money remains unchanged.
 - [x] Compact accessible arrow pagination only for nonempty multiple-page results.
 - [x] Directly affected existing tests, lint, build and diff review. No E2E or full suite.
-- [ ] Commit, push and open one PR to develop; do not merge.
+- [x] Commit, push and open one PR to develop; do not merge.
 
 ## Expected files
 cointrail-frontend/src/pages/transactions/TransactionsPage.tsx
@@ -25,3 +25,6 @@ Use existing filtered total metadata to distinguish first-use emptiness from no 
 
 ## Verification
 Transactions UI and existing transport/query suites: 2 suites / 69 tests passed. Existing filter tests now open the disclosure and verify query metadata, pagination and no-match recovery. Two necessary list cases cover first-use emptiness and date groups/one-page pagination/detail navigation. Frontend lint, production build and git diff --check passed; existing bundle-size warning remains. No full suite, E2E or backend tests run.
+
+## Delivery
+Implementation commit bc7492b pushed on feature/transactions-page-redesign. PR https://github.com/deepakydv25/cointrail/pull/33 targets develop and remains open/unmerged.
