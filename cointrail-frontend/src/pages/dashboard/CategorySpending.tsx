@@ -35,7 +35,7 @@ export default function CategorySpending({ from, to, label, attempt, onRetry }: 
                     {groups.length <= 12 ? <AmountChart items={groups.map((group, index) => ({ id: group.categoryId, label: String(index + 1), tooltipLabel: group.categoryName, amount: group.totals.expense, tone: 'expense' }))} />
                         : <p className="ct-description">Chart omitted for this larger category set; the complete list follows.</p>}
                     <ol className="ct-financial-list" aria-label={`Expense categories for ${label}`}>{groups.map((group, index) =>
-                        <li key={group.categoryId}><div className="ct-financial-row"><CategoryIcon />
+                        <li key={group.categoryId}><div className="ct-financial-row"><CategoryIcon name={group.categoryName} type={group.categoryType} system={group.system} />
                             <div className="ct-row-content"><Link className="ct-row-title" to={`/app/transactions?${new URLSearchParams({ type: 'EXPENSE', categoryId: group.categoryId, from, to, page: '0' })}`}>
                                 {index + 1}. {group.categoryName}</Link>
                                 <p className="ct-row-metadata">{group.system ? 'System' : 'Custom'}{!group.active && ' · Inactive category'}</p></div>

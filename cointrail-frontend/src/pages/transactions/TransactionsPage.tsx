@@ -85,7 +85,7 @@ export default function TransactionsPage() {
                 {data.content.length === 0 ? <EmptyState appearance="clarity" title="No transactions">No transactions match these filters. Clear filters or create a transaction.</EmptyState>
                     : <SurfaceCard padding="none"><ul className="ct-financial-list">{data.content.map(transaction => <li key={transaction.id}>
                         <FinancialRow title={transaction.description || `${transaction.type} transaction`} to={`/app/transactions/${transaction.id}${search}`}
-                            type={transaction.type} amount={formatMoney(transaction.amount)} metadata={<><p>{transaction.transactionDate}</p><p>Account: {transaction.accountName}</p></>} category={`Category: ${transaction.categoryName}`} />
+                            type={transaction.type} amount={formatMoney(transaction.amount)} metadata={<><p>{transaction.transactionDate}</p><p>Account: {transaction.accountName}</p></>} categoryName={transaction.categoryName} category={`Category: ${transaction.categoryName}`} />
                     </li>)}</ul></SurfaceCard>}
                 <div className="ct-pagination" aria-label="Transaction pagination">
                     <p>{data.totalElements} transactions · {data.totalPages === '0' ? 'No result pages' : `Page ${BigInt(data.number) + 1n} of ${data.totalPages}`}</p>

@@ -33,7 +33,7 @@ export default function CategoryDetailsPage() {
         <PageHeader title="Category details" back={<Link to="/app/categories">Back to categories</Link>} />
         {error && <ErrorState appearance="clarity" message={error} onRetry={!category ? () => { setError(''); setAttempt(attempt + 1); } : undefined} />}
         {!category ? !error && <LoadingState appearance="clarity" /> : <SurfaceCard className="ct-stack">
-            <div className="ct-category-heading"><CategoryIcon /><h2>{category.name}</h2></div><p>Type (immutable): {category.type}</p>
+            <div className="ct-category-heading"><CategoryIcon name={category.name} type={category.type} system={category.system} /><h2>{category.name}</h2></div><p>Type (immutable): {category.type}</p>
             <p>{category.system ? 'System · Read-only' : 'Custom'}</p>
             <p className="ct-meta ct-description">Created: {category.createdAt}<br />Updated: {category.updatedAt}</p>
             {category.system ? <p>System categories cannot be renamed or deactivated.</p> : <>

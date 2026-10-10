@@ -38,7 +38,7 @@ function RecurringList({ search }: { search: string }) {
                 {BigInt(data.number) > 0n ? 'Choose the first page to review the current results.' : filtered ? 'Clear or adjust filters to see other rules.' : 'Create a recurring income or expense rule to schedule future transactions.'}
             </EmptyState> : <SurfaceCard padding="none"><ul className="ct-financial-list">{data.content.map(rule => <li key={rule.id}>
                 <FinancialRow title={rule.description || `${rule.type} recurring rule`} to={`/app/recurring/${rule.id}${recurringSearch(query)}`} type={rule.type} amount={formatMoney(rule.amount)}
-                    category={`Category: ${rule.categoryName}`} metadata={<><p>Account: {rule.accountName}</p><p>{rule.frequency} · {rule.status}</p><p>Next due: {rule.nextDueDate ?? 'No next due date'}</p>{rule.blockedReason && <p>Blocked reason: {rule.blockedReason}</p>}</>} />
+                    categoryName={rule.categoryName} category={`Category: ${rule.categoryName}`} metadata={<><p>Account: {rule.accountName}</p><p>{rule.frequency} · {rule.status}</p><p>Next due: {rule.nextDueDate ?? 'No next due date'}</p>{rule.blockedReason && <p>Blocked reason: {rule.blockedReason}</p>}</>} />
             </li>)}</ul></SurfaceCard>}
             <div className="ct-pagination" aria-label="Recurring pagination"><p>{data.totalElements} rules · {BigInt(data.totalPages) === 0n ? 'No result pages' : `Page ${BigInt(data.number) + 1n} of ${data.totalPages}`}</p>
                 <Button variant="secondary" disabled={BigInt(data.number) === 0n} onClick={() => changePage(String(BigInt(data.number) - 1n))}>Previous page</Button>

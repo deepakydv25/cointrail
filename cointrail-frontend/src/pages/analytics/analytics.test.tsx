@@ -27,6 +27,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); logoutSession(); vi.restoreAllMocks(); });
 
 describe('Analytics reports and authoritative exact values', () => {
+    it('keeps limits in a keyboard-accessible disclosure and ordinary grouping labels with API values', async () => {
+        setup(); await loaded();
+        expect(screen.getByText('Dates are inclusive. Grouping changes the trend chart.')).toBeInTheDocument();
+        const disclosure = screen.getByText('Reporting limits').closest('details')!;
+        expect(disclosure).not.toHaveAttribute('open');
+        await userEvent.click(screen.getByText('Reporting limits'));
+        expect(disclosure).toHaveAttribute('open');
+        expect(within(disclosure).getByText(/366 inclusive days/)).toBeInTheDocument();
+        expect(screen.getByRole('option', { name: 'Daily' })).toHaveValue('DAILY');
+        expect(screen.getByRole('option', { name: 'Weekly' })).toHaveValue('WEEKLY');
+        expect(screen.getByRole('option', { name: 'Monthly' })).toHaveValue('MONTHLY');
+    });
     it('renders one protected Clarity page with exact overview, inactive account metadata and all bucket values', async () => {
         setup(); await loaded(); const overview = region('Overview');
         expect(within(overview).getByText(formatMoney(summary.totals.income))).toBeInTheDocument();

@@ -1,0 +1,148 @@
+{
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/155.0.8059.39",
+    "revision": "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "jsVersion": "15.5.35.20"
+  },
+  "checks": [
+    {
+      "name": "200% dashboard 768 false",
+      "data": {
+        "width": 373,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 365.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% analytics 768 false",
+      "data": {
+        "width": 373,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 365.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% dashboard 1024 false",
+      "data": {
+        "width": 501,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 493.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% analytics 1024 false",
+      "data": {
+        "width": 501,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 493.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% dashboard 1440 false",
+      "data": {
+        "width": 709,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 701.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% analytics 1440 false",
+      "data": {
+        "width": 709,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 701.5,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% dashboard 1600 false",
+      "data": {
+        "width": 789,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 72,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% dashboard 1600 true",
+      "data": {
+        "width": 789,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 240,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% analytics 1600 false",
+      "data": {
+        "width": 789,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 72,
+        "navOverflow": false
+      }
+    },
+    {
+      "name": "200% analytics 1600 true",
+      "data": {
+        "width": 789,
+        "height": 251,
+        "dpr": 2,
+        "overflow": false,
+        "rail": 240,
+        "navOverflow": false
+      }
+    }
+  ],
+  "requests": [
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts",
+    "/api/analytics/categories",
+    "/api/dashboard",
+    "/api/analytics/summary",
+    "/api/analytics/trends",
+    "/api/analytics/categories",
+    "/api/analytics/accounts"
+  ],
+  "notes": "Synthetic intercepted financial fixtures only. Actual layout, keyboard, table scrolling, category glyphs and scroll restoration. Actual 200% isolated Chrome profile zoom; no emulation scaling."
+}

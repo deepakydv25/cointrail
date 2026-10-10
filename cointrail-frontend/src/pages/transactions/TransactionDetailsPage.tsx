@@ -32,7 +32,7 @@ export default function TransactionDetailsPage() {
         {!transaction ? !error && <LoadingState appearance="clarity" /> : <SurfaceCard className="ct-stack">
             <h2>{transaction.type} · <span className={`ct-amount ct-amount--${transaction.type.toLowerCase()}`}>{formatMoney(transaction.amount)}</span></h2>
             <p>Date: {transaction.transactionDate}</p><p>Description: {transaction.description ?? 'No description'}</p>
-            <p>Account: {transaction.accountName}</p><div className="ct-category-heading"><CategoryIcon size="small" /><p>Category: {transaction.categoryName}</p></div>
+            <p>Account: {transaction.accountName}</p><div className="ct-category-heading"><CategoryIcon size="small" name={transaction.categoryName} type={transaction.type} /><p>Category: {transaction.categoryName}</p></div>
             <p className="ct-meta ct-description">Historical account and category names remain available even if the resources are no longer active.</p>
             <p className="ct-meta ct-description">Created: {transaction.createdAt}<br />Updated: {transaction.updatedAt}</p>
             <ButtonLink to={`/app/transactions/${transaction.id}/edit${search}`}>Edit transaction</ButtonLink>
