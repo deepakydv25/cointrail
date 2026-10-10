@@ -68,7 +68,8 @@ describe('foundation app navigation with real session and transport', () => {
         expect(document.querySelector('.ct-shell')).toBeNull();
         const header = within(screen.getByRole('navigation', { name: 'Primary navigation' }));
         expect(header.getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
-        expect(header.queryByRole('button')).not.toBeInTheDocument();
+        if (authenticated) expect(header.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+        else expect(header.queryByRole('button')).not.toBeInTheDocument();
         expect(header.queryByRole('link', { name: /features|how it works/i })).not.toBeInTheDocument();
         expect(adapter).not.toHaveBeenCalled();
         screen.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' }).forEach(link => expect(link).toHaveAttribute('href', authenticated ? '/app/dashboard' : '/register'));
@@ -127,7 +128,7 @@ describe('foundation app navigation with real session and transport', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
         expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
         expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
-        expect(screen.getByRole('link', { name: 'CoinTrail dashboard' })).toHaveAttribute('href', '/app/dashboard');
+        expect(screen.getByRole('link', { name: 'CoinTrail home' })).toHaveAttribute('href', '/');
         expect(screen.getByRole('link', { name: 'Expense records' })).toHaveAttribute('href', '/expenses');
     });
 
@@ -138,7 +139,7 @@ describe('foundation app navigation with real session and transport', () => {
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
         await user.click(screen.getByRole('button', { name: 'Login' }));
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-        await screen.findByText('Total active-account balance');
+        await screen.findByText('Total balance');
         expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?year=2026&month=10#budget-summary-heading');
         expect(paths).toContain('/api/dashboard'); expect(paths).toContain('/api/analytics/categories'); expect(paths.some(path => path.startsWith('/api/v1/expenses'))).toBe(false);
         expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
@@ -155,7 +156,7 @@ describe('foundation app navigation with real session and transport', () => {
         expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
         expect(screen.getByRole('link', { name: 'Expense overview' })).toHaveAttribute('aria-current', 'page');
         expect(screen.getByText(/Legacy expense records remain available/)).toBeInTheDocument();
-        expect(screen.queryByText('Total active-account balance')).toBeNull();
+        expect(screen.queryByText('Total balance')).toBeNull();
     });
 
     it('logs out to public home and defaults a fresh login to the current Dashboard', async () => {
@@ -167,7 +168,7 @@ describe('foundation app navigation with real session and transport', () => {
         fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'owner@example.com' } });
         fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
         fireEvent.click(screen.getByRole('button', { name: 'Login' }));
-        await screen.findByText('Total active-account balance');
+        await screen.findByText('Total balance');
         expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
     });
 
@@ -179,7 +180,7 @@ describe('foundation app navigation with real session and transport', () => {
         renderApp(path);
         await screen.findByRole('heading', { name: 'Welcome Back' });
         expect(screen.getByRole('status')).toHaveTextContent('Your session expired');
-        expect(screen.queryByText('Total active-account balance')).toBeNull();
+        expect(screen.queryByText('Total balance')).toBeNull();
         api.defaults.adapter = original;
         fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'owner@example.com' } });
         fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });

@@ -1,6 +1,10 @@
-export type IconName = 'menu' | 'close' | 'chevron-left' | 'chevron-right' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout' | 'utensils' | 'suitcase' | 'shopping-bag' | 'film' | 'medical' | 'graduation' | 'house' | 'repeat' | 'briefcase' | 'gift' | 'laptop' | 'percent';
+export type IconName = 'refresh' | 'analytics' | 'cart' | 'profile' | 'menu' | 'close' | 'chevron-left' | 'chevron-right' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout' | 'utensils' | 'suitcase' | 'shopping-bag' | 'film' | 'medical' | 'graduation' | 'house' | 'repeat' | 'briefcase' | 'gift' | 'laptop' | 'percent';
 
 const paths: Record<IconName, string[]> = {
+    refresh: ['M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M4 12a8 8 0 0 0 14 6'],
+    analytics: ['M4 3v18h17M8 16v-5M13 16V7M18 16V4'],
+    cart: ['M2 3h3l3 12h11l3-8H6M9 20h.01M18 20h.01'],
+    profile: ['M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 21v-2a8 8 0 0 1 16 0v2'],
     utensils: ['M4 3v6a3 3 0 0 0 6 0V3M7 3v18M18 3c-3 3-3 8 0 9h2V3h-2v18'],
     suitcase: ['M4 7h16v13H4zM9 7V4h6v3M8 7v13M16 7v13'],
     'shopping-bag': ['M4 7h16l1 14H3zM8 9V6a4 4 0 0 1 8 0v3'],

@@ -32,10 +32,10 @@ describe('Dashboard financial overview and previews', () => {
         expect(within(overview()).getByText('-₹1,99,99,99,99,99,99,99,999.98')).toBeInTheDocument();
         expect(within(overview()).getByText('₹99,99,99,99,99,99,99,999.99')).toBeInTheDocument();
         expect(within(overview()).getByText('-₹0.01')).toBeInTheDocument();
-        expect(within(overview()).getByText(/All recorded dates/)).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Income vs expense' })).toBeNull();
         expect(screen.getByRole('link', { name: 'Outside selected month' })).toHaveAttribute('href', '/app/transactions/9223372036854775807');
         expect(screen.getByText('2026-09-01')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'View monthly expenses' })).toHaveAttribute('href', '/app/transactions?type=EXPENSE&from=2026-10-01&to=2026-10-31&page=0');
+
         const budgets = screen.getByRole('region', { name: 'Budget summary' });
         expect(within(budgets).getByText('₹10.00')).toBeInTheDocument(); expect(within(budgets).getByText('1')).toBeInTheDocument();
         expect(within(budgets).getByRole('link', { name: 'View budgets' })).toHaveAttribute('href', '/app/budgets?year=2026&month=10');
@@ -53,9 +53,9 @@ describe('Dashboard financial overview and previews', () => {
     it('keeps distinct category IDs, inactive history and only expense groups', async () => {
         setup(); const list = await screen.findByRole('list', { name: 'Expense categories for October 2026' });
         expect(within(list).getAllByRole('listitem')).toHaveLength(2);
-        expect(within(list).getByRole('link', { name: '1. Same name' })).toHaveAttribute('href', '/app/transactions?type=EXPENSE&categoryId=9007199254740995&from=2026-10-01&to=2026-10-31&page=0');
-        expect(within(list).getByRole('link', { name: '2. Same name' })).toHaveAttribute('href', '/app/transactions?type=EXPENSE&categoryId=9223372036854775807&from=2026-10-01&to=2026-10-31&page=0');
-        expect(within(list).getByText('Custom · Inactive category')).toBeInTheDocument(); expect(within(list).queryByText('Income category')).toBeNull();
+        expect(within(list).getAllByRole('link', { name: 'Same name' })[1]).toHaveAttribute('href', '/app/transactions?type=EXPENSE&categoryId=9007199254740995&from=2026-10-01&to=2026-10-31&page=0');
+        expect(within(list).getAllByRole('link', { name: 'Same name' })[0]).toHaveAttribute('href', '/app/transactions?type=EXPENSE&categoryId=9223372036854775807&from=2026-10-01&to=2026-10-31&page=0');
+        expect(list.querySelectorAll('.ct-spending-bar')).toHaveLength(2); expect(within(list).queryByText('Income category')).toBeNull();
         expect(list.querySelectorAll('.ct-category-icon')).toHaveLength(2);
     });
     it('renders zero values without inferring no accounts and uses independent empty states', async () => {
@@ -87,7 +87,7 @@ describe('Dashboard financial overview and previews', () => {
 describe('dashboard URL and request lifecycle', () => {
     it('preserves metadata/hash through Apply, reset and Back/Forward without duplicate history', async () => {
         setup('/app/dashboard?source=review&source=shared#budget-summary-heading');
-        await screen.findByText('Total active-account balance');
+        await screen.findByText('Total balance');
         fireEvent.change(screen.getByLabelText('Reporting year'), { target: { value: '2024' } });
         fireEvent.change(screen.getByLabelText('Reporting month'), { target: { value: '2' } });
         fireEvent.click(screen.getByRole('button', { name: 'Apply period' }));
@@ -182,7 +182,7 @@ describe('dashboard URL and request lifecycle', () => {
         setup('/app/dashboard?year=2026&month=11');
         await screen.findByRole('region', { name: 'Financial overview for November 2026' });
         vi.setSystemTime(new Date(2027, 0, 1));
-        fireEvent.click(screen.getByRole('link', { name: 'CoinTrail dashboard' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Current month' }));
         await screen.findByRole('region', { name: 'Financial overview for January 2027' });
         expect(getDashboard).toHaveBeenCalledTimes(2);
         expect(getDashboard).toHaveBeenLastCalledWith({ year: '2027', month: '1' }, expect.any(AbortSignal));

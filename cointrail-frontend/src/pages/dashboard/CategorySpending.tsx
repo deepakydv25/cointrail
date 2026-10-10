@@ -8,7 +8,7 @@ import { formatMoney } from '../../api/financial';
 import CategoryIcon from '../../components/CategoryIcon';
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States';
 import { SurfaceCard } from '../../components/ui/SurfaceCard';
-import { AmountChart } from './IncomeExpenseChart';
+import { minorUnits } from './chartData';
 
 export default function CategorySpending({ from, to, label, attempt, onRetry }: {
     from: string; to: string; label: string; attempt: number; onRetry: () => void;
@@ -25,21 +25,20 @@ export default function CategorySpending({ from, to, label, attempt, onRetry }: 
         return () => controller.abort();
     }, [from, to, key]);
     const current = result?.key === key ? result : null;
-    const groups = current?.data?.items.filter(item => item.categoryType === 'EXPENSE') ?? [];
-    return <SurfaceCard className="ct-dashboard-categories"><section aria-labelledby="category-spending-heading">
-        <h2 id="category-spending-heading">Spending by category</h2><p className="ct-description">{label} · Expense transactions for this month, including inactive categories.</p>
+    const groups = current?.data?.items.filter(item => item.categoryType === 'EXPENSE' && minorUnits(item.totals.expense) > 0n) ?? [];
+    groups.sort((a, b) => { const left = minorUnits(a.totals.expense); const right = minorUnits(b.totals.expense); return left > right ? -1 : left < right ? 1 : 0; });
+    const total = groups.reduce((sum, group) => sum + minorUnits(group.totals.expense), 0n);
+    return <SurfaceCard className="ct-dashboard-categories ct-dashboard-wide"><section aria-labelledby="category-spending-heading">
+        <h2 id="category-spending-heading">Spending Summary</h2><p className="ct-description">{label}</p>
         {current?.error ? <ErrorState appearance="clarity" message={current.error} onRetry={onRetry} />
             : !current?.data ? <LoadingState appearance="clarity" message="Loading category spending…" />
                 : groups.length === 0 ? <EmptyState appearance="clarity" title="No category spending">No expense-category spending in this month.</EmptyState> : <>
-                    <p className="ct-description">Relative amounts. All categories and exact values are listed below.</p>
-                    {groups.length <= 12 ? <AmountChart items={groups.map((group, index) => ({ id: group.categoryId, label: String(index + 1), tooltipLabel: group.categoryName, amount: group.totals.expense, tone: 'expense' }))} />
-                        : <p className="ct-description">Chart omitted for this larger category set; the complete list follows.</p>}
-                    <ol className="ct-financial-list" aria-label={`Expense categories for ${label}`}>{groups.map((group, index) =>
+                    <ol className="ct-financial-list" aria-label={`Expense categories for ${label}`}>{groups.map(group =>
                         <li key={group.categoryId}><div className="ct-financial-row"><CategoryIcon name={group.categoryName} type={group.categoryType} system={group.system} />
                             <div className="ct-row-content"><Link className="ct-row-title" to={`/app/transactions?${new URLSearchParams({ type: 'EXPENSE', categoryId: group.categoryId, from, to, page: '0' })}`}>
-                                {index + 1}. {group.categoryName}</Link>
-                                <p className="ct-row-metadata">{group.system ? 'System' : 'Custom'}{!group.active && ' · Inactive category'}</p></div>
-                            <p className="ct-amount ct-amount--expense">{formatMoney(group.totals.expense)}</p></div></li>)}</ol>
+                                {group.categoryName}</Link>
+                                <div className="ct-spending-bar" aria-hidden="true"><span style={{ width: `${Number(minorUnits(group.totals.expense) * 10000n / total) / 100}%` }} /></div></div>
+                            <div className="ct-row-value"><p className="ct-amount ct-amount--expense">{formatMoney(group.totals.expense)}</p><p className="ct-row-metadata">{(Number(minorUnits(group.totals.expense) * 10000n / total) / 100).toFixed(2)}%</p></div></div></li>)}</ol>
                 </>}
     </section></SurfaceCard>;
 }

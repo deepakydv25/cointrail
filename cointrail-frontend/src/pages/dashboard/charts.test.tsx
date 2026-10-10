@@ -41,6 +41,6 @@ describe('exact dashboard chart equivalents', () => {
         vi.mocked(getCategoryBreakdown).mockResolvedValue({ ...categories, items: Array.from({ length: 13 }, (_, index) => ({ ...categories.items[0], categoryId: String(index + 1), categoryName: `Category ${index + 1}` })) });
         render(<MemoryRouter><CategorySpending from="2026-10-01" to="2026-10-31" label="October 2026" attempt={0} onRetry={() => {}} /></MemoryRouter>);
         const list = await screen.findByRole('list', { name: 'Expense categories for October 2026' }); expect(within(list).getAllByRole('listitem')).toHaveLength(13);
-        expect(screen.getByText(/Chart omitted/)).toBeInTheDocument(); expect(screen.queryByTestId('geometry')).toBeNull();
+        expect(list.querySelectorAll('.ct-spending-bar')).toHaveLength(13); expect(screen.queryByTestId('geometry')).toBeNull();
     });
 });
