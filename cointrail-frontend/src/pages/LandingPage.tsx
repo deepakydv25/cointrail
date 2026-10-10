@@ -56,7 +56,7 @@ export default function LandingPage() {
                 <div><Link to="/" className="ct-landing-brand" aria-label="CoinTrail home"><Brand /></Link><p>Understand where your money goes.</p></div>
                 <nav aria-label="Footer navigation" className="ct-landing-footer-groups">
                     <div><h2>Explore</h2><a href="#features">Features</a><a href="#how-it-works">How It Works</a></div>
-                    <div><h2>Your account</h2>{isAuthenticated ? <ButtonLink variant="ghost" to="/dashboard">Go to Dashboard</ButtonLink> : <><ButtonLink variant="ghost" to="/login">Sign In</ButtonLink><ButtonLink variant="ghost" to="/register">Get Started</ButtonLink></>}</div>
+                    <div><h2>Your account</h2><div className="ct-landing-footer-actions">{isAuthenticated ? <ButtonLink variant="primary" to="/dashboard">Go to Dashboard</ButtonLink> : <><ButtonLink variant="secondary" to="/login">Sign In</ButtonLink><ButtonLink variant="primary" to="/register">Get Started</ButtonLink></>}</div></div>
                 </nav>
                 <p className="ct-landing-copyright">© {new Date().getFullYear()} CoinTrail.</p>
             </div>

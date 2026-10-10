@@ -38,6 +38,8 @@ describe('public landing', () => {
         expect(footer.getByRole('link', { name: 'Features' })).toHaveAttribute('href', '#features');
         expect(footer.getByRole('link', { name: 'How It Works' })).toHaveAttribute('href', '#how-it-works');
         expect(footer.getByRole('heading', { name: 'Your account' })).toBeInTheDocument();
+        expect(footer.getByRole('link', { name: 'Sign In' })).toHaveClass('ct-button', 'ct-button--secondary');
+        expect(footer.getByRole('link', { name: 'Get Started' })).toHaveClass('ct-button', 'ct-button--primary');
         expect(screen.getByRole('contentinfo')).toHaveTextContent(`© ${new Date().getFullYear()} CoinTrail.`);
         expect(screen.queryByRole('link', { name: /privacy|terms/i })).not.toBeInTheDocument();
     });
@@ -46,6 +48,7 @@ describe('public landing', () => {
         auth.mockReturnValue(session(true)); view.rerender(<MemoryRouter><LandingPage /></MemoryRouter>);
         expect(screen.queryByRole('link', { name: 'Get Started' })).not.toBeInTheDocument();
         screen.getAllByRole('link', { name: 'Go to Dashboard' }).forEach(link => expect(link).toHaveAttribute('href', '/dashboard'));
+        expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Go to Dashboard' })).toHaveClass('ct-button--primary');
         expect(screen.getByText('₹42,500.00')).toBeInTheDocument();
         expect(screen.getByText('Continue reviewing the financial activity you record.')).toBeInTheDocument();
         auth.mockReturnValue(session(false)); view.rerender(<MemoryRouter><LandingPage /></MemoryRouter>);
