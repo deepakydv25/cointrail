@@ -42,7 +42,7 @@ function Overview({ query, attempt, onPending }: { query: AnalyticsQuery; attemp
     const { from, to } = query;
     const load = useCallback((signal: AbortSignal) => getAnalyticsSummary({ from, to }, signal), [from, to]);
     return <Report name="Overview" load={load} attempt={attempt} onPending={onPending}>{report => <>
-        <p className="ct-description">{report.range.from} through {report.range.to} · {report.range.dayCount} inclusive days. Recorded V2 activity; no opening balances.</p>
+        <p className="ct-description">{report.range.from} through {report.range.to} · {report.range.dayCount} inclusive days. Recorded transaction activity; no opening balances.</p>
         <div className="ct-dashboard-metrics">
             <MetricCard label="Income" tone="income" value={formatMoney(report.totals.income)} />
             <MetricCard label="Expenses" tone="expense" value={formatMoney(report.totals.expense)} />
@@ -68,7 +68,7 @@ function Accounts({ query, attempt, onPending }: { query: AnalyticsQuery; attemp
     const load = useCallback((signal: AbortSignal) => getAccountBreakdown({ from, to }, signal), [from, to]);
     return <SurfaceCard><Report name="Account activity" load={load} attempt={attempt} onPending={onPending}>{report => <>
         <p className="ct-description">{report.range.from} through {report.range.to}. Transaction activity, not account balances. Current names and inactive history; account ID order.</p>
-        {report.items.length === 0 ? <EmptyState appearance="clarity" title="No account activity">No recorded V2 transactions in the selected range.</EmptyState> :
+        {report.items.length === 0 ? <EmptyState appearance="clarity" title="No account activity">No recorded transactions in the selected range.</EmptyState> :
             <ul className="ct-financial-list">{report.items.map(item => <li key={item.accountId}>
                 <Link className="ct-row-title" to={transactionLink(report.range, { accountId: item.accountId })}>{item.accountName}</Link>
                 <p className="ct-description">{item.accountType} · {item.active ? 'Active' : 'Inactive'} · ID {item.accountId}</p>
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
     const [attempt, setAttempt] = useState(0); const [pending, setPending] = useState<Record<string, boolean>>({});
     const onPending = useCallback<Pending>((name, value) => setPending(previous => previous[name] === value ? previous : { ...previous, [name]: value }), []);
     return <main className="ct-page ct-analytics">
-        <PageHeader title="Analytics" description="Recorded V2 income and expenses. Legacy expenses, opening balances and unposted recurring rules are excluded." />
+        <PageHeader title="Analytics" description="Explore recorded income and expenses for a selected period. Excludes legacy expense records, opening balances and recurring rules that have not created transactions." />
         <RangeForm key={`${search}/${revision}`} search={search} query={query} />
         {error ? <ErrorState appearance="clarity" message={error} /> : query && <>
             <div className="ct-actions"><p className="ct-description">Reporting {query.from} through {query.to}. Reports may briefly differ during concurrent changes; refresh is not a synchronized snapshot.</p>

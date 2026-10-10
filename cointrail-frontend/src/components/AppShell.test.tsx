@@ -18,19 +18,47 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><p>{location.pathname}</p><button onClick={() => navigate(-1)}>Browser back</button></>; }
 function setup() { return render(<MemoryRouter initialEntries={['/app/transactions', '/app/accounts/9223372036854775807/edit?from=2026-01-01']} initialIndex={1}><AppShell><main><h1>Edit account</h1><Location /></main></AppShell></MemoryRouter>); }
 describe('Clarity application shell', () => {
+    it('starts collapsed and preserves explicit expansion across navigation, resetting on remount', async () => {
+        const view = setup();
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-expanded');
+        const pin = screen.getByRole('button', { name: 'Expand navigation' });
+        expect(pin).toHaveAttribute('aria-expanded', 'false');
+        await userEvent.click(pin);
+        expect(document.querySelector('.ct-shell')).toHaveClass('ct-shell--navigation-expanded');
+        expect(screen.getByRole('button', { name: 'Collapse navigation' })).toHaveAttribute('aria-expanded', 'true');
+        await userEvent.click(screen.getByRole('link', { name: 'Categories' }));
+        expect(document.querySelector('.ct-shell')).toHaveClass('ct-shell--navigation-expanded');
+        expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('aria-current', 'page');
+        await userEvent.click(screen.getByRole('button', { name: 'Collapse navigation' }));
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-expanded');
+        await userEvent.click(screen.getByRole('button', { name: 'Expand navigation' }));
+        view.unmount(); setup();
+        expect(document.querySelector('.ct-shell')).not.toHaveClass('ct-shell--navigation-expanded');
+    });
+    it('keeps the rail collapsed on hover and focus with named link hints', async () => {
+        setup();
+        const link = screen.getByRole('link', { name: 'Accounts' });
+        expect(link).toHaveAttribute('title', 'Accounts');
+        await userEvent.hover(link);
+        act(() => link.focus());
+        expect(document.querySelector('.ct-nav-hint')).toHaveTextContent('Accounts');
+        expect(screen.getByRole('button', { name: 'Expand navigation' })).toHaveAttribute('aria-expanded', 'false');
+        fireEvent.blur(link);
+        expect(document.querySelector('.ct-nav-hint')).not.toBeInTheDocument();
+    });
     it('has one navigation tree, selected descendant and separate legacy destinations', () => {
         setup(); const nav = screen.getByRole('navigation', { name: 'Primary navigation' });
         expect(screen.getAllByRole('navigation')).toHaveLength(1); expect(screen.getAllByRole('main')).toHaveLength(1);
-        expect(within(nav).getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(within(nav).getByRole('link', { name: 'CoinTrail dashboard' })).toHaveTextContent(/^CoinTrail$/);
         expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
         expect(within(nav).getByRole('link', { name: 'Accounts' })).toHaveAttribute('aria-current', 'page');
         expect(within(nav).getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/app/transactions');
-        expect(within(nav).getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('href', '/app/dashboard');
-        expect(within(nav).getByRole('link', { name: 'Legacy Overview' })).toHaveAttribute('href', '/dashboard');
-        expect(within(nav).getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
+        expect(within(nav).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/app/dashboard');
+        expect(within(nav).getByRole('link', { name: 'Expense overview' })).toHaveAttribute('href', '/dashboard');
+        expect(within(nav).getByRole('link', { name: 'Expense records' })).toHaveAttribute('href', '/expenses');
         expect(within(nav).getByRole('link', { name: 'Budgets' })).toHaveAttribute('href', '/app/budgets');
         expect(within(nav).getByRole('link', { name: 'Analytics' })).toHaveAttribute('href', '/app/analytics');
-        expect(within(nav).getByRole('link', { name: 'Recurring Transactions' })).toHaveAttribute('href', '/app/recurring');
+        expect(within(nav).getByRole('link', { name: 'Recurring transactions' })).toHaveAttribute('href', '/app/recurring');
     });
     it('closes with Escape and returns focus, then closes on route/history changes', async () => {
         setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
@@ -45,7 +73,7 @@ describe('Clarity application shell', () => {
         const view = setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
         await userEvent.click(trigger);
         act(() => { matches = true; resize?.({ matches: true } as MediaQueryListEvent); });
-        expect(trigger).toHaveAttribute('aria-expanded', 'false'); expect(screen.getByRole('link', { name: 'CoinTrail home' })).toHaveFocus();
+        expect(trigger).toHaveAttribute('aria-expanded', 'false'); expect(screen.getByRole('button', { name: 'Expand navigation' })).toHaveFocus();
         screen.getByRole('link', { name: 'Accounts' }).focus();
         act(() => { matches = false; resize?.({ matches: false } as MediaQueryListEvent); }); expect(trigger).toHaveFocus();
         view.unmount(); expect(remove).toHaveBeenCalledWith('change', expect.any(Function));

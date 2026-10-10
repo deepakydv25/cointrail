@@ -47,7 +47,7 @@ describe('public landing', () => {
         const view = render(<MemoryRouter><LandingPage /></MemoryRouter>);
         auth.mockReturnValue(session(true)); view.rerender(<MemoryRouter><LandingPage /></MemoryRouter>);
         expect(screen.queryByRole('link', { name: 'Get Started' })).not.toBeInTheDocument();
-        screen.getAllByRole('link', { name: 'Go to Dashboard' }).forEach(link => expect(link).toHaveAttribute('href', '/dashboard'));
+        screen.getAllByRole('link', { name: 'Go to Dashboard' }).forEach(link => expect(link).toHaveAttribute('href', '/app/dashboard'));
         expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Go to Dashboard' })).toHaveClass('ct-button--primary');
         expect(screen.getByText('₹42,500.00')).toBeInTheDocument();
         expect(screen.getByText('Continue reviewing the financial activity you record.')).toBeInTheDocument();

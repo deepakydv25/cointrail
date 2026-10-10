@@ -63,7 +63,7 @@ describe("PublicRoute", () => {
                     </Route>
 
                     <Route 
-                        path="/dashboard"
+                        path="/app/dashboard"
                         element={<div>Dashboard Page</div>}
                     />
                 </Routes>

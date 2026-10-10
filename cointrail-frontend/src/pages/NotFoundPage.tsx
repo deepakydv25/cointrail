@@ -1,3 +1,4 @@
+import { AUTHENTICATED_HOME } from '../routes/destinations';
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
@@ -20,7 +21,7 @@ function NotFoundPage() {
                 </p>
 
                 <Link
-                    to={isAuthenticated ? "/dashboard" : "/"}
+                    to={isAuthenticated ? AUTHENTICATED_HOME : "/"}
                     className="ct-button ct-button--primary mt-6 inline-block px-5 py-3 font-medium transition"
                 >
                     {isAuthenticated ? "Go to Dashboard" : "Go Home"}

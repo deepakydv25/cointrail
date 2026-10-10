@@ -25,7 +25,7 @@ it('reacts to session changes while preserving the dashboard default', () => {
     const view = render(<MemoryRouter><PublicLandingNavigation /></MemoryRouter>);
     vi.mocked(useAuth).mockReturnValue(session(true));
     view.rerender(<MemoryRouter><PublicLandingNavigation /></MemoryRouter>);
-    expect(screen.getByRole('link', { name: 'Go to Dashboard' })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByRole('link', { name: 'Go to Dashboard' })).toHaveAttribute('href', '/app/dashboard');
     expect(screen.queryByRole('link', { name: 'Sign In' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Get Started' })).not.toBeInTheDocument();
     vi.mocked(useAuth).mockReturnValue(session(false));

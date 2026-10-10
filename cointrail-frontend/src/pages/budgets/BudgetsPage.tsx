@@ -46,7 +46,7 @@ export default function BudgetsPage() {
     try { period = periodFromSearch(search); } catch (caught) { error = normalizeApiError(caught).message; }
     useEffect(() => { if (!period && !error) navigate(`/app/budgets?${periodSearch(initial)}`, { replace: true }); }, [period, error, initial, navigate]);
     const params = new URLSearchParams(search); const context = period ? `?${periodSearch(period)}` : '';
-    return <main className="ct-page ct-stack"><PageHeader title="Budgets" description="Monthly expense-category limits and actual V2 spending. Legacy expenses are separate." actions={period && <>
+    return <main className="ct-page ct-stack"><PageHeader title="Budgets" description="Monthly category limits and recorded expense spending. Legacy expense records remain separate." actions={period && <>
         <ButtonLink variant="primary" to={`/app/budgets/create${context}`}>Create budget</ButtonLink><ButtonLink variant="secondary" to={`/app/dashboard${context}`}>View dashboard</ButtonLink></>} />
         {typeof state?.notice === 'string' && <p role="status">{state.notice}</p>}
         <MonthSelection key={search} initial={period ?? { year: params.get('year') ?? initial.year, month: params.get('month') ?? initial.month }} />

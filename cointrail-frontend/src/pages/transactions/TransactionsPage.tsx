@@ -50,7 +50,7 @@ export default function TransactionsPage() {
     const sortNames = { transactionDate: 'Transaction date', amount: 'Amount', createdAt: 'Created date', updatedAt: 'Updated date' };
     function changePage(value: string) { const next = new URLSearchParams(params); next.set('page', value); setParams(next); }
     return <main className="ct-page">
-        <PageHeader title="Transactions" description="V2 expense and income transactions. Legacy expenses remain separate." actions={<ButtonLink variant="primary" to={`/app/transactions/create${search}`}>Create transaction</ButtonLink>} />
+        <PageHeader title="Transactions" description="Record income and expenses. Legacy expense records remain separate." actions={<ButtonLink variant="primary" to={`/app/transactions/create${search}`}>Create transaction</ButtonLink>} />
         {typeof state?.notice === 'string' && <p role="status">{state.notice}</p>}
         <SurfaceCard><form key={search} className="ct-filter-grid" noValidate onSubmit={event => {
             event.preventDefault(); const fields = new FormData(event.currentTarget); const next = new URLSearchParams();

@@ -33,7 +33,7 @@ function BudgetDetail({ id, search }: { id: string; search: string }) {
         {typeof state?.notice === 'string' && <p role="status">{state.notice}</p>}
         {!current ? <LoadingState appearance="clarity" message="Loading budget…" /> : current.error ? <ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /> : budget && <SurfaceCard className="ct-stack">
             <div className="ct-category-heading"><CategoryIcon /><h2>{budget.categoryName}</h2></div><p>{periodLabel(budget)}</p><BudgetValues budget={budget} />
-            <p className="ct-description">Spending includes this category's V2 expense transactions for the budget month. Historical category names remain available even if inactive.</p>
+            <p className="ct-description">Spending includes this category's expense transactions for the budget month. Historical category names remain available even if inactive.</p>
             <p className="ct-meta ct-description">Created: {budget.createdAt}<br />Updated: {budget.updatedAt}</p>
             {error && <ErrorState appearance="clarity" message={error} />}
             <div className="ct-actions"><ButtonLink to={`/app/budgets/${budget.id}/edit${context}`}>Edit budget amount</ButtonLink><ButtonLink variant="secondary" to={transactions}>View category expenses</ButtonLink>

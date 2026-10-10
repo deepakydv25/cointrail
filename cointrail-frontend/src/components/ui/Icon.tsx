@@ -1,8 +1,10 @@
-export type IconName = 'menu' | 'close' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout';
+export type IconName = 'menu' | 'close' | 'chevron-left' | 'chevron-right' | 'account' | 'tag' | 'transactions' | 'overview' | 'receipt' | 'info' | 'error' | 'logout';
 
 const paths: Record<IconName, string[]> = {
     menu: ['M4 6h16M4 12h16M4 18h16'],
     close: ['m6 6 12 12M18 6 6 18'],
+    'chevron-left': ['m14 6-6 6 6 6'],
+    'chevron-right': ['m10 6 6 6-6 6'],
     account: ['M3 7h18v13H3zM3 7l9-4 9 4M7 11v5M12 11v5M17 11v5'],
     tag: ['M3 3h8l10 10-8 8L3 11z', 'M7 7h.01'],
     transactions: ['M4 7h15l-4-4M20 17H5l4 4'],

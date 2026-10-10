@@ -15,7 +15,7 @@ const originalAdapter = api.defaults.adapter;
 const expense = { id: 7, amount: 12.34, category: 'FOOD', description: 'Legacy lunch', expenseDate: '2026-10-01', createdAt: '2026-10-01T12:00:00', updatedAt: '2026-10-01T12:00:00' };
 const accountJson = '{"id":9007199254740993,"name":"V2 Savings","type":"BANK","openingBalance":99999999999999999.99,"active":true,"createdAt":"2026-10-01T12:00:00","updatedAt":"2026-10-01T12:00:00"}';
 const response = (config: InternalAxiosRequestConfig, data: unknown): AxiosResponse => ({ config, data, status: 200, statusText: '', headers: new AxiosHeaders() });
-function Location() { const location = useLocation(); return <span data-testid="location">{location.pathname + location.search}</span>; }
+function Location() { const location = useLocation(); return <span data-testid="location">{location.pathname + location.search + location.hash}</span>; }
 const renderApp = (path: string) => render(<MemoryRouter initialEntries={[path]}><AuthProvider><App /><Location /></AuthProvider></MemoryRouter>);
 
 beforeEach(() => {
@@ -71,8 +71,7 @@ describe('foundation app navigation with real session and transport', () => {
         expect(header.queryByRole('button')).not.toBeInTheDocument();
         expect(header.queryByRole('link', { name: /features|how it works/i })).not.toBeInTheDocument();
         expect(adapter).not.toHaveBeenCalled();
-        const main = within(screen.getByRole('main'));
-        expect(main.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' })[0]).toHaveAttribute('href', authenticated ? '/dashboard' : '/register');
+        screen.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' }).forEach(link => expect(link).toHaveAttribute('href', authenticated ? '/app/dashboard' : '/register'));
     });
     it('preserves classic auth layout and restores title when leaving landing', async () => {
         document.title = 'CoinTrail'; renderApp('/');
@@ -114,39 +113,79 @@ describe('foundation app navigation with real session and transport', () => {
         });
 
     it('returns to a legacy edit deep link and keeps its search after login', async () => {
-        const user = userEvent.setup(); renderApp('/expenses/7/edit?source=legacy');
+        const user = userEvent.setup(); renderApp('/expenses/7/edit?source=legacy#description');
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com');
         await user.type(screen.getByLabelText('Password'), 'password123');
         await user.click(screen.getByRole('button', { name: 'Login' }));
         expect(await screen.findByRole('heading', { name: 'Edit Expense' })).toBeInTheDocument();
         expect(screen.getByLabelText('Description')).toHaveValue('Legacy lunch');
-        expect(screen.getByTestId('location')).toHaveTextContent('/expenses/7/edit?source=legacy');
+        expect(screen.getByTestId('location')).toHaveTextContent('/expenses/7/edit?source=legacy#description');
     });
 
-    it('keeps the ordinary authenticated default on /dashboard', async () => {
-        loginSession(makeToken()); renderApp('/login');
+    it.each(['/login', '/register'])('uses the current Dashboard default from %s', async path => {
+        loginSession(makeToken()); renderApp(path);
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-        expect(screen.getByTestId('location')).toHaveTextContent('/dashboard');
-        expect(screen.getByRole('link', { name: 'Legacy Overview' })).toHaveAttribute('aria-current', 'page');
-        expect(screen.getByRole('link', { name: 'Legacy Expenses' })).toHaveAttribute('href', '/expenses');
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
+        expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', { name: 'CoinTrail dashboard' })).toHaveAttribute('href', '/app/dashboard');
+        expect(screen.getByRole('link', { name: 'Expense records' })).toHaveAttribute('href', '/expenses');
     });
 
-    it('returns to a Dashboard V2 reporting deep link after login without using V1 expense APIs', async () => {
+    it('returns to a Dashboard reporting deep link after login without using V1 expense APIs', async () => {
         const original = api.defaults.adapter; const paths: string[] = [];
         api.defaults.adapter = async config => { paths.push(config.url!); return (original as (config: InternalAxiosRequestConfig) => Promise<AxiosResponse>)(config); };
-        const user = userEvent.setup(); renderApp('/app/dashboard?year=2026&month=10');
+        const user = userEvent.setup(); renderApp('/app/dashboard?year=2026&month=10#budget-summary-heading');
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
         await user.click(screen.getByRole('button', { name: 'Login' }));
-        expect(await screen.findByRole('heading', { name: 'Dashboard V2' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
         await screen.findByText('Total active-account balance');
-        expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?year=2026&month=10');
+        expect(screen.getByTestId('location')).toHaveTextContent('/app/dashboard?year=2026&month=10#budget-summary-heading');
         expect(paths).toContain('/api/dashboard'); expect(paths).toContain('/api/analytics/categories'); expect(paths.some(path => path.startsWith('/api/v1/expenses'))).toBe(false);
-        expect(screen.getByRole('link', { name: 'Dashboard V2' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
     });
 
-    it('keeps /app redirected to the V1 dashboard', async () => {
+    it('redirects /app to the current Dashboard without period parameters', async () => {
         loginSession(makeToken()); renderApp('/app');
-        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument(); expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument(); expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
+    });
+
+    it('preserves the explicit legacy dashboard and its legacy expense data', async () => {
+        loginSession(makeToken()); renderApp('/dashboard');
+        await screen.findByText('Legacy chart');
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/dashboard$/);
+        expect(screen.getByRole('link', { name: 'Expense overview' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByText(/Legacy expense records remain available/)).toBeInTheDocument();
+        expect(screen.queryByText('Total active-account balance')).toBeNull();
+    });
+
+    it('logs out to public home and defaults a fresh login to the current Dashboard', async () => {
+        loginSession(makeToken()); renderApp('/expenses/7/edit?source=legacy');
+        await screen.findByRole('heading', { name: 'Edit Expense' });
+        fireEvent.click(screen.getByRole('button', { name: 'Logout' }));
+        await screen.findByRole('heading', { name: 'Understand where your money goes.' });
+        fireEvent.click(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Sign In' }));
+        fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'owner@example.com' } });
+        fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+        await screen.findByText('Total active-account balance');
+        expect(screen.getByTestId('location')).toHaveTextContent(/^\/app\/dashboard$/);
+    });
+
+    it('reauthenticates an expired reporting session to its pinned period and hash', async () => {
+        loginSession(makeToken());
+        const original = api.defaults.adapter;
+        api.defaults.adapter = config => Promise.reject(new AxiosError('Unauthorized', '', config, undefined, { ...response(config, ''), status: 401 }));
+        const path = '/app/dashboard?year=2024&month=2#budget-summary-heading';
+        renderApp(path);
+        await screen.findByRole('heading', { name: 'Welcome Back' });
+        expect(screen.getByRole('status')).toHaveTextContent('Your session expired');
+        expect(screen.queryByText('Total active-account balance')).toBeNull();
+        api.defaults.adapter = original;
+        fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'owner@example.com' } });
+        fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+        await screen.findByRole('region', { name: 'Financial overview for February 2024' });
+        expect(screen.getByTestId('location')).toHaveTextContent(path);
     });
 
     it('returns to an Analytics comparison deep link after login and calls only the five V2 analytics endpoints', async () => {
@@ -173,7 +212,7 @@ describe('foundation app navigation with real session and transport', () => {
         await user.type(await screen.findByLabelText('Email'), 'owner@example.com'); await user.type(screen.getByLabelText('Password'), 'password123');
         await user.click(screen.getByRole('button', { name: 'Login' })); await screen.findByText('No matching recurring rules');
         expect(screen.getByTestId('location')).toHaveTextContent('/app/recurring?status=BLOCKED&accountId=9007199254740993');
-        expect(screen.getByRole('link', { name: 'Recurring Transactions' })).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByRole('link', { name: 'Recurring transactions' })).toHaveAttribute('aria-current', 'page');
     });
 
     it('returns to a V2 detail deep link after login with exact money and Long IDs', async () => {
@@ -202,6 +241,7 @@ describe('foundation app navigation with real session and transport', () => {
     it('keeps unknown /app screens unavailable and advertises delivered resource screens', async () => {
         loginSession(makeToken()); renderApp('/app/unsupported');
         expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Go to Dashboard' })).toHaveAttribute('href', '/app/dashboard');
         expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/app/accounts');
         expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute('href', '/app/categories');
         expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/app/transactions');
@@ -249,7 +289,7 @@ describe('foundation app navigation with real session and transport', () => {
         loginSession(makeToken()); renderApp('/dashboard');
         await screen.findByRole('heading', { name: 'Dashboard' });
         fireEvent.click(screen.getByRole('button', { name: 'Toggle navigation menu' }));
-        fireEvent.click(screen.getByRole('link', { name: 'Legacy Expenses' }));
+        fireEvent.click(screen.getByRole('link', { name: 'Expense records' }));
         const heading = await screen.findByRole('heading', { name: 'Expenses' });
         await waitFor(() => expect(heading).toHaveFocus());
         expect(screen.getByRole('button', { name: 'Toggle navigation menu' })).toHaveAttribute('aria-expanded', 'false');
