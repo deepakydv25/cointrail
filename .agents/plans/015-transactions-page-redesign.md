@@ -36,8 +36,10 @@ The user requested an update on the existing branch and PR 33. Keep financial ca
 - [x] Removable active-filter chips resetting page to zero while preserving remaining query parameters.
 - [x] Page size outside the panel beside pagination; preserve custom sizes and existing active query values.
 - [x] Directly affected existing tests, lint/build and diff review; no E2E/full suite.
-- [ ] Commit/push updates and revise existing PR 33 without creating or merging a PR.
+- [x] Commit/push compact updates and revise existing PR 33 without creating or merging a PR (27db7e4).
 
 Latest user refinements: show the three-horizontal-line sliders glyph beside the visible Filter label. Group headings show the month/year and Today/Yesterday with day/month (for example October 2026 then Today - 10 October). Expenses use a visual minus prefix and income a plus prefix, retaining the exact currency formatter and decimals. No financial data or calculations change.
 
 Compact revision verification: 3 directly affected suites / 89 tests passed across targeted runs (Transactions 38, transport/query 31, UI foundation 20). The initial parallel run had one 5-second filter journey timeout; it passed unchanged in isolation and in serial Transactions runs. Final Transactions suite: 38 passed with one worker after final layout/icon changes. No new test cases or increased timeouts. Existing assertions updated for signed amounts, date/month headings, labels, removable chips, page-size placement and auto-collapse/focus. Final lint, production build and diff whitespace check passed; existing bundle-size warning remains.
+
+Final presentation refinements: Filter trigger, active chips and expanded panel align to the right; empty descriptions use the category name instead of redundant type/transaction text; exact signed amounts remain on one line with a max-content grid column and no inherited width cap. Final existing Transactions suite: 38 passed; frontend lint/build and diff whitespace check passed. Changes delivered to the same branch and PR.

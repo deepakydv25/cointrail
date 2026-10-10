@@ -92,7 +92,7 @@ export default function TransactionsPage() {
         const next = new URLSearchParams(params); next.set('size', size); next.set('page', '0'); setParams(next);
     };
     const rows = (items: TransactionResponse[]) => <SurfaceCard padding="none"><ul className="ct-financial-list">{items.map(transaction => <li key={transaction.id}>
-        <FinancialRow compact title={transaction.description || `${transaction.type} transaction`} to={`/app/transactions/${transaction.id}${search}`}
+        <FinancialRow compact title={transaction.description?.trim() || transaction.categoryName} to={`/app/transactions/${transaction.id}${search}`}
             type={transaction.type} amount={`${transaction.type === 'EXPENSE' ? '\u2212' : '+'}${formatMoney(transaction.amount)}`} metadata={<><span>{transaction.accountName}</span>{!sort.startsWith('transactionDate,') && <time className="ct-transaction-row-date" dateTime={transaction.transactionDate}>{transaction.transactionDate}</time>}</>} categoryName={transaction.categoryName} category={transaction.categoryName} />
     </li>)}</ul></SurfaceCard>;
     const dateGroups = new Map<string, TransactionResponse[]>();
@@ -106,10 +106,11 @@ export default function TransactionsPage() {
         <PageHeader title="Transactions" actions={firstUse ? undefined : <ButtonLink variant="primary" to={`/app/transactions/create${search}`}>Create transaction</ButtonLink>} />
         {typeof state?.notice === 'string' && <p role="status">{state.notice}</p>}
         {!firstUse && <>
-            {orderedDateGroups.length > 0 && <h2 className="ct-transaction-month-heading">{monthHeading(orderedDateGroups[0][0])}</h2>}
-            <div className="ct-transactions-filter-toolbar"><Button ref={filtersTrigger} variant="ghost" className="ct-transaction-filter-toggle" aria-label="Filter" title="Filter" aria-expanded={filtersOpen} aria-controls="transaction-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Icon name="filter" /><span>Filter</span></Button>
-                {activeFilters.length > 0 && <ul className="ct-active-filters" aria-label="Active filters">{activeFilters.map(({ key, label }) => <li key={key}><span>{label}</span><Button variant="ghost" size="icon" className="ct-filter-chip-remove" aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={() => removeFilter(key)}><Icon name="close" /></Button></li>)}</ul>}
+            <div className="ct-transactions-filter-toolbar">
+                {orderedDateGroups.length > 0 && <h2 className="ct-transaction-month-heading">{monthHeading(orderedDateGroups[0][0])}</h2>}
+                <Button ref={filtersTrigger} variant="ghost" className="ct-transaction-filter-toggle" aria-label="Filter" title="Filter" aria-expanded={filtersOpen} aria-controls="transaction-filters" onClick={() => setFiltersOpen(!filtersOpen)}><Icon name="filter" /><span>Filter</span></Button>
             </div>
+            {activeFilters.length > 0 && <ul className="ct-active-filters" aria-label="Active filters">{activeFilters.map(({ key, label }) => <li key={key}><span>{label}</span><Button variant="ghost" size="icon" className="ct-filter-chip-remove" aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={() => removeFilter(key)}><Icon name="close" /></Button></li>)}</ul>}
             <div id="transaction-filters" hidden={!filtersOpen}><SurfaceCard padding="compact">
                 <div className="ct-transaction-filter-header"><h2>Filters</h2><Button variant="ghost" className="ct-filter-clear" onClick={() => { filtersForm.current?.reset(); clearFilters(); }}>Clear all</Button></div>
                 <form ref={filtersForm} key={search} className="ct-transaction-filter-grid" noValidate onSubmit={event => {
