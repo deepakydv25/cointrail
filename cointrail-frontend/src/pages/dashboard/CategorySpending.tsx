@@ -10,8 +10,8 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States
 import { SurfaceCard } from '../../components/ui/SurfaceCard';
 import { minorUnits } from './chartData';
 
-export default function CategorySpending({ from, to, label, attempt, onRetry }: {
-    from: string; to: string; label: string; attempt: number; onRetry: () => void;
+export default function CategorySpending({ from, to, label, attempt, onRetry, onSettled }: {
+    from: string; to: string; label: string; attempt: number; onRetry: () => void; onSettled?: (key: string) => void;
 }) {
     const key = `${from}/${to}/${attempt}`;
     const [result, setResult] = useState<{ key: string; data?: CategoriesResponse; error?: string } | null>(null);
@@ -21,9 +21,11 @@ export default function CategorySpending({ from, to, label, attempt, onRetry }: 
             if (!controller.signal.aborted) setResult({ key, data });
         }).catch(error => {
             if (!controller.signal.aborted && !axios.isCancel(error)) setResult({ key, error: normalizeApiError(error).message });
+        }).finally(() => {
+            if (!controller.signal.aborted) onSettled?.(key);
         });
         return () => controller.abort();
-    }, [from, to, key]);
+    }, [from, to, key, onSettled]);
     const current = result?.key === key ? result : null;
     const groups = current?.data?.items.filter(item => item.categoryType === 'EXPENSE' && minorUnits(item.totals.expense) > 0n) ?? [];
     groups.sort((a, b) => { const left = minorUnits(a.totals.expense); const right = minorUnits(b.totals.expense); return left > right ? -1 : left < right ? 1 : 0; });

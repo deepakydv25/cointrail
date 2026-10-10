@@ -11,7 +11,7 @@ import PublicHeader from '../PublicHeader';
 export default function PublicLandingNavigation() {
     const { isAuthenticated, logout } = useAuth();
     const profile = useRef<HTMLDetailsElement>(null);
-    return <PublicHeader className="ct-landing-header">
+    return <PublicHeader className={`ct-landing-header${isAuthenticated ? ' ct-landing-header--authenticated' : ''}`}>
             <Link to="/" className="ct-landing-brand" aria-label="CoinTrail home"><Brand /></Link>
             <div className="ct-landing-nav-actions">
                 {isAuthenticated ? <details ref={profile} className="ct-profile-menu" onKeyDown={event => {

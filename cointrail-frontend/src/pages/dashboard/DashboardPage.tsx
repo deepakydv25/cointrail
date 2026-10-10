@@ -1,56 +1,36 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getDashboard } from '../../services/dashboardService';
 import type { DashboardPeriod, DashboardResponse } from '../../types/dashboard';
-import { ApiError, normalizeApiError } from '../../api/errors';
+import { normalizeApiError } from '../../api/errors';
 import { formatMoney } from '../../api/financial';
-import type { ReactNode } from 'react';
 import { Icon } from '../../components/ui/Icon';
 import { SurfaceCard } from '../../components/ui/SurfaceCard';
 import { MetricCard } from '../../components/ui/MetricCard';
-import { FormField } from '../../components/ui/FormField';
 import { FinancialRow } from '../../components/ui/FinancialRow';
 import { Button, ButtonLink } from '../../components/ui/Button';
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States';
 import CategoryIcon from '../../components/CategoryIcon';
-import { monthRange, months, periodFromSearch, periodLabel, periodSearch, validatePeriod } from './period';
-import { AUTHENTICATED_HOME } from '../../routes/destinations';
+import { monthRange, periodLabel, periodSearch } from './period';
 import { useCurrentCalendarPeriod } from './useCurrentCalendarPeriod';
 import CategorySpending from './CategorySpending';
 
-function PeriodForm({ initial, urlError, rolling, onApply, onCurrent }: {
-    initial: DashboardPeriod; urlError?: ApiError; rolling: boolean;
-    onApply: (period: DashboardPeriod) => void; onCurrent: () => void;
-}) {
-    const form = useRef<HTMLFormElement>(null);
-    const [draft, setDraft] = useState<(DashboardPeriod & { baseline: string }) | null>(null);
-    const [error, setError] = useState<ApiError | null>(null);
-    const initialKey = `${initial.year}/${initial.month}`;
-    const { year, month } = draft ?? initial;
-    const feedback = error ?? urlError;
-    const change = (next: DashboardPeriod) => setDraft({ ...next, baseline: draft?.baseline ?? initialKey });
-    return <form ref={form} aria-label="Reporting period" noValidate className="ct-dashboard-period" onSubmit={event => {
-        event.preventDefault();
-        try { const period = validatePeriod({ year, month }); setError(null); setDraft(null); onApply(period); }
-        catch (error) {
-            setError(normalizeApiError(error));
-            requestAnimationFrame(() => form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
-        }
-    }}>
-        <FormField id="report-month" label="Reporting month" describedBy={feedback ? 'report-period-error' : undefined} error={feedback?.fieldErrors.month}>{props => <select {...props} className="ct-control" value={month} onChange={event => change({ year, month: event.target.value })}>
-            <option value="">Choose a month</option>{months.map((name, index) => <option key={name} value={String(index + 1)}>{name}</option>)}
-        </select>}</FormField>
-        <FormField id="report-year" label="Reporting year" describedBy={feedback ? 'report-period-error' : undefined} error={feedback?.fieldErrors.year}>{props => <input {...props} className="ct-control" inputMode="numeric" type="number" min="1" max="9999" step="1" value={year} onChange={event => change({ year: event.target.value, month })} />}</FormField>
-        <div className="ct-actions"><Button type="submit">Apply period</Button><Button variant="secondary" onClick={() => {
-            setDraft(null); setError(null); onCurrent();
-        }}>Current month</Button></div>
-        {feedback && <p id="report-period-error" role="alert" className="ct-field-error">{feedback.message}</p>}
-        {rolling && draft && draft.baseline !== initialKey && <p role="status">Current reporting month has changed. Your unsaved period is preserved.</p>}
-    </form>;
-}
+const balanceVisibilityKey = 'cointrail.dashboard.balanceHidden';
 
-function DashboardReport({ period, onRefresh, selector }: { period: DashboardPeriod; onRefresh: () => boolean; selector: ReactNode }) {
+function DashboardReport({ period, onRefresh }: { period: DashboardPeriod; onRefresh: () => DashboardPeriod }) {
+    const [balanceHidden, setBalanceHidden] = useState(() => {
+        try { return localStorage.getItem(balanceVisibilityKey) === 'true'; }
+        catch { return false; }
+    });
+    const toggleBalance = () => {
+        const hidden = !balanceHidden;
+        setBalanceHidden(hidden);
+        try { localStorage.setItem(balanceVisibilityKey, String(hidden)); }
+        catch { /* Keep the toggle usable when device storage is unavailable. */ }
+    };
+    const [categorySettled, setCategorySettled] = useState('');
+    const [refreshTarget, setRefreshTarget] = useState<{ dashboard: string; categories: string } | null>(null);
     const [attempt, setAttempt] = useState(0); const [categoryAttempt, setCategoryAttempt] = useState(0);
     const key = `${period.year}/${period.month}/${attempt}`;
     const [result, setResult] = useState<{ key: string; data?: DashboardResponse; error?: string } | null>(null);
@@ -65,21 +45,36 @@ function DashboardReport({ period, onRefresh, selector }: { period: DashboardPer
     }, [period.year, period.month, key]);
     const current = result?.key === key ? result : null;
     const data = current?.data; const label = periodLabel(period); const range = monthRange(period);
+    const categoryKey = `${range.from}/${range.to}/${categoryAttempt}`;
+    const refreshing = refreshTarget?.dashboard === key && refreshTarget.categories === categoryKey
+        && (!current || categorySettled !== categoryKey);
     return <>
-        <header className="ct-dashboard-header"><h1>Dashboard</h1><div className="ct-dashboard-controls">{selector}<div className="ct-actions"><Button variant="secondary" size="icon" aria-label="Refresh dashboard" title="Refresh dashboard" onClick={() => {
-            if (!onRefresh()) { setAttempt(attempt + 1); setCategoryAttempt(categoryAttempt + 1); }
-        }}><Icon name="refresh" /></Button><ButtonLink variant="ghost" size="icon" aria-label="View analytics" title="View analytics" to={`/app/analytics?${new URLSearchParams({ ...range, grouping: 'DAILY' })}`}><Icon name="analytics" /></ButtonLink></div></div></header>
+        <header className="ct-dashboard-header"><h1>Dashboard</h1><div className="ct-actions">
+            <Button variant="ghost" size="icon" className="ct-dashboard-action" aria-label="Refresh dashboard" title="Refresh dashboard" pending={refreshing} onClick={() => {
+                const next = onRefresh(); const nextRange = monthRange(next);
+                setRefreshTarget({ dashboard: `${next.year}/${next.month}/${attempt + 1}`, categories: `${nextRange.from}/${nextRange.to}/${categoryAttempt + 1}` });
+                setAttempt(attempt + 1); setCategoryAttempt(categoryAttempt + 1);
+            }}><Icon name="refresh" className={refreshing ? 'ct-refresh-spinning' : ''} /></Button>
+            <ButtonLink variant="ghost" size="icon" className="ct-dashboard-action" aria-label="View analytics" title="View analytics" to={`/app/analytics?${new URLSearchParams({ ...range, grouping: 'DAILY' })}`}><Icon name="analytics" /></ButtonLink>
+        </div></header>
         <div className="ct-dashboard-grid">
             {current?.error ? <div className="ct-dashboard-wide"><ErrorState appearance="clarity" message={current.error} onRetry={() => setAttempt(attempt + 1)} /></div>
                 : !data ? <div className="ct-dashboard-wide"><LoadingState appearance="clarity" message="Loading dashboard…" /></div> : <>
-                    <section className="ct-dashboard-metrics ct-dashboard-wide" aria-label={`Financial overview for ${label}`}>
-                        <MetricCard label="Total balance" value={formatMoney(data.totalActiveAccountBalance)} />
-                        <MetricCard label="Monthly income" tone="income" value={formatMoney(data.monthlySummary.income)} />
-                        <MetricCard label="Monthly expenses" tone="expense" value={formatMoney(data.monthlySummary.expense)} />
-                        <MetricCard label="Net cash flow" value={formatMoney(data.monthlySummary.netCashFlow)} />
+                    <section className="ct-dashboard-overview ct-dashboard-wide" aria-label={`Financial overview for ${label}`}>
+                        <SurfaceCard className="ct-dashboard-balance">
+                            <div className="ct-balance-heading"><h2>Total Balance</h2><Button variant="ghost" size="icon" className="ct-dashboard-action" aria-label={balanceHidden ? 'Show total balance' : 'Hide total balance'} title={balanceHidden ? 'Show total balance' : 'Hide total balance'} aria-controls="total-balance-amount" onClick={toggleBalance}><Icon name={balanceHidden ? 'eye-off' : 'eye'} /></Button></div>
+                            <p id="total-balance-amount" className="ct-metric ct-amount" aria-live="polite">{balanceHidden ? '\u20b9 \u2022\u2022\u2022\u2022\u2022\u2022' : formatMoney(data.totalActiveAccountBalance)}</p>
+                        </SurfaceCard>
+                        <section aria-labelledby="monthly-cash-flow-heading"><div className="ct-cash-flow-heading"><h2 id="monthly-cash-flow-heading">Monthly Cash Flow</h2><p className="ct-description">{label}</p></div>
+                            <div className="ct-dashboard-metrics">
+                                <MetricCard label="Money In" tone="income" value={formatMoney(data.monthlySummary.income)} />
+                                <MetricCard label="Money Out" tone="expense" value={formatMoney(data.monthlySummary.expense)} />
+                                <MetricCard label="Net Cash Flow" value={formatMoney(data.monthlySummary.netCashFlow)} />
+                            </div>
+                        </section>
                     </section>
                 </>}
-            <CategorySpending {...range} label={label} attempt={categoryAttempt} onRetry={() => setCategoryAttempt(categoryAttempt + 1)} />
+            <CategorySpending {...range} label={label} attempt={categoryAttempt} onRetry={() => setCategoryAttempt(categoryAttempt + 1)} onSettled={setCategorySettled} />
             {data && <>
                 <SurfaceCard className="ct-dashboard-wide"><section aria-labelledby="recent-transactions-heading">
                     <h2 id="recent-transactions-heading">Recent transactions</h2>
@@ -121,26 +116,6 @@ function DashboardReport({ period, onRefresh, selector }: { period: DashboardPer
 }
 
 export default function DashboardPage() {
-    const { search, hash, key } = useLocation(); const navigate = useNavigate();
-    let explicit: DashboardPeriod | null = null; let error: ApiError | undefined;
-    try { explicit = periodFromSearch(search); } catch (caught) { error = normalizeApiError(caught); }
-    const rolling = !error && !explicit;
-    const calendar = useCurrentCalendarPeriod(rolling);
-    const period = explicit ?? calendar.period;
-    const params = new URLSearchParams(search);
-    const initial = explicit ?? { year: params.get('year') ?? calendar.period.year, month: params.get('month') ?? calendar.period.month };
-    const select = (selected?: DashboardPeriod) => {
-        const next = new URLSearchParams(search);
-        next.delete('year'); next.delete('month');
-        if (selected) { next.set('year', selected.year); next.set('month', selected.month); }
-        const nextSearch = next.size ? `?${next}` : '';
-        if (nextSearch !== search) navigate({ pathname: AUTHENTICATED_HOME, search: nextSearch, hash });
-    };
-    const selector = <PeriodForm key={key} initial={initial} urlError={error} rolling={rolling} onApply={select} onCurrent={() => { calendar.recheck(); select(); }} />;
-    return <main className="ct-page ct-dashboard">
-        {error ? <header className="ct-dashboard-header"><h1>Dashboard</h1>{selector}</header> : <DashboardReport period={period} selector={selector} onRefresh={() => {
-            if (!rolling) return false;
-            return periodSearch(calendar.recheck()) !== periodSearch(period);
-        }} />}
-    </main>;
+    const calendar = useCurrentCalendarPeriod(true);
+    return <main className="ct-page ct-dashboard"><DashboardReport period={calendar.period} onRefresh={calendar.recheck} /></main>;
 }
