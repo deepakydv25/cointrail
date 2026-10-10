@@ -42,6 +42,21 @@ beforeEach(() => {
 afterEach(() => { cleanup(); api.defaults.adapter = originalAdapter; logoutSession(); vi.restoreAllMocks(); });
 
 describe('foundation app navigation with real session and transport', () => {
+    it.each(['/', '/login', '/register', '/unknown-public-page'])('shares public header geometry and brand on %s without requesting financial data', async path => {
+        const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => response(config, {}));
+        api.defaults.adapter = adapter;
+        renderApp(path);
+        await screen.findByRole('heading', { level: 1 });
+        expect(screen.getByRole('banner')).toHaveClass('ct-public-header', 'ct-glass-header');
+        const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
+        expect(navigation).toHaveClass('ct-public-header-container');
+        expect(within(navigation).getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(within(navigation).queryByRole('button', { name: /toggle navigation/i })).not.toBeInTheDocument();
+        if (path === '/login' || path === '/register') {
+            expect(within(screen.getByRole('main')).getByRole('button', { name: path === '/login' ? 'Login' : 'Register' })).toHaveClass('ct-button', 'ct-button--primary');
+        }
+        expect(adapter).not.toHaveBeenCalled();
+    });
     it.each([false, true])('keeps landing public with no API calls when authenticated=%s', async authenticated => {
         if (authenticated) loginSession(makeToken());
         const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => response(config, {}));
@@ -51,6 +66,10 @@ describe('foundation app navigation with real session and transport', () => {
         expect(screen.getAllByRole('main')).toHaveLength(1);
         expect(document.querySelector('.ct-landing-header')).toBeInTheDocument();
         expect(document.querySelector('.ct-shell')).toBeNull();
+        const header = within(screen.getByRole('navigation', { name: 'Primary navigation' }));
+        expect(header.getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(header.queryByRole('button')).not.toBeInTheDocument();
+        expect(header.queryByRole('link', { name: /features|how it works/i })).not.toBeInTheDocument();
         expect(adapter).not.toHaveBeenCalled();
         const main = within(screen.getByRole('main'));
         expect(main.getAllByRole('link', { name: authenticated ? 'Go to Dashboard' : 'Get Started' })[0]).toHaveAttribute('href', authenticated ? '/dashboard' : '/register');
@@ -62,6 +81,8 @@ describe('foundation app navigation with real session and transport', () => {
         expect(document.querySelector('.ct-landing-header')).toBeNull();
         expect(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/register');
         expect(document.title).toBe('CoinTrail');
+        expect(screen.getByText('Sign in to continue with CoinTrail.')).toBeInTheDocument();
+        expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
     });
 
     it('does not steal focus from a new-page control when heading focus is delayed', () => {

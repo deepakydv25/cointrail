@@ -33,6 +33,11 @@ describe("Navbar", () => {
 
         expect(screen.getByRole("link", { name: "CoinTrail home" }))
             .toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'CoinTrail home' })).toHaveTextContent(/^CoinTrail$/);
+        expect(screen.queryByText('Spend with intention')).not.toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toHaveClass('ct-public-header-container');
+        expect(screen.getByRole('banner')).toHaveClass('ct-public-header', 'ct-glass-header');
+        expect(screen.queryByRole('button', { name: /toggle navigation menu/i })).not.toBeInTheDocument();
 
         expect(screen.getByText("Login"))
             .toBeInTheDocument();
@@ -115,7 +120,7 @@ describe("Navbar", () => {
 
     it("opens the mobile navigation menu", () => {
         mockedUseAuth.mockReturnValue({
-            isAuthenticated: false,
+            isAuthenticated: true,
             isInitialized: true, sessionExpired: false, sessionVersion: 0,
             login: vi.fn(),
             logout: vi.fn(),
@@ -137,11 +142,11 @@ describe("Navbar", () => {
         expect(menuButton).toHaveAttribute("aria-expanded", "true");
         expect(menuButton).toHaveAttribute("aria-controls", "primary-navigation");
         expect(
-            screen.getAllByText("Login")
+            screen.getAllByText("Accounts")
         ).toHaveLength(1);
 
         expect(
-            screen.getAllByText("Register")
+            screen.getAllByText("Categories")
         ).toHaveLength(1);
 
         fireEvent.keyDown(menuButton, { key: "Escape" });

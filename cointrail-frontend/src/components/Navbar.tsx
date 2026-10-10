@@ -4,6 +4,8 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { Button } from './ui/Button';
 import { Icon, type IconName } from './ui/Icon';
+import Brand from './Brand';
+import PublicHeader from './PublicHeader';
 
 export default function Navbar({ appearance = 'classic' }: { appearance?: 'classic' | 'clarity' }) {
     return appearance === 'clarity' ? <ApplicationNavigation /> : <ClassicNavbar />;
@@ -40,8 +42,8 @@ function ApplicationNavigation() {
     return <nav ref={navigation} aria-label="Primary navigation" className="ct-navigation" onKeyDown={event => {
         if (event.key === 'Escape' && open) { setOpen(false); trigger.current?.focus(); }
     }}>
-        <div className="ct-nav-top"><Link to="/" className="ct-brand" aria-label="CoinTrail home" onClick={() => setOpen(false)}>
-            <img src="/cointrail-mark.svg" alt="" /><span>CoinTrail</span></Link>
+        <div className="ct-nav-top ct-glass-header"><Link to="/" className="ct-brand" aria-label="CoinTrail home" onClick={() => setOpen(false)}>
+            <Brand /></Link>
             <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
                 aria-expanded={open} aria-controls="application-navigation" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
         </div>
@@ -66,41 +68,32 @@ function ClassicNavbar() {
     const navigate = useNavigate();
     const close = () => setIsOpen(false);
     const linkClass = ({ isActive }: { isActive: boolean }) =>
-        `rounded px-2 py-2 font-medium transition hover:text-blue-600 ${isActive ? 'text-blue-700 underline underline-offset-4' : 'text-gray-700'}`;
+        `ct-button ct-button--ghost${isActive ? ' ct-public-link--active' : ''}`;
     return (
-        <nav aria-label="Primary navigation" className="border-b border-gray-200 bg-white"
+        <PublicHeader
             onKeyDown={event => {
                 if (event.key === 'Escape' && isOpen) { close(); button.current?.focus(); }
             }}>
-            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <Link to="/" aria-label="CoinTrail home" onClick={close} className="group flex items-center gap-3 rounded">
-                    <img src="/cointrail-mark.svg" alt="" className="h-10 w-10 transition-transform duration-200 motion-safe:group-hover:scale-105" />
-                    <span className="flex flex-col leading-none">
-                        <span className="text-xl font-bold tracking-tight"><span className="text-blue-600">Coin</span><span className="text-slate-900">Trail</span></span>
-                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Spend with intention</span>
-                    </span>
+                <Link to="/" aria-label="CoinTrail home" onClick={close} className="ct-brand rounded">
+                    <Brand />
                 </Link>
-                <button ref={button} type="button" onClick={() => setIsOpen(!isOpen)}
-                    className="rounded p-3 text-gray-700 hover:bg-gray-100 lg:hidden"
+                {isAuthenticated && <Button ref={button} variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}
+                    className="ct-public-menu-toggle"
                     aria-label="Toggle navigation menu" aria-expanded={isOpen} aria-controls="primary-navigation">
                     <span aria-hidden="true">{isOpen ? '✕' : '☰'}</span>
-                </button>
-                <div id="primary-navigation" className={`${isOpen ? 'flex' : 'hidden'} w-full flex-col gap-3 border-t border-gray-200 pt-4 lg:flex lg:w-auto lg:flex-row lg:items-center lg:border-0 lg:pt-0`}>
-                    {isAuthenticated ? <>
+                </Button>}
+                {isAuthenticated ? <div id="primary-navigation" className={`ct-public-menu${isOpen ? ' ct-public-menu--open' : ''}`}>
                         <NavLink to="/app/accounts" className={linkClass} onClick={close}>Accounts</NavLink>
                         <NavLink to="/app/categories" className={linkClass} onClick={close}>Categories</NavLink>
                         <NavLink to="/app/transactions" className={linkClass} onClick={close}>Transactions</NavLink>
                         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Legacy</span>
                         <NavLink to="/dashboard" className={linkClass} onClick={close}>Legacy Overview</NavLink>
                         <NavLink to="/expenses" className={linkClass} onClick={close}>Legacy Expenses</NavLink>
-                        <button type="button" onClick={() => { logout(); close(); navigate('/'); }}
-                            className="rounded-lg bg-red-600 px-4 py-3 font-medium text-white hover:bg-red-700">Logout</button>
-                    </> : <>
-                        <NavLink to="/login" className={linkClass} onClick={close}>Login</NavLink>
-                        <NavLink to="/register" className={linkClass} onClick={close}>Register</NavLink>
-                    </>}
-                </div>
-            </div>
-        </nav>
+                        <Button variant="danger" onClick={() => { logout(); close(); navigate('/'); }}>Logout</Button>
+                </div> : <div className="ct-landing-nav-actions">
+                    <NavLink className={linkClass} to="/login">Login</NavLink>
+                    <NavLink className={({ isActive }) => `ct-button ct-button--primary${isActive ? ' ct-public-link--active' : ''}`} to="/register">Register</NavLink>
+                </div>}
+        </PublicHeader>
     );
 }

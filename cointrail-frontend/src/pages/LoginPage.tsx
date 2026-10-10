@@ -31,7 +31,7 @@ function LoginPage() {
                 </h1>
 
                 <p className="mb-6 text-center text-gray-500">
-                    Login to continue using CoinTrail
+                    Sign in to continue with CoinTrail.
                 </p>
 
                 {sessionExpired && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-amber-900">Your session expired. Please log in again.</p>}
@@ -109,7 +109,7 @@ function LoginPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                        className="ct-button ct-button--primary w-full px-4 py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                     >
                         {isLoading ? 'Logging in...' : 'Login'}
                     </button>

@@ -148,7 +148,7 @@ function CreateExpensePage() {
                             <button
                                 type="button"
                                 onClick={() => navigate('/expenses')}
-                                className="w-full cursor-pointer rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+                                className="ct-button ct-button--secondary w-full sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -156,7 +156,7 @@ function CreateExpensePage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full cursor-pointer rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                                className="ct-button ct-button--primary w-full cursor-pointer px-5 py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                             >
                                 {isLoading ? 'Adding...' : 'Add Expense'}
                             </button>
