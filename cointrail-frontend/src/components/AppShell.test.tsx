@@ -69,6 +69,39 @@ describe('Clarity application shell', () => {
         await userEvent.click(trigger); await userEvent.click(screen.getByRole('button', { name: 'Browser back' }));
         await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
     });
+    it('opens one modal navigation tree, focuses Close and restores body styles and trigger focus', async () => {
+        document.body.style.overflow = 'auto'; document.body.style.paddingRight = '4px';
+        const view = setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        await userEvent.click(trigger);
+        const dialog = screen.getByRole('dialog', { name: 'Navigation' });
+        expect(dialog).toHaveAttribute('open');
+        expect(screen.getByRole('button', { name: 'Close navigation' })).toHaveFocus();
+        await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+        expect(screen.getByRole('button', { name: 'Logout' })).toHaveFocus();
+        await userEvent.tab(); expect(screen.getByRole('button', { name: 'Close navigation' })).toHaveFocus();
+        expect(screen.getAllByRole('link', { name: 'Categories' })).toHaveLength(1);
+        expect(document.querySelectorAll('#application-navigation')).toHaveLength(1);
+        expect(document.body.style.overflow).toBe('hidden');
+        await userEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
+        expect(trigger).toHaveFocus(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(document.body.style.overflow).toBe('auto'); expect(document.body.style.paddingRight).toBe('4px');
+        await userEvent.click(trigger); view.unmount();
+        expect(document.body.style.overflow).toBe('auto'); expect(document.body.style.paddingRight).toBe('4px');
+        document.body.style.overflow = ''; document.body.style.paddingRight = '';
+    });
+    it('dismisses native cancel and backdrop clicks, and keeps drawer Logout functional', async () => {
+        setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
+        await userEvent.click(trigger);
+        fireEvent(screen.getByRole('dialog'), new Event('cancel', { cancelable: true }));
+        expect(trigger).toHaveFocus(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        await userEvent.click(trigger); fireEvent.click(screen.getByRole('dialog'), { clientX: -1 });
+        expect(trigger).toHaveFocus(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        await userEvent.click(trigger); await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+        expect(useAuth().logout).toHaveBeenCalledOnce(); expect(screen.getByText('/')).toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(document.body.style.overflow).toBe('');
+    });
     it('resets mobile disclosure on breakpoint changes and cleans up the listener', async () => {
         const view = setup(); const trigger = screen.getByRole('button', { name: 'Toggle navigation menu' });
         await userEvent.click(trigger);

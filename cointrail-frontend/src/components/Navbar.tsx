@@ -1,5 +1,5 @@
 import { AUTHENTICATED_HOME } from '../routes/destinations';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
@@ -7,6 +7,7 @@ import { Button } from './ui/Button';
 import { Icon, type IconName } from './ui/Icon';
 import Brand from './Brand';
 import PublicHeader from './PublicHeader';
+import MobileNavigationDrawer from './MobileNavigationDrawer';
 
 export default function Navbar({ appearance = 'classic', expanded = false, onToggle }: {
     appearance?: 'classic' | 'clarity'; expanded?: boolean; onToggle?: () => void;
@@ -18,17 +19,19 @@ function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onTo
     const [open, setOpen] = useState(false);
     const trigger = useRef<HTMLButtonElement>(null);
     const navigation = useRef<HTMLElement>(null);
+    const drawer = useRef<HTMLDialogElement>(null);
     const location = useLocation();
     const previousLocation = useRef(location.key);
     const navigate = useNavigate();
     const { logout } = useAuth();
-    useEffect(() => {
+    useLayoutEffect(() => {
         // Browser history navigation must close the disclosure too.
         if (previousLocation.current === location.key) return;
         previousLocation.current = location.key;
+        // Remove modality before SiteLayout's next-frame route-heading focus.
+        drawer.current?.close();
         const frame = requestAnimationFrame(() => {
             setOpen(false);
-            if (window.matchMedia && !window.matchMedia('(min-width: 768px)').matches && navigation.current?.contains(document.activeElement)) trigger.current?.focus();
         });
         return () => cancelAnimationFrame(frame);
     }, [location.key]);
@@ -36,40 +39,30 @@ function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onTo
         if (!window.matchMedia) return;
         const media = window.matchMedia('(min-width: 768px)');
         const reset = () => {
-            setOpen(false);
             const focused = document.activeElement;
+            const fromDrawer = !!focused && !!drawer.current?.contains(focused);
+            flushSync(() => setOpen(false));
             if (!media.matches && focused && navigation.current?.contains(focused) && focused !== trigger.current) trigger.current?.focus();
-            else if (media.matches && focused === trigger.current) navigation.current?.querySelector<HTMLButtonElement>('.ct-nav-expand')?.focus();
+            else if (media.matches && (focused === trigger.current || fromDrawer)) navigation.current?.querySelector<HTMLButtonElement>('.ct-nav-expand')?.focus();
         };
         media.addEventListener('change', reset);
         return () => media.removeEventListener('change', reset);
     }, []);
     const [hint, setHint] = useState<{ label: string; top: number } | null>(null);
     const closeMobileNavigation = () => {
-        setOpen(false);
-        if (window.matchMedia && !window.matchMedia('(min-width: 768px)').matches) trigger.current?.focus();
+        flushSync(() => setOpen(false));
     };
     const destination = (to: string, label: string, icon: IconName) => <NavLink to={to} aria-label={label} title={label} className="ct-nav-link"
         onFocus={event => setHint({ label, top: Math.max(8, Math.min(window.innerHeight - 48, event.currentTarget.getBoundingClientRect().top)) })} onBlur={() => setHint(null)}
         onClick={() => { closeMobileNavigation(); setHint(null); }}><Icon name={icon} /><span className="ct-nav-text">{label}</span></NavLink>;
-    return <nav ref={navigation} aria-label="Primary navigation" className="ct-navigation" onKeyDown={event => {
-        if (event.key === 'Escape' && open) { setOpen(false); trigger.current?.focus(); }
-    }}>
-        <div className="ct-nav-top ct-glass-header"><Link to={AUTHENTICATED_HOME} className="ct-brand" aria-label="CoinTrail dashboard" onClick={closeMobileNavigation}>
-            <Brand /></Link>
-            <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
-                aria-expanded={open} aria-controls="application-navigation application-navigation-logout" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
-            <Button variant="ghost" size="icon" className="ct-nav-expand" aria-label={expanded ? 'Collapse navigation' : 'Expand navigation'}
-                title={expanded ? 'Collapse navigation' : 'Expand navigation'} aria-expanded={expanded} aria-controls="application-navigation" onClick={() => { setHint(null); onToggle?.(); }}>
-                <span className="ct-nav-expand-logo"><Brand /><Icon name="chevron-right" /></span><span className="ct-nav-expand-icon"><Icon name="chevron-left" /></span>
-            </Button>
-        </div>
-        <div id="application-navigation" className={`ct-nav-panel ${open ? 'ct-nav-panel--open' : ''}`}>
+    const dismiss = () => { flushSync(() => setOpen(false)); trigger.current?.focus(); };
+    const navigationContent = <>
+        <div id="application-navigation" className="ct-nav-panel">
             <p className="ct-nav-label">Workspace</p>
             <div className="ct-nav-group">{destination(AUTHENTICATED_HOME, 'Dashboard', 'overview')}{destination('/app/transactions', 'Transactions', 'transactions')}{destination('/app/budgets', 'Budgets', 'overview')}{destination('/app/analytics', 'Analytics', 'overview')}{destination('/app/recurring', 'Recurring transactions', 'transactions')}{destination('/app/accounts', 'Accounts', 'account')}{destination('/app/categories', 'Categories', 'tag')}</div>
             <p className="ct-nav-label">Legacy expenses</p><div className="ct-nav-group">{destination('/dashboard', 'Expense overview', 'overview')}{destination('/expenses', 'Expense records', 'receipt')}</div>
         </div>
-        <div id="application-navigation-logout" className={`ct-nav-bottom${open ? ' ct-nav-bottom--open' : ''}`}>
+        <div id="application-navigation-logout" className="ct-nav-bottom">
             <Button variant="ghost" className="ct-nav-logout" aria-label="Logout" title="Logout"
                 onFocus={event => setHint({ label: 'Logout', top: Math.max(8, Math.min(window.innerHeight - 48, event.currentTarget.getBoundingClientRect().top)) })} onBlur={() => setHint(null)} onClick={() => {
                 // Resolve the guard's session-change update before issuing the
@@ -78,6 +71,21 @@ function ApplicationNavigation({ expanded, onToggle }: { expanded: boolean; onTo
                 navigate('/');
             }}><Icon name="logout" /><span className="ct-nav-text">Logout</span></Button>
         </div>
+    </>;
+    return <nav ref={navigation} aria-label="Primary navigation" className="ct-navigation" onKeyDown={event => {
+        if (event.key === 'Escape' && open) { event.preventDefault(); dismiss(); }
+    }}>
+        <div className="ct-nav-top ct-glass-header"><Link to={AUTHENTICATED_HOME} className="ct-brand" aria-label="CoinTrail dashboard" onClick={closeMobileNavigation}>
+            <Brand /></Link>
+            <Button ref={trigger} variant="ghost" size="icon" className="ct-nav-toggle" aria-label="Toggle navigation menu"
+                aria-expanded={open} aria-controls="application-navigation application-navigation-logout" aria-haspopup="dialog" onClick={() => setOpen(!open)}><Icon name={open ? 'close' : 'menu'} /></Button>
+            <Button variant="ghost" size="icon" className="ct-nav-expand" aria-label={expanded ? 'Collapse navigation' : 'Expand navigation'}
+                title={expanded ? 'Collapse navigation' : 'Expand navigation'} aria-expanded={expanded} aria-controls="application-navigation" onClick={() => { setHint(null); onToggle?.(); }}>
+                <span className="ct-nav-expand-logo"><Brand /><Icon name="chevron-right" /></span><span className="ct-nav-expand-icon"><Icon name="chevron-left" /></span>
+            </Button>
+        </div>
+        {!open && navigationContent}
+        {open && <MobileNavigationDrawer dialog={drawer} onDismiss={dismiss}>{navigationContent}</MobileNavigationDrawer>}
         {hint && <span aria-hidden="true" className="ct-nav-hint" style={{ top: hint.top }}>{hint.label}</span>}
     </nav>;
 }

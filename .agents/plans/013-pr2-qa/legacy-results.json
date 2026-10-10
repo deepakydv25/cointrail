@@ -1,0 +1,94 @@
+{
+    "browser":  {
+                    "protocolVersion":  "1.3",
+                    "product":  "Chrome/155.0.8059.39",
+                    "revision":  "@3ff7ac5a9224be9156d7f8703a06e22890aafd34",
+                    "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+                    "jsVersion":  "15.5.35.20"
+                },
+    "checks":  [
+                   {
+                       "name":  "legacy controls and keyboard ring 320",
+                       "data":  [
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "SELECT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "BUTTON",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "BUTTON",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    }
+                                ]
+                   },
+                   {
+                       "name":  "legacy controls and keyboard ring 1024",
+                       "data":  [
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "SELECT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "INPUT",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "BUTTON",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    },
+                                    {
+                                        "tag":  "BUTTON",
+                                        "radius":  "12px",
+                                        "height":  48
+                                    }
+                                ]
+                   },
+                   {
+                       "name":  "desktop Enter expansion/collapse preserved"
+                   },
+                   {
+                       "name":  "browser history dismisses modal before heading focus"
+                   }
+               ],
+    "requests":  [
+                     "/api/analytics/categories",
+                     "/api/dashboard",
+                     "/api/analytics/categories",
+                     "/api/dashboard"
+                 ],
+    "notes":  "Four supplementary real Chrome checks with synthetic intercepted APIs: legacy control dimensions and actual keyboard focus at 320/1024px, desktop Enter toggle and native browser history drawer dismissal before heading focus. No real financial API calls."
+}
