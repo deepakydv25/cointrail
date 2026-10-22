@@ -4,8 +4,6 @@ A personal expense tracker for everyday spending — sign up, log in, add expens
 
 Built with Spring Boot, React, TypeScript, PostgreSQL, and Docker.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://cointrail.up.railway.app)
-[![API Health](https://img.shields.io/badge/api-status-blue)](https://cointrail-api.up.railway.app/actuator/health)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](#)
 
 ---
@@ -16,12 +14,25 @@ See the full flow in action — landing page → sign up → login → dashboard
 
 https://github.com/user-attachments/assets/fa640467-b855-46db-b4e8-e04f0a6ffdfb
 
-## Live
+## Deployment
 
-**Frontend** : [cointrail.up.railway.app](https://cointrail.up.railway.app) 
+CoinTrail is deployed using separate services:
 
-**API health** : [cointrail-api.up.railway.app/actuator/health](https://cointrail-api.up.railway.app/actuator/health) 
+| Component | Provider |
+|---|---|
+| Frontend (React + Vite) | Vercel |
+| Backend (Spring Boot API) | Render |
+| PostgreSQL database | Neon |
 
+**Architecture:** Browser → Vercel frontend → Render API → Neon PostgreSQL.
+
+The previous Railway deployment has been replaced. Production frontend and API URLs should be added after confirming the current public endpoints.
+
+### Production configuration
+
+Configure the backend with `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, and `CORS_ALLOWED_ORIGIN` (the Vercel origin). Use Neon's PostgreSQL connection details for the database. Configure the frontend's API base URL to point to the Render service.
+
+Keep database credentials and JWT secrets in hosting environment settings, never in Git.
 
 ## ✨ Features
 
@@ -39,7 +50,7 @@ https://github.com/user-attachments/assets/fa640467-b855-46db-b4e8-e04f0a6ffdfb
 | Frontend | React, TypeScript, Vite, Tailwind CSS |
 | Backend | Java, Spring Boot, Spring Security, Spring Data JPA |
 | Database | PostgreSQL |
-| Deployment | Railway, Docker |
+| Deployment | Vercel (frontend), Render (backend), Neon (PostgreSQL); Docker (local) |
 
 ## 🚀 Run locally
 
